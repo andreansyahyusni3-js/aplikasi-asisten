@@ -40,12 +40,9 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen bg-slate-50 flex flex-col md:flex-row pb-20 md:pb-0">
 
-  <!-- ========================================== -->
-  <!-- SIDEBAR NAVIGASI SAMPING (LAPTOP / DESKTOP) -->
-  <!-- ========================================== -->
+  <!-- SIDEBAR NAVIGASI SAMPING -->
   <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 no-print">
-
-    <!-- BRAND HEADER -->
+    
     <div class="p-5 border-b border-slate-800 flex items-center space-x-3">
       <div class="bg-red-600 p-2.5 rounded-xl text-white shadow-md shadow-red-900/50">
         <i data-lucide="package-search" class="w-6 h-6"></i>
@@ -62,12 +59,10 @@
         <span id="sync-indicator" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
         Status Cloud
       </span>
-      <span id="sync-status-text" class="text-amber-400 font-medium">Menghubungkan...</span>
+      <span id="sync-status-text" class="text-amber-400 font-medium">Memuat Data...</span>
     </div>
 
-    <!-- MENU NAVIGASI SAMPING -->
     <nav class="flex-1 px-3 py-4 space-y-1.5 overflow-y-auto">
-
       <button onclick="switchTab('stok')" id="nav-desk-stok" class="w-full px-4 py-3 rounded-xl font-medium text-xs flex items-center space-x-3 transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="boxes" class="w-4 h-4"></i>
         <span>Stok Barang</span>
@@ -94,17 +89,14 @@
           <span>Laporan & PDF</span>
         </button>
       </div>
-
     </nav>
 
-    <!-- FOOTER SIDEBAR -->
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v3.0 &bull; Firebase Cloud Sync
+      v3.1 &bull; Fixed Refresh Load
     </div>
-
   </aside>
 
-  <!-- HEADER MOBILE ONLY -->
+  <!-- HEADER MOBILE -->
   <header class="md:hidden bg-slate-900 text-white p-4 sticky top-0 z-40 shadow-md flex justify-between items-center no-print">
     <div class="flex items-center space-x-3">
       <div class="bg-red-600 p-2 rounded-lg text-white">
@@ -121,15 +113,11 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT AREA -->
+  <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
 
-    <!-- ========================================== -->
-    <!-- TAB STOK: MANAJEMEN STOK BARANG DIBAWA    -->
-    <!-- ========================================== -->
+    <!-- TAB STOK -->
     <section id="tab-stok" class="hidden space-y-6">
-
-      <!-- HEADER STOK -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -145,7 +133,6 @@
         </div>
       </div>
 
-      <!-- KARTU RINGKASAN TOTAL STOK -->
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
@@ -170,7 +157,6 @@
         </div>
       </div>
 
-      <!-- TABEL DAFTAR STOK PER SKU -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex justify-between items-center border-b border-slate-100 pb-3">
           <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -193,21 +179,14 @@
                 <th class="p-3 border border-slate-200 text-center">Aksi Manajemen</th>
               </tr>
             </thead>
-            <tbody id="stock-table-body" class="divide-y divide-slate-200">
-              <!-- Render via JS -->
-            </tbody>
+            <tbody id="stock-table-body" class="divide-y divide-slate-200"></tbody>
           </table>
         </div>
       </div>
-
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 1: PENDING OMZET & KERANJANG PENJUALAN -->
-    <!-- ========================================== -->
+    <!-- TAB OMZET -->
     <section id="tab-omzet" class="block space-y-6">
-
-      <!-- WIDGET TARGET BULANAN -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div class="flex justify-between items-center">
           <div class="flex items-center gap-2">
@@ -239,7 +218,6 @@
           </div>
         </div>
 
-        <!-- PROGRESS BAR -->
         <div class="space-y-1">
           <div class="flex justify-between text-[11px] font-semibold">
             <span class="text-slate-600">Persentase Pencapaian</span>
@@ -251,10 +229,7 @@
         </div>
       </div>
 
-      <!-- WIDGET RINGKASAN BUNGKUS HARIAN -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-
-        <!-- WIDGET TOTAL BARANG KELUAR -->
         <div class="bg-gradient-to-br from-indigo-900 to-slate-900 text-white p-4 rounded-xl border border-indigo-800 shadow-sm flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold text-indigo-200 uppercase tracking-wider">Total Barang Keluar</p>
@@ -266,7 +241,6 @@
           </div>
         </div>
 
-        <!-- WIDGET BUNGKUS PENDING -->
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bungkus Pending</p>
@@ -278,7 +252,6 @@
           </div>
         </div>
 
-        <!-- WIDGET BUNGKUS DILAPORKAN -->
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Bungkus Dilaporkan</p>
@@ -290,7 +263,6 @@
           </div>
         </div>
 
-        <!-- WIDGET TOTAL TRANSAKSI TOKO -->
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Transaksi Toko</p>
@@ -301,13 +273,9 @@
             <i data-lucide="store" class="w-6 h-6"></i>
           </div>
         </div>
-
       </div>
 
-      <!-- FORM INPUT & KERANJANG -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- SISI KIRI: INPUT TRANSAKSI & KERANJANG -->
         <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
           <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
             <h2 class="font-bold text-slate-900 flex items-center gap-2">
@@ -317,19 +285,15 @@
             <span class="text-xs bg-red-50 text-red-700 px-2.5 py-1 rounded-full font-medium">Sistem Keranjang</span>
           </div>
 
-          <!-- NAMA TOKO -->
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Toko / Outlet <span class="text-red-500">*</span></label>
-            <input type="text" id="input-toko" placeholder="Contoh: Toko Ali / Berkah Jaya" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition">
+            <input type="text" id="input-toko" placeholder="Contoh: Toko Ali / Berkah Jaya" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none transition">
           </div>
 
-          <!-- PENAMBAHAN ITEM KE KERANJANG -->
           <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
             <label class="block text-xs font-bold text-slate-700 uppercase">Pilih Produk Rokok</label>
             <div class="space-y-3">
-              <select id="select-produk" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-red-500 outline-none">
-                <!-- Dropdown diisi otomatis lewat JS -->
-              </select>
+              <select id="select-produk" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-red-500 outline-none"></select>
 
               <div class="flex items-center gap-2">
                 <div class="flex-1">
@@ -343,19 +307,17 @@
             </div>
           </div>
 
-          <!-- DAFTAR ITEM DALAM KERANJANG -->
           <div>
             <div class="flex justify-between items-center mb-2">
               <span class="text-xs font-bold text-slate-700 uppercase">Isi Keranjang Toko</span>
               <span id="cart-count" class="text-xs bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full">0 Item</span>
             </div>
-
+            
             <div id="cart-items-container" class="space-y-2 max-h-48 overflow-y-auto border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50/50">
               <p class="text-xs text-slate-400 text-center py-4">Keranjang masih kosong</p>
             </div>
           </div>
 
-          <!-- STATUS & TOMBOL SIMPAN -->
           <div class="pt-2 border-t border-slate-100 space-y-3">
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Awal</label>
@@ -372,7 +334,6 @@
           </div>
         </div>
 
-        <!-- SISI KANAN: RIWAYAT / DAFTAR TRANSAKSI TOKO -->
         <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-3 border-b border-slate-100">
             <div>
@@ -395,22 +356,14 @@
             </div>
           </div>
 
-          <!-- LIST TRANSAKSI -->
-          <div id="tx-list-container" class="space-y-3">
-            <!-- Transaksi di-render lewat JS -->
-          </div>
+          <div id="tx-list-container" class="space-y-3"></div>
         </div>
-
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 2: KILOMETER & KONSUMSI BBM VEHICLE -->
-    <!-- ========================================== -->
+    <!-- TAB BBM -->
     <section id="tab-bbm" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- PENCATATAN 1: JARAK TEMPUH MOBIL -->
         <div class="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h2 class="font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
             <i data-lucide="navigation" class="w-5 h-5 text-blue-600"></i>
@@ -438,16 +391,12 @@
             Simpan Jarak Tempuh
           </button>
 
-          <!-- RIWAYAT JARAK TEMPUH -->
           <div class="pt-2 border-t border-slate-100 space-y-2">
             <h3 class="text-xs font-bold text-slate-700 uppercase">Riwayat Jarak Tempuh Harian</h3>
-            <div id="km-list-container" class="space-y-2 max-h-60 overflow-y-auto">
-              <!-- Rendered via JS -->
-            </div>
+            <div id="km-list-container" class="space-y-2 max-h-60 overflow-y-auto"></div>
           </div>
         </div>
 
-        <!-- PENCATATAN 2: PENGISIAN BBM -->
         <div class="lg:col-span-6 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h2 class="font-bold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
             <i data-lucide="fuel" class="w-5 h-5 text-emerald-600"></i>
@@ -474,25 +423,17 @@
             Simpan Pengisian BBM
           </button>
 
-          <!-- RIWAYAT PENGISIAN BBM -->
           <div class="pt-2 border-t border-slate-100 space-y-2">
             <h3 class="text-xs font-bold text-slate-700 uppercase">Riwayat Pembelian BBM</h3>
-            <div id="bbm-fill-list-container" class="space-y-2 max-h-60 overflow-y-auto">
-              <!-- Rendered via JS -->
-            </div>
+            <div id="bbm-fill-list-container" class="space-y-2 max-h-60 overflow-y-auto"></div>
           </div>
         </div>
-
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 3: PENGINGAT SURAT & SERVICE MOBIL     -->
-    <!-- ========================================== -->
+    <!-- TAB SURAT -->
     <section id="tab-surat" class="hidden space-y-6">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
-        <!-- INPUT SURAT / SERVICE -->
         <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h2 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
             <i data-lucide="bell" class="w-5 h-5 text-purple-600"></i>
@@ -516,7 +457,6 @@
             <input type="text" id="input-surat-title" placeholder="Contoh: Mobil Box DA 8123 XX" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none">
           </div>
 
-          <!-- INPUT KHUSUS JADWAL KM SERVICE / GANTI OLI -->
           <div id="field-km-reminder" class="space-y-3 bg-purple-50 p-3.5 rounded-xl border border-purple-200">
             <div>
               <label class="block text-xs font-bold text-purple-900 uppercase mb-1">KM Target Harus Service / Ganti Oli</label>
@@ -528,7 +468,6 @@
             </div>
           </div>
 
-          <!-- INPUT KHUSUS SURAT PAJAK BERDASARKAN TANGGAL -->
           <div id="field-date-reminder" class="hidden">
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal Jatuh Tempo</label>
             <input type="date" id="input-surat-date" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none">
@@ -540,27 +479,19 @@
           </button>
         </div>
 
-        <!-- DAFTAR PENGINGAT -->
         <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <h2 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
             <i data-lucide="calendar-days" class="w-5 h-5 text-purple-600"></i>
             Jadwal Service & Jatuh Tempo Surat
           </h2>
 
-          <div id="reminder-list-container" class="space-y-3">
-            <!-- Data Pengingat di-render lewat JS -->
-          </div>
+          <div id="reminder-list-container" class="space-y-3"></div>
         </div>
-
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- TAB 4: LAPORAN REKAPITULASI (TABEL & PDF)  -->
-    <!-- ========================================== -->
+    <!-- TAB LAPORAN -->
     <section id="tab-laporan" class="hidden space-y-6">
-
-      <!-- HEADER LAPORAN & TOMBOL CETAK -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
@@ -575,16 +506,12 @@
         </button>
       </div>
 
-      <!-- KONTEN TABEL LAPORAN -->
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-8">
-
-        <!-- HEADER CETAK PDF -->
         <div class="text-center border-b pb-4 mb-4">
           <h1 class="text-xl font-bold text-slate-900 uppercase tracking-wide">LAPORAN PENJUALAN & OPERASIONAL SALES</h1>
           <p class="text-xs text-slate-600 mt-1">Tanggal Rekapitulasi: <span id="report-date-str" class="font-semibold">--</span></p>
         </div>
 
-        <!-- 1. TABEL AKUMULASI PENDING VS LAPOR PER SKU -->
         <div class="space-y-3">
           <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
             <i data-lucide="box" class="w-4 h-4 text-red-600"></i>
@@ -601,14 +528,11 @@
                   <th class="p-2.5 border border-slate-200 text-right">Total Keseluruhan</th>
                 </tr>
               </thead>
-              <tbody id="report-table-sku-body" class="divide-y divide-slate-200">
-                <!-- Diisi via JS -->
-              </tbody>
+              <tbody id="report-table-sku-body" class="divide-y divide-slate-200"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- 2. TABEL RINCIAN KHUSUS OMZET DILAPORKAN PER TOKO -->
         <div class="space-y-3">
           <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
             <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
@@ -625,14 +549,11 @@
                   <th class="p-2.5 border border-slate-200 text-center">Status</th>
                 </tr>
               </thead>
-              <tbody id="report-table-store-body" class="divide-y divide-slate-200">
-                <!-- Diisi via JS -->
-              </tbody>
+              <tbody id="report-table-store-body" class="divide-y divide-slate-200"></tbody>
             </table>
           </div>
         </div>
 
-        <!-- 3. TABEL PENGINGAT OPERASIONAL -->
         <div class="space-y-3">
           <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
             <i data-lucide="bell" class="w-4 h-4 text-purple-600"></i>
@@ -647,19 +568,16 @@
                   <th class="p-2 border border-slate-200 text-center">Target / Jatuh Tempo</th>
                 </tr>
               </thead>
-              <tbody id="report-table-surat-body">
-                <!-- Diisi JS -->
-              </tbody>
+              <tbody id="report-table-surat-body"></tbody>
             </table>
           </div>
         </div>
-
       </div>
     </section>
 
   </main>
 
-  <!-- MODAL EDIT TARGET BULANAN -->
+  <!-- MODAL TARGET BULANAN -->
   <div id="modal-target" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -671,14 +589,12 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
       <div class="space-y-3">
         <div>
           <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Penjualan (Bungkus)</label>
           <input type="number" min="0" id="input-monthly-target" placeholder="Contoh: 5000" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
         </div>
       </div>
-
       <div class="flex gap-2 pt-2">
         <button onclick="closeModal('modal-target')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
         <button onclick="saveMonthlyTarget()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Target</button>
@@ -698,7 +614,6 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
       <div class="space-y-3">
         <p class="text-xs text-slate-600 font-medium">SKU: <b id="modal-edit-sku-title" class="text-slate-900">--</b></p>
         <div>
@@ -706,7 +621,6 @@
           <input type="number" min="0" id="modal-input-edit-stock" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
         </div>
       </div>
-
       <div class="flex gap-2 pt-2">
         <button onclick="closeModal('modal-edit-stock')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
         <button onclick="confirmEditStock()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Stok</button>
@@ -726,7 +640,6 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
       <div class="space-y-3">
         <p class="text-xs text-slate-600 font-medium">SKU: <b id="modal-add-sku-title" class="text-slate-900">--</b></p>
         <div>
@@ -734,7 +647,6 @@
           <input type="number" min="1" id="modal-input-add-stock" placeholder="0" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
         </div>
       </div>
-
       <div class="flex gap-2 pt-2">
         <button onclick="closeModal('modal-add-stock')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
         <button onclick="confirmAddStock()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs">Tambah Pasokan</button>
@@ -754,11 +666,7 @@
           <i data-lucide="x" class="w-5 h-5"></i>
         </button>
       </div>
-
-      <div id="modal-partial-body" class="space-y-3">
-        <!-- Konten dinamik modal -->
-      </div>
-
+      <div id="modal-partial-body" class="space-y-3"></div>
       <div class="flex gap-2 pt-2">
         <button onclick="closePartialModal()" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-sm">Batal</button>
         <button onclick="confirmPartialReport()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 rounded-xl text-sm">Proses Laporkan</button>
@@ -766,7 +674,7 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION FOR MOBILE -->
+  <!-- BOTTOM NAVIGATION MOBILE -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2 flex justify-around items-center no-print">
     <button onclick="switchTab('stok')" id="nav-mob-stok" class="flex flex-col items-center gap-1 text-slate-400">
       <i data-lucide="boxes" class="w-5 h-5"></i>
@@ -790,10 +698,10 @@
     </button>
   </div>
 
-  <!-- INTEGRASI FIREBASE MODULE SDK -->
+  <!-- FIREBASE MODULE SDK & STATE MANAGEMENT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAjMsxk0__VsFf37h9vyAIBlNDoNwLghUY",
@@ -805,18 +713,22 @@
       measurementId: "G-H5R0RTHBT8"
     };
 
-    // Inisialisasi Firebase & Firestore
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const appDocRef = doc(db, "app_data", "sales_pro_state");
 
-    // LIST SKU ROKOK
+    // Mengaktifkan offline persistence agar data yang di-load tersimpan di browser
+    try {
+      enableIndexedDbPersistence(db);
+    } catch (err) {
+      console.warn("Offline persistence warning:", err);
+    }
+
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
       "MCG SKT", "PBB SKT", "PBM SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
     ];
 
-    // STATE UTAMA
     window.cart = [];
     window.stockData = {};
     window.transactions = [];
@@ -830,7 +742,9 @@
     window.currentEditingTxId = null;
     window.selectedStockSku = null;
 
-    // SINKRONISASI DATA KE FIREBASE
+    // Load awal dari localStorage agar tampilan langsung terisi saat refresh sebelum network merespon
+    loadFromLocalStorage();
+
     window.syncToCloud = async function() {
       updateSyncStatus("saving");
       try {
@@ -846,22 +760,39 @@
           updatedAt: new Date().toISOString()
         }, { merge: true });
 
-        // Backup lokal
-        localStorage.setItem('sales_stock_data', JSON.stringify(window.stockData));
-        localStorage.setItem('sales_transactions', JSON.stringify(window.transactions));
-        localStorage.setItem('sales_km_logs', JSON.stringify(window.kmLogs));
-        localStorage.setItem('sales_bbm_fills', JSON.stringify(window.bbmFills));
-        localStorage.setItem('sales_reminders', JSON.stringify(window.reminders));
-        localStorage.setItem('sales_monthly_target', window.monthlyTarget);
-        localStorage.setItem('sales_target_month_year', window.targetMonthYear);
-        localStorage.setItem('sales_last_active_date', window.lastActiveDate);
-
+        saveToLocalStorage();
         updateSyncStatus("connected");
       } catch (err) {
-        console.error("Gagal menyimpan ke Firebase Cloud:", err);
+        console.error("Gagal menyimpan ke Cloud:", err);
+        saveToLocalStorage();
         updateSyncStatus("error");
       }
     };
+
+    function saveToLocalStorage() {
+      localStorage.setItem('sales_stock_data', JSON.stringify(window.stockData));
+      localStorage.setItem('sales_transactions', JSON.stringify(window.transactions));
+      localStorage.setItem('sales_km_logs', JSON.stringify(window.kmLogs));
+      localStorage.setItem('sales_bbm_fills', JSON.stringify(window.bbmFills));
+      localStorage.setItem('sales_reminders', JSON.stringify(window.reminders));
+      localStorage.setItem('sales_monthly_target', window.monthlyTarget);
+      localStorage.setItem('sales_target_month_year', window.targetMonthYear || '');
+      localStorage.setItem('sales_last_active_date', window.lastActiveDate || '');
+    }
+
+    function loadFromLocalStorage() {
+      window.stockData = JSON.parse(localStorage.getItem('sales_stock_data')) || {};
+      window.transactions = JSON.parse(localStorage.getItem('sales_transactions')) || [];
+      window.kmLogs = JSON.parse(localStorage.getItem('sales_km_logs')) || [];
+      window.bbmFills = JSON.parse(localStorage.getItem('sales_bbm_fills')) || [];
+      window.reminders = JSON.parse(localStorage.getItem('sales_reminders')) || [];
+      window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target'), 10) || 0;
+      window.targetMonthYear = localStorage.getItem('sales_target_month_year') || null;
+      window.lastActiveDate = localStorage.getItem('sales_last_active_date') || null;
+
+      initStockData();
+      renderAllViews();
+    }
 
     function updateSyncStatus(status) {
       const deskInd = document.getElementById("sync-indicator");
@@ -881,13 +812,13 @@
         if (mobTxt) { mobTxt.textContent = "Syncing"; mobTxt.className = "text-amber-400 font-medium"; }
       } else {
         if (deskInd) deskInd.className = "w-2 h-2 rounded-full bg-red-500";
-        if (deskTxt) { deskTxt.textContent = "Offline / Error"; deskTxt.className = "text-red-400 font-medium"; }
+        if (deskTxt) { deskTxt.textContent = "Offline Mode"; deskTxt.className = "text-red-400 font-medium"; }
         if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-red-500";
         if (mobTxt) { mobTxt.textContent = "Offline"; mobTxt.className = "text-red-400 font-medium"; }
       }
     }
 
-    // LISTENER SNAPSHOT FIREBASE REAL-TIME
+    // LISTENER SNAPSHOT FIREBASE
     onSnapshot(appDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -899,29 +830,18 @@
         window.monthlyTarget = data.monthlyTarget || 0;
         window.targetMonthYear = data.targetMonthYear || null;
         window.lastActiveDate = data.lastActiveDate || null;
-      } else {
-        initStockData();
-      }
 
-      checkAndPerformDailyReset();
-      checkMonthlyReset();
-      renderAllViews();
-      updateSyncStatus("connected");
-    }, (err) => {
-      console.warn("Menggunakan data lokal (Offline mode):", err);
-      window.stockData = JSON.parse(localStorage.getItem('sales_stock_data')) || {};
-      window.transactions = JSON.parse(localStorage.getItem('sales_transactions')) || [];
-      window.kmLogs = JSON.parse(localStorage.getItem('sales_km_logs')) || [];
-      window.bbmFills = JSON.parse(localStorage.getItem('sales_bbm_fills')) || [];
-      window.reminders = JSON.parse(localStorage.getItem('sales_reminders')) || [];
-      window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target'), 10) || 0;
-      window.targetMonthYear = localStorage.getItem('sales_target_month_year') || null;
-      window.lastActiveDate = localStorage.getItem('sales_last_active_date') || null;
+        saveToLocalStorage();
+      }
 
       initStockData();
       checkAndPerformDailyReset();
       checkMonthlyReset();
       renderAllViews();
+      updateSyncStatus("connected");
+    }, (err) => {
+      console.warn("Menggunakan data lokal saat offline/error:", err);
+      loadFromLocalStorage();
       updateSyncStatus("error");
     });
 
@@ -969,7 +889,7 @@
     }
   </script>
 
-  <!-- JAVASCRIPT APP LOGIC -->
+  <!-- JAVASCRIPT UTAMA -->
   <script>
     function openTargetModal() {
       document.getElementById('input-monthly-target').value = window.monthlyTarget || '';
@@ -1021,7 +941,7 @@
       ['stok', 'omzet', 'bbm', 'surat', 'laporan'].forEach(t => {
         const deskBtn = document.getElementById(`nav-desk-${t}`);
         const mobBtn = document.getElementById(`nav-mob-${t}`);
-
+        
         if (t === tabName) {
           deskBtn.className = "w-full px-4 py-3 rounded-xl font-medium text-xs flex items-center space-x-3 transition bg-red-600 text-white shadow-lg shadow-red-900/40";
           mobBtn.className = "flex flex-col items-center gap-1 text-red-500";
@@ -1252,9 +1172,12 @@
 
     function renderTransactions() {
       const container = document.getElementById('tx-list-container');
-      const filter = document.getElementById('filter-status').value;
+      const filterSelect = document.getElementById('filter-status');
+      if (!container || !filterSelect) return;
 
+      const filter = filterSelect.value;
       let filtered = window.transactions;
+
       if (filter === 'pending') {
         filtered = window.transactions.filter(t => t.items.some(i => i.pendingQty > 0));
       } else if (filter === 'reported') {
@@ -1288,13 +1211,13 @@
 
       document.getElementById('widget-target-val').textContent = `${window.monthlyTarget.toLocaleString('id-ID')} Bungkus`;
       document.getElementById('widget-achieved-val').textContent = `${monthlyAchievedPacks.toLocaleString('id-ID')} Bungkus`;
-
+      
       const remainingTarget = Math.max(0, window.monthlyTarget - monthlyAchievedPacks);
       document.getElementById('widget-remaining-val').textContent = `${remainingTarget.toLocaleString('id-ID')} Bungkus`;
 
       const percent = window.monthlyTarget > 0 ? Math.min(100, Math.round((monthlyAchievedPacks / window.monthlyTarget) * 100)) : 0;
       document.getElementById('widget-target-percent').textContent = `${percent}%`;
-
+      
       const bar = document.getElementById('widget-target-bar');
       bar.style.width = `${percent}%`;
       if (percent >= 100) {
@@ -1473,7 +1396,7 @@
               <span class="font-bold text-slate-800">${k.note}</span>
               <span class="text-[10px] bg-blue-100 text-blue-700 font-bold px-1.5 py-0.5 rounded">${k.date}</span>
             </div>
-            <p class="text-slate-500 mt-0.5">KM ${k.kmAwal} ? KM ${k.kmAkhir}</p>
+            <p class="text-slate-500 mt-0.5">KM ${k.kmAwal} ➔ KM ${k.kmAkhir}</p>
           </div>
           <div class="text-right flex items-center gap-3">
             <span class="font-bold text-blue-600 text-sm">${k.totalJarak} KM</span>
