@@ -91,7 +91,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v3.6 &bull; Sisa Omzet Synchronized
+      v3.7 &bull; Fitur Kurangi Omzet Added
     </div>
   </aside>
 
@@ -649,7 +649,52 @@
     </div>
   </div>
 
-  <!-- MODAL LAPORAN CUSTOM LINTAS TOKO (FIXED LOGIKA SISA PENDING OMZET) -->
+  <!-- MODAL KURANGI OMZET / PRODUK DARI TOKO (BARU) -->
+  <div id="modal-reduce-omzet" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-100">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="minus-circle" class="w-5 h-5 text-amber-600"></i>
+          Kurangi Produk / Omzet Toko
+        </h3>
+        <button onclick="closeReduceOmzetModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <p class="text-xs text-slate-600 font-medium">Toko: <b id="modal-reduce-toko-name" class="text-slate-900">--</b></p>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Produk Rokok Yang Ingin Dikurangi</label>
+          <select id="modal-reduce-produk" onchange="updateReduceMaxLimit()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-amber-500 outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Kurangi Dari Bagian Mana?</label>
+          <select id="modal-reduce-target" onchange="updateReduceMaxLimit()" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-amber-500 outline-none">
+            <option value="pending">Sisa Pending Omzet (Belum Dilapor)</option>
+            <option value="reported">Yang Sudah Dilaporkan (Retur/Koreksi)</option>
+          </select>
+        </div>
+
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="block text-xs font-bold text-slate-700 uppercase">Jumlah Bungkus Dikurangi</label>
+            <span id="reduce-max-info" class="text-[11px] font-semibold text-amber-600">Maks: 0 Bks</span>
+          </div>
+          <input type="number" min="1" id="modal-reduce-jumlah" placeholder="Contoh: 5" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeReduceOmzetModal()" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-sm">Batal</button>
+        <button onclick="confirmReduceOmzetFromTx()" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2.5 rounded-xl text-sm">Proses Pengurangan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL LAPORAN CUSTOM LINTAS TOKO -->
   <div id="modal-custom-report" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl border border-slate-100">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -838,7 +883,6 @@
     window.currentEditingTxId = null;
     window.selectedStockSku = null;
 
-    // Load data lokal terlebih dahulu secara instant
     loadFromLocalStorage();
 
     window.syncToCloud = async function() {
@@ -1268,7 +1312,7 @@
       renderStockTable();
     }
 
-    // FUNGSI UNTUK MODAL TAMBAH OMZET
+    // FUNGSI MODAL TAMBAH OMZET
     function openAddOmzetModal(txId) {
       window.currentEditingTxId = txId;
       const tx = window.transactions.find(t => t.id === txId);
@@ -1322,6 +1366,96 @@
       }
 
       closeAddOmzetModal();
+      window.syncToCloud();
+      renderTransactions();
+      renderStockTable();
+    }
+
+    // FUNGSI MODAL KURANGI OMZET / PRODUK (FITUR BARU)
+    function openReduceOmzetModal(txId) {
+      window.currentEditingTxId = txId;
+      const tx = window.transactions.find(t => t.id === txId);
+      if (!tx) return;
+
+      document.getElementById('modal-reduce-toko-name').textContent = tx.toko;
+
+      const productSelect = document.getElementById('modal-reduce-produk');
+      if (productSelect && tx.items.length > 0) {
+        productSelect.innerHTML = tx.items.map(i => `<option value="${i.product}">${i.product}</option>`).join('');
+      }
+
+      document.getElementById('modal-reduce-jumlah').value = '';
+      document.getElementById('modal-reduce-omzet').classList.remove('hidden');
+      updateReduceMaxLimit();
+    }
+
+    function closeReduceOmzetModal() {
+      document.getElementById('modal-reduce-omzet').classList.add('hidden');
+      window.currentEditingTxId = null;
+    }
+
+    function updateReduceMaxLimit() {
+      if (!window.currentEditingTxId) return;
+      const tx = window.transactions.find(t => t.id === window.currentEditingTxId);
+      if (!tx) return;
+
+      const selectedProduct = document.getElementById('modal-reduce-produk').value;
+      const targetType = document.getElementById('modal-reduce-target').value;
+      const item = tx.items.find(i => i.product === selectedProduct);
+
+      const maxLimitInfo = document.getElementById('reduce-max-info');
+      if (item) {
+        const limitVal = targetType === 'reported' ? item.reportedQty : item.pendingQty;
+        maxLimitInfo.textContent = `Maks: ${limitVal} Bks`;
+      } else {
+        maxLimitInfo.textContent = `Maks: 0 Bks`;
+      }
+    }
+
+    function confirmReduceOmzetFromTx() {
+      if (!window.currentEditingTxId) return;
+      const tx = window.transactions.find(t => t.id === window.currentEditingTxId);
+      if (!tx) return;
+
+      const selectedProduct = document.getElementById('modal-reduce-produk').value;
+      const targetType = document.getElementById('modal-reduce-target').value;
+      const reduceQty = parseInt(document.getElementById('modal-reduce-jumlah').value, 10);
+
+      if (isNaN(reduceQty) || reduceQty <= 0) {
+        alert('Masukkan jumlah bungkus pengurangan yang valid!');
+        return;
+      }
+
+      const itemIndex = tx.items.findIndex(i => i.product === selectedProduct);
+      if (itemIndex > -1) {
+        const item = tx.items[itemIndex];
+
+        if (targetType === 'reported') {
+          if (reduceQty > item.reportedQty) {
+            alert(`Jumlah pengurangan melebihi bungkus yang sudah dilaporkan (${item.reportedQty} Bks)!`);
+            return;
+          }
+          item.reportedQty -= reduceQty;
+        } else {
+          if (reduceQty > item.pendingQty) {
+            alert(`Jumlah pengurangan melebihi bungkus pending (${item.pendingQty} Bks)!`);
+            return;
+          }
+          item.pendingQty -= reduceQty;
+        }
+
+        item.qty = item.pendingQty + item.reportedQty;
+
+        if (item.qty <= 0) {
+          tx.items.splice(itemIndex, 1);
+        }
+
+        if (tx.items.length === 0) {
+          window.transactions = window.transactions.filter(t => t.id !== tx.id);
+        }
+      }
+
+      closeReduceOmzetModal();
       window.syncToCloud();
       renderTransactions();
       renderStockTable();
@@ -1418,11 +1552,14 @@
               `).join('')}
             </div>
 
-            <div class="flex justify-between items-center pt-1">
+            <div class="flex flex-wrap justify-between items-center gap-2 pt-1">
               <span class="text-xs text-slate-500 font-medium">Total: <b>${totalItemsInTx} Bungkus</b></span>
               <div class="flex items-center gap-1.5">
                 <button onclick="openAddOmzetModal(${t.id})" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition flex items-center gap-1">
-                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Omzet
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah
+                </button>
+                <button onclick="openReduceOmzetModal(${t.id})" class="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                  <i data-lucide="minus" class="w-3.5 h-3.5"></i> Kurangi
                 </button>
                 ${!isFullyReported ? `
                   <button onclick="openPartialModal(${t.id})" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1">
@@ -1902,7 +2039,6 @@
       }
     }
 
-    // LOGIKA LAPORAN CUSTOM DENGAN MENGGUNAKAN SISA PENDING OMZET REAL-TIME
     function openCustomReportModal() {
       const listContainer = document.getElementById('custom-items-selection-list');
       if (!listContainer) return;
