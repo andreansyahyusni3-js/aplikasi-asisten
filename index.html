@@ -40,9 +40,8 @@
 </head>
 <body class="text-slate-800 antialiased min-h-screen bg-slate-50 flex flex-col md:flex-row pb-20 md:pb-0">
 
-  <!-- SIDEBAR NAVIGASI SAMPING -->
+  <!-- SIDEBAR NAVIGASI -->
   <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 no-print">
-    
     <div class="p-5 border-b border-slate-800 flex items-center space-x-3">
       <div class="bg-red-600 p-2.5 rounded-xl text-white shadow-md shadow-red-900/50">
         <i data-lucide="package-search" class="w-6 h-6"></i>
@@ -92,7 +91,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v3.1 &bull; Fixed Refresh Load
+      v3.2 &bull; Firebase Cloud Sync
     </div>
   </aside>
 
@@ -113,7 +112,7 @@
     </div>
   </header>
 
-  <!-- MAIN CONTENT -->
+  <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
 
     <!-- TAB STOK -->
@@ -577,6 +576,48 @@
 
   </main>
 
+  <!-- MODAL TAMBAH OMZET BUNGKUS KETOKO -->
+  <div id="modal-add-omzet" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-100">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i>
+          Tambah Omzet Toko
+        </h3>
+        <button onclick="closeAddOmzetModal()" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3">
+        <p class="text-xs text-slate-600 font-medium">Toko: <b id="modal-add-toko-name" class="text-slate-900">--</b></p>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Pilih Produk Rokok</label>
+          <select id="modal-add-produk" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none"></select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jumlah Bungkus Tambahan</label>
+          <input type="number" min="1" id="modal-add-jumlah" placeholder="Contoh: 10" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Status Tambahan Omzet</label>
+          <select id="modal-add-status" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl bg-white focus:ring-2 focus:ring-blue-500 outline-none">
+            <option value="pending">Masuk Pending Omzet</option>
+            <option value="reported">Langsung Dilaporkan</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeAddOmzetModal()" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-sm">Batal</button>
+        <button onclick="confirmAddOmzetToTx()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-sm">Tambahkan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL TARGET BULANAN -->
   <div id="modal-target" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
@@ -700,8 +741,8 @@
 
   <!-- FIREBASE MODULE SDK & STATE MANAGEMENT -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/13.0.0/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAjMsxk0__VsFf37h9vyAIBlNDoNwLghUY",
@@ -716,13 +757,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const appDocRef = doc(db, "app_data", "sales_pro_state");
-
-    // Mengaktifkan offline persistence agar data yang di-load tersimpan di browser
-    try {
-      enableIndexedDbPersistence(db);
-    } catch (err) {
-      console.warn("Offline persistence warning:", err);
-    }
 
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
@@ -742,29 +776,30 @@
     window.currentEditingTxId = null;
     window.selectedStockSku = null;
 
-    // Load awal dari localStorage agar tampilan langsung terisi saat refresh sebelum network merespon
     loadFromLocalStorage();
 
     window.syncToCloud = async function() {
       updateSyncStatus("saving");
-      try {
-        await setDoc(appDocRef, {
-          stockData: window.stockData,
-          transactions: window.transactions,
-          kmLogs: window.kmLogs,
-          bbmFills: window.bbmFills,
-          reminders: window.reminders,
-          monthlyTarget: window.monthlyTarget,
-          targetMonthYear: window.targetMonthYear,
-          lastActiveDate: window.lastActiveDate,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
+      
+      const payload = {
+        stockData: window.stockData || {},
+        transactions: window.transactions || [],
+        kmLogs: window.kmLogs || [],
+        bbmFills: window.bbmFills || [],
+        reminders: window.reminders || [],
+        monthlyTarget: window.monthlyTarget || 0,
+        targetMonthYear: window.targetMonthYear || null,
+        lastActiveDate: window.lastActiveDate || null,
+        updatedAt: new Date().toISOString()
+      };
 
-        saveToLocalStorage();
+      saveToLocalStorage();
+
+      try {
+        await setDoc(appDocRef, payload, { merge: true });
         updateSyncStatus("connected");
       } catch (err) {
-        console.error("Gagal menyimpan ke Cloud:", err);
-        saveToLocalStorage();
+        console.error("Gagal simpan ke Firebase:", err);
         updateSyncStatus("error");
       }
     };
@@ -781,14 +816,18 @@
     }
 
     function loadFromLocalStorage() {
-      window.stockData = JSON.parse(localStorage.getItem('sales_stock_data')) || {};
-      window.transactions = JSON.parse(localStorage.getItem('sales_transactions')) || [];
-      window.kmLogs = JSON.parse(localStorage.getItem('sales_km_logs')) || [];
-      window.bbmFills = JSON.parse(localStorage.getItem('sales_bbm_fills')) || [];
-      window.reminders = JSON.parse(localStorage.getItem('sales_reminders')) || [];
-      window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target'), 10) || 0;
-      window.targetMonthYear = localStorage.getItem('sales_target_month_year') || null;
-      window.lastActiveDate = localStorage.getItem('sales_last_active_date') || null;
+      try {
+        window.stockData = JSON.parse(localStorage.getItem('sales_stock_data')) || {};
+        window.transactions = JSON.parse(localStorage.getItem('sales_transactions')) || [];
+        window.kmLogs = JSON.parse(localStorage.getItem('sales_km_logs')) || [];
+        window.bbmFills = JSON.parse(localStorage.getItem('sales_bbm_fills')) || [];
+        window.reminders = JSON.parse(localStorage.getItem('sales_reminders')) || [];
+        window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target'), 10) || 0;
+        window.targetMonthYear = localStorage.getItem('sales_target_month_year') || null;
+        window.lastActiveDate = localStorage.getItem('sales_last_active_date') || null;
+      } catch (e) {
+        console.warn("Gagal membaca LocalStorage:", e);
+      }
 
       initStockData();
       renderAllViews();
@@ -812,24 +851,23 @@
         if (mobTxt) { mobTxt.textContent = "Syncing"; mobTxt.className = "text-amber-400 font-medium"; }
       } else {
         if (deskInd) deskInd.className = "w-2 h-2 rounded-full bg-red-500";
-        if (deskTxt) { deskTxt.textContent = "Offline Mode"; deskTxt.className = "text-red-400 font-medium"; }
+        if (deskTxt) { deskTxt.textContent = "Mode Lokal/Offline"; deskTxt.className = "text-red-400 font-medium"; }
         if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-red-500";
         if (mobTxt) { mobTxt.textContent = "Offline"; mobTxt.className = "text-red-400 font-medium"; }
       }
     }
 
-    // LISTENER SNAPSHOT FIREBASE
     onSnapshot(appDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
-        window.stockData = data.stockData || {};
-        window.transactions = data.transactions || [];
-        window.kmLogs = data.kmLogs || [];
-        window.bbmFills = data.bbmFills || [];
-        window.reminders = data.reminders || [];
-        window.monthlyTarget = data.monthlyTarget || 0;
-        window.targetMonthYear = data.targetMonthYear || null;
-        window.lastActiveDate = data.lastActiveDate || null;
+        if (data.stockData) window.stockData = data.stockData;
+        if (data.transactions) window.transactions = data.transactions;
+        if (data.kmLogs) window.kmLogs = data.kmLogs;
+        if (data.bbmFills) window.bbmFills = data.bbmFills;
+        if (data.reminders) window.reminders = data.reminders;
+        if (data.monthlyTarget !== undefined) window.monthlyTarget = data.monthlyTarget;
+        if (data.targetMonthYear) window.targetMonthYear = data.targetMonthYear;
+        if (data.lastActiveDate) window.lastActiveDate = data.lastActiveDate;
 
         saveToLocalStorage();
       }
@@ -840,24 +878,20 @@
       renderAllViews();
       updateSyncStatus("connected");
     }, (err) => {
-      console.warn("Menggunakan data lokal saat offline/error:", err);
-      loadFromLocalStorage();
+      console.warn("Koneksi Firebase gagal, menggunakan mode lokal:", err);
       updateSyncStatus("error");
     });
 
     function renderAllViews() {
-      initProductDropdown();
-      renderCartUI();
-      renderTransactions();
-      renderStockTable();
-      renderKmLogs();
-      renderBbmFills();
-      renderReminders();
-      toggleReminderTypeForm();
-      if (!document.getElementById('tab-laporan').classList.contains('hidden')) {
-        renderReportTab();
-      }
-      lucide.createIcons();
+      if (typeof initProductDropdown === 'function') initProductDropdown();
+      if (typeof renderCartUI === 'function') renderCartUI();
+      if (typeof renderTransactions === 'function') renderTransactions();
+      if (typeof renderStockTable === 'function') renderStockTable();
+      if (typeof renderKmLogs === 'function') renderKmLogs();
+      if (typeof renderBbmFills === 'function') renderBbmFills();
+      if (typeof renderReminders === 'function') renderReminders();
+      if (typeof toggleReminderTypeForm === 'function') toggleReminderTypeForm();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function initStockData() {
@@ -889,7 +923,7 @@
     }
   </script>
 
-  <!-- JAVASCRIPT UTAMA -->
+  <!-- JAVASCRIPT UTAMA & LOGIKA TAMBAH OMZET -->
   <script>
     function openTargetModal() {
       document.getElementById('input-monthly-target').value = window.monthlyTarget || '';
@@ -1170,6 +1204,65 @@
       renderStockTable();
     }
 
+    // FUNGSI UNTUK MODAL TAMBAH OMZET
+    function openAddOmzetModal(txId) {
+      window.currentEditingTxId = txId;
+      const tx = window.transactions.find(t => t.id === txId);
+      if (!tx) return;
+
+      document.getElementById('modal-add-toko-name').textContent = tx.toko;
+      
+      const productSelect = document.getElementById('modal-add-produk');
+      if (productSelect && window.PRODUCT_LIST) {
+        productSelect.innerHTML = window.PRODUCT_LIST.map(p => `<option value="${p}">${p}</option>`).join('');
+      }
+
+      document.getElementById('modal-add-jumlah').value = '';
+      document.getElementById('modal-add-omzet').classList.remove('hidden');
+    }
+
+    function closeAddOmzetModal() {
+      document.getElementById('modal-add-omzet').classList.add('hidden');
+      window.currentEditingTxId = null;
+    }
+
+    function confirmAddOmzetToTx() {
+      if (!window.currentEditingTxId) return;
+      const tx = window.transactions.find(t => t.id === window.currentEditingTxId);
+      if (!tx) return;
+
+      const product = document.getElementById('modal-add-produk').value;
+      const qty = parseInt(document.getElementById('modal-add-jumlah').value, 10);
+      const status = document.getElementById('modal-add-status').value;
+
+      if (isNaN(qty) || qty <= 0) {
+        alert('Masukkan jumlah bungkus tambahan yang valid!');
+        return;
+      }
+
+      const existingItem = tx.items.find(i => i.product === product);
+      if (existingItem) {
+        existingItem.qty += qty;
+        if (status === 'reported') {
+          existingItem.reportedQty += qty;
+        } else {
+          existingItem.pendingQty += qty;
+        }
+      } else {
+        tx.items.push({
+          product: product,
+          qty: qty,
+          pendingQty: status === 'reported' ? 0 : qty,
+          reportedQty: status === 'reported' ? qty : 0
+        });
+      }
+
+      closeAddOmzetModal();
+      window.syncToCloud();
+      renderTransactions();
+      renderStockTable();
+    }
+
     function renderTransactions() {
       const container = document.getElementById('tx-list-container');
       const filterSelect = document.getElementById('filter-status');
@@ -1263,10 +1356,13 @@
 
             <div class="flex justify-between items-center pt-1">
               <span class="text-xs text-slate-500 font-medium">Total: <b>${totalItemsInTx} Bungkus</b></span>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-1.5">
+                <button onclick="openAddOmzetModal(${t.id})" class="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition flex items-center gap-1">
+                  <i data-lucide="plus" class="w-3.5 h-3.5"></i> Tambah Omzet
+                </button>
                 ${!isFullyReported ? `
-                  <button onclick="openPartialModal(${t.id})" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1">
-                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Laporkan Omzet
+                  <button onclick="openPartialModal(${t.id})" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1">
+                    <i data-lucide="check" class="w-3.5 h-3.5"></i> Laporkan
                   </button>
                 ` : ''}
                 <button onclick="deleteTx(${t.id})" class="p-1.5 text-slate-400 hover:text-red-600 transition">
