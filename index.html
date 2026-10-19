@@ -91,7 +91,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v3.4 &bull; Offline First + Firebase
+      v3.5 &bull; Custom Report Flexible Qty
     </div>
   </aside>
 
@@ -525,7 +525,7 @@
                 <th class="p-2.5 border">No</th>
                 <th class="p-2.5 border">Nama Toko Asal</th>
                 <th class="p-2.5 border">Produk / SKU Rokok</th>
-                <th class="p-2.5 border text-right">Jumlah (Bungkus)</th>
+                <th class="p-2.5 border text-right">Jumlah Dikeluarkan (Bungkus)</th>
               </tr>
             </thead>
             <tbody id="custom-report-tbody"></tbody>
@@ -649,13 +649,13 @@
     </div>
   </div>
 
-  <!-- MODAL LAPORAN CUSTOM LINTAS TOKO -->
+  <!-- MODAL LAPORAN CUSTOM LINTAS TOKO (DENGAN INPUT QTY SESUAI SELERAMU) -->
   <div id="modal-custom-report" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl border border-slate-100">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
         <h3 class="font-bold text-slate-900 flex items-center gap-2">
           <i data-lucide="sliders" class="w-5 h-5 text-indigo-600"></i>
-          Pilih Omzet Spesifik Dari Beberapa Toko
+          Pilih Omzet & Sesuaikan Jumlah Bungkus
         </h3>
         <button onclick="closeModal('modal-custom-report')" class="text-slate-400 hover:text-slate-600">
           <i data-lucide="x" class="w-5 h-5"></i>
@@ -668,7 +668,7 @@
           <input type="text" id="input-custom-report-title" placeholder="Contoh: Laporan Gabungan Toko Ali & Toko B" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
 
-        <p class="text-xs font-bold text-slate-700 uppercase pt-1">Centang Item Yang Ingin Dimasukkan Ke Laporan:</p>
+        <p class="text-xs font-bold text-slate-700 uppercase pt-1">Centang Item & Isikan Jumlah Yang Dikeluarkan:</p>
 
         <div id="custom-items-selection-list" class="space-y-3 max-h-64 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50"></div>
       </div>
@@ -1902,7 +1902,7 @@
       }
     }
 
-    // LOGIKA LAPORAN CUSTOM LINTAS TOKO
+    // LOGIKA LAPORAN CUSTOM DENGAN INPUT KELUARAN QTY DINAMIS
     function openCustomReportModal() {
       const listContainer = document.getElementById('custom-items-selection-list');
       if (!listContainer) return;
@@ -1919,18 +1919,28 @@
           <p class="font-bold text-xs text-indigo-900 flex items-center gap-1.5 border-b pb-1">
             <i data-lucide="store" class="w-3.5 h-3.5 text-indigo-600"></i> ${tx.toko}
           </p>
-          <div class="space-y-1.5 pl-1">`;
+          <div class="space-y-2 pl-1">`;
         
         tx.items.forEach((item, itemIdx) => {
           const checkboxId = `chk_${tx.id}_${itemIdx}`;
+          const inputQtyId = `qty_custom_${tx.id}_${itemIdx}`;
+
           checkHTML += `
-            <label for="${checkboxId}" class="flex items-center justify-between text-xs cursor-pointer hover:bg-slate-50 p-1 rounded transition">
-              <div class="flex items-center gap-2">
-                <input type="checkbox" id="${checkboxId}" data-toko="${tx.toko}" data-sku="${item.product}" data-qty="${item.qty}" class="custom-item-chk rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
-                <span class="font-semibold text-slate-700">${item.product}</span>
+            <div class="bg-slate-50 p-2 rounded-lg border border-slate-200 space-y-1.5">
+              <label for="${checkboxId}" class="flex items-center justify-between text-xs cursor-pointer">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" id="${checkboxId}" data-toko="${tx.toko}" data-sku="${item.product}" data-inputid="${inputQtyId}" class="custom-item-chk rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                  <span class="font-bold text-slate-800">${item.product}</span>
+                </div>
+                <span class="text-[10px] text-slate-500">Total Transaksi: <b>${item.qty} Bks</b></span>
+              </label>
+
+              <div class="flex items-center gap-2 pt-1 border-t border-slate-200/60">
+                <span class="text-[11px] text-slate-600 font-medium">Jml Dikeluarkan:</span>
+                <input type="number" id="${inputQtyId}" min="1" max="${item.qty}" value="${item.qty}" class="w-24 px-2 py-1 text-xs font-bold border border-slate-300 rounded-md outline-none focus:ring-1 focus:ring-indigo-500 bg-white">
+                <span class="text-[11px] text-slate-500 font-semibold">Bungkus</span>
               </div>
-              <span class="bg-indigo-50 text-indigo-700 font-bold px-2 py-0.5 rounded text-[11px]">${item.qty} Bungkus</span>
-            </label>
+            </div>
           `;
         });
 
@@ -1958,7 +1968,10 @@
       checkboxes.forEach((chk, idx) => {
         const toko = chk.getAttribute('data-toko');
         const sku = chk.getAttribute('data-sku');
-        const qty = parseInt(chk.getAttribute('data-qty'), 10) || 0;
+        const inputId = chk.getAttribute('data-inputid');
+        const qtyInputVal = parseInt(document.getElementById(inputId).value, 10);
+        const qty = isNaN(qtyInputVal) || qtyInputVal < 0 ? 0 : qtyInputVal;
+        
         totalPacks += qty;
 
         rowsHTML += `
