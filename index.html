@@ -91,7 +91,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v3.7 &bull; Fitur Kurangi Omzet Added
+      v3.8 &bull; Permanen Akumulasi Penjualan
     </div>
   </aside>
 
@@ -336,17 +336,14 @@
                 <i data-lucide="list" class="w-5 h-5 text-red-600"></i>
                 Daftar Stok & Status Omzet Toko
               </h2>
-              <p class="text-[11px] text-slate-500">Reset harian otomatis untuk transaksi yang 100% tuntas dilaporkan.</p>
+              <p class="text-[11px] text-slate-500">Menampilkan transaksi aktif (Pending / Hari Ini).</p>
             </div>
             <div class="flex items-center gap-2 w-full sm:w-auto">
-              <button onclick="manualDailyReset()" title="Bersihkan transaksi selesai" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2.5 py-1.5 rounded-lg flex items-center gap-1 transition">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                Reset Selesai
-              </button>
               <select id="filter-status" onchange="renderTransactions()" class="text-xs border border-slate-300 rounded-lg px-2.5 py-1.5 bg-slate-50 font-medium outline-none">
-                <option value="all">Semua Status</option>
-                <option value="pending">Khusus Pending</option>
-                <option value="reported">Khusus Dilaporkan</option>
+                <option value="active">Transaksi Aktif / Hari Ini</option>
+                <option value="pending">Khusus Pending Omzet</option>
+                <option value="reported">Khusus Selesai / Dilaporkan</option>
+                <option value="all">Semua Riwayat Transaksi</option>
               </select>
             </div>
           </div>
@@ -605,7 +602,7 @@
 
   </main>
 
-  <!-- MODALS MODALS -->
+  <!-- MODALS -->
 
   <!-- MODAL TAMBAH OMZET BUNGKUS KE TOKO -->
   <div id="modal-add-omzet" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
@@ -649,7 +646,7 @@
     </div>
   </div>
 
-  <!-- MODAL KURANGI OMZET / PRODUK DARI TOKO (BARU) -->
+  <!-- MODAL KURANGI OMZET / PRODUK DARI TOKO -->
   <div id="modal-reduce-omzet" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-100">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -1010,11 +1007,9 @@
       });
     }
 
+    // UPDATE LOGIKA: JANGAN MENGHAPUS TRANSAKSI AGAR DATA AKUMULASI BULANAN TETAP LENGKAP
     function checkAndPerformDailyReset() {
-      const todayStr = new Date().toDateString();
-      if (window.lastActiveDate && window.lastActiveDate !== todayStr) {
-        window.transactions = window.transactions.filter(t => t.items.some(i => i.pendingQty > 0));
-      }
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
       window.lastActiveDate = todayStr;
     }
 
@@ -1044,18 +1039,6 @@
       closeModal('modal-target');
       window.syncToCloud();
       renderTransactions();
-    }
-
-    function manualDailyReset() {
-      if (confirm('Bersihkan semua transaksi harian yang sudah 100% Selesai Dilaporkan?\n(Transaksi yang masih memiliki pending omzet tetap disimpan)')) {
-        window.transactions = window.transactions.filter(t => t.items.some(i => i.pendingQty > 0));
-        window.syncToCloud();
-        renderTransactions();
-        renderStockTable();
-        if (!document.getElementById('tab-laporan').classList.contains('hidden')) {
-          renderReportTab();
-        }
-      }
     }
 
     function initProductDropdown() {
@@ -1312,7 +1295,6 @@
       renderStockTable();
     }
 
-    // FUNGSI MODAL TAMBAH OMZET
     function openAddOmzetModal(txId) {
       window.currentEditingTxId = txId;
       const tx = window.transactions.find(t => t.id === txId);
@@ -1371,7 +1353,6 @@
       renderStockTable();
     }
 
-    // FUNGSI MODAL KURANGI OMZET / PRODUK (FITUR BARU)
     function openReduceOmzetModal(txId) {
       window.currentEditingTxId = txId;
       const tx = window.transactions.find(t => t.id === txId);
@@ -1461,15 +1442,20 @@
       renderStockTable();
     }
 
+    // RENDER TRANSAKSI: DILENGKAPI FILTER TRANSAKSI AKTIF DAN TOTAL AKUMULASI BULANAN
     function renderTransactions() {
       const container = document.getElementById('tx-list-container');
       const filterSelect = document.getElementById('filter-status');
       if (!container || !filterSelect) return;
 
       const filter = filterSelect.value;
+      const todayStr = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+      
       let filtered = window.transactions;
 
-      if (filter === 'pending') {
+      if (filter === 'active') {
+        filtered = window.transactions.filter(t => t.items.some(i => i.pendingQty > 0) || t.createdAt === todayStr);
+      } else if (filter === 'pending') {
         filtered = window.transactions.filter(t => t.items.some(i => i.pendingQty > 0));
       } else if (filter === 'reported') {
         filtered = window.transactions.filter(t => t.items.every(i => i.pendingQty === 0));
@@ -1482,6 +1468,7 @@
       const currentMonthYear = `${now.getMonth() + 1}-${now.getFullYear()}`;
       let monthlyAchievedPacks = 0;
 
+      // Akumulasi Tetap Menghitung Seluruh Transaksi Bulan Ini
       window.transactions.forEach(t => {
         t.items.forEach(i => {
           totalPendingPacks += (i.pendingQty || 0);
