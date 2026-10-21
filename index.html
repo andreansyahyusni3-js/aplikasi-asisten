@@ -79,7 +79,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v4.3 &bull; Auto-Reset & Pure Target System
+      v4.4 &bull; Sync Real-Time Multi-Device
     </div>
   </aside>
 
@@ -569,11 +569,9 @@
       renderAllViews();
     }
 
-    // CHECK DAN RESET OTOMATIS SAAT BERGANTI TANGGAL
     function checkAndPerformDailyReset() {
       const today = new Date().toISOString().split('T')[0];
       if (window.lastActiveDate !== today) {
-        // Kosongkan riwayat tampilan laporan harian (Laporan hari lalu hilang dari layar)
         window.generatedReports = [];
         window.lastActiveDate = today;
         saveToLocalStorage();
@@ -709,7 +707,6 @@
         const initial = window.stockData[sku] ? (window.stockData[sku].initial || 0) : 0;
         const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
 
-        // TOTAL PENJUALAN KELUAR = SEMUA TRANSAKSI TERMASUK YANG SUDAH DILAPORKAN / HILANG DARI D2
         let out = 0;
         window.transactions.forEach(t => {
           t.items.forEach(i => {
@@ -751,7 +748,6 @@
       document.getElementById('stat-stock-out').textContent = `${grandOut} Bungkus`;
       document.getElementById('stat-stock-remaining').textContent = `${grandRemaining} Bungkus`;
 
-      // UPDATE STATISTIK TARGET BULANAN
       document.getElementById('widget-target-val').textContent = `${(window.monthlyTarget || 0).toLocaleString('id-ID')} Bungkus`;
       document.getElementById('widget-achieved-val').textContent = `${grandOut.toLocaleString('id-ID')} Bungkus`;
 
@@ -942,7 +938,6 @@
       const container = document.getElementById('tx-list-container');
       if (!container) return;
 
-      // HANYA TAMPILKAN TRANSAKSI YANG MASIH MEMILIKI SISA STOK TOKO (PENDING > 0)
       const activeTransactions = window.transactions.filter(t => {
         const totalPendingInTx = t.items.reduce((sum, i) => sum + i.pendingQty, 0);
         return totalPendingInTx > 0;
@@ -1171,7 +1166,6 @@
       document.getElementById('preview-custom-title').textContent = titleInput;
       document.getElementById('custom-report-preview-container').classList.remove('hidden');
 
-      // Simpan ke Riwayat Laporan Harian
       window.generatedReports.unshift({
         id: Date.now(),
         title: titleInput,
