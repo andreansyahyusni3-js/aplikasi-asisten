@@ -79,7 +79,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v4.5 &bull; Filter & Daily Widget
+      v4.6 &bull; Strict Daily Sync
     </div>
   </aside>
 
@@ -655,6 +655,15 @@
 
   <!-- JAVASCRIPT LOGIKA UTAMA -->
   <script>
+    // HELPER FUNCTION UNTUK FORMAT ISO DATE
+    function getIsoDateStr(dateObj) {
+      if (!dateObj || isNaN(dateObj.getTime())) return '';
+      const year = dateObj.getFullYear();
+      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+      const day = String(dateObj.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+
     function openTargetModal() {
       document.getElementById('input-monthly-target').value = window.monthlyTarget || '';
       document.getElementById('modal-target').classList.remove('hidden');
@@ -921,7 +930,7 @@
       }
 
       const now = new Date();
-      const isoDate = now.toISOString().split('T')[0];
+      const isoDate = getIsoDateStr(now);
       const finalItems = window.cart.map(item => ({
         product: item.product,
         qty: item.qty,
@@ -1180,7 +1189,7 @@
       document.getElementById('custom-report-preview-container').classList.remove('hidden');
 
       const now = new Date();
-      const isoDate = now.toISOString().split('T')[0];
+      const isoDate = getIsoDateStr(now);
 
       window.generatedReports.unshift({
         id: Date.now(),
@@ -1218,29 +1227,36 @@
 
       if (!container) return;
 
-      const todayIso = new Date().toISOString().split('T')[0];
-      const todayFormatted = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      const now = new Date();
+      const todayIso = getIsoDateStr(now);
+      const todayFormatted = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
       if (todayDateEl) todayDateEl.textContent = todayFormatted;
 
-      // KELOLA HITUNGAN WIDGET BARANG KELUAR HARI INI
+      // PEMBENAHAN STRICT HITUNGAN WIDGET HARI INI
       let todayPacks = 0;
       (window.generatedReports || []).forEach(rep => {
-        const repDate = rep.rawDate || (rep.id ? new Date(rep.id).toISOString().split('T')[0] : '');
-        if (repDate === todayIso) {
+        let repIso = rep.rawDate;
+        if (!repIso && rep.id) {
+          repIso = getIsoDateStr(new Date(rep.id));
+        }
+        if (repIso === todayIso) {
           todayPacks += (rep.totalPacks || 0);
         }
       });
       if (todayStatEl) todayStatEl.textContent = `${todayPacks.toLocaleString('id-ID')} Bungkus`;
 
-      // FILTERING BERDASARKAN TANGGAL
+      // FILTERING TANGGAL
       const selectedFilter = filterInput ? filterInput.value : '';
       let filteredReports = (window.generatedReports || []);
 
       if (selectedFilter) {
         filteredReports = filteredReports.filter(rep => {
-          const repDate = rep.rawDate || (rep.id ? new Date(rep.id).toISOString().split('T')[0] : '');
-          return repDate === selectedFilter;
+          let repIso = rep.rawDate;
+          if (!repIso && rep.id) {
+            repIso = getIsoDateStr(new Date(rep.id));
+          }
+          return repIso === selectedFilter;
         });
       }
 
@@ -1249,26 +1265,45 @@
         return;
       }
 
-      // KELOMPOKKAN DENGAN TANGGAL SEBAGAI KEY (URUTAN TERBARU KELUAR PERTAMA)
+      // KELOMPOKKAN LAPORAN BERDASARKAN TANGGAL KELUAR
       const grouped = {};
+      const dateOrder = [];
+
       filteredReports.forEach(rep => {
-        const dateKey = rep.fullDateStr || rep.createdAt || "Tanggal Tidak Diketahui";
-        if (!grouped[dateKey]) {
-          grouped[dateKey] = [];
+        let repIso = rep.rawDate;
+        if (!repIso && rep.id) {
+          repIso = getIsoDateStr(new Date(rep.id));
         }
-        grouped[dateKey].push(rep);
+        
+        let dateKey = rep.fullDateStr;
+        if (!dateKey && rep.id) {
+          dateKey = new Date(rep.id).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        }
+        if (!dateKey) dateKey = "Laporan Lainnya";
+
+        if (!grouped[repIso]) {
+          grouped[repIso] = {
+            label: dateKey,
+            items: []
+          };
+          dateOrder.push(repIso);
+        }
+        grouped[repIso].items.push(rep);
       });
 
+      // URUTKAN TANGGAL DARI TERBARU KE TERLAMA
+      dateOrder.sort((a, b) => b.localeCompare(a));
+
       let groupedHTML = '';
-      Object.keys(grouped).forEach(dateGroup => {
-        const items = grouped[dateGroup];
-        const groupTotalPacks = items.reduce((sum, r) => sum + r.totalPacks, 0);
+      dateOrder.forEach(isoKey => {
+        const groupObj = grouped[isoKey];
+        const groupTotalPacks = groupObj.items.reduce((sum, r) => sum + r.totalPacks, 0);
 
         groupedHTML += `
           <div class="space-y-3">
             <div class="flex items-center justify-between bg-indigo-50 border-l-4 border-indigo-600 px-4 py-2 rounded-r-xl">
               <span class="font-bold text-indigo-950 text-xs flex items-center gap-1.5">
-                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> ${dateGroup}
+                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> ${groupObj.label}
               </span>
               <span class="text-xs bg-indigo-200 text-indigo-900 font-bold px-2.5 py-0.5 rounded-full">
                 Total Hari Ini: ${groupTotalPacks.toLocaleString('id-ID')} Bungkus
@@ -1276,7 +1311,7 @@
             </div>
 
             <div class="space-y-3 pl-2 sm:pl-4">
-              ${items.map(rep => `
+              ${groupObj.items.map(rep => `
                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 shadow-sm">
                   <div class="flex justify-between items-start">
                     <div>
