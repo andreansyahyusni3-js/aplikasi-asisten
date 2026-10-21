@@ -79,7 +79,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v4.4 &bull; Sync Real-Time Multi-Device
+      v4.5 &bull; Filter & Daily Widget
     </div>
   </aside>
 
@@ -292,7 +292,7 @@
             <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i>
             Dashboard 3: Pelaporan Harian
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Laporan akan di-reset otomatis setiap hari. Total bungkus tetap aman tersimpan di Target Bulanan.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Kelola laporan harian, filter tanggal, dan pantau barang keluar hari ini.</p>
         </div>
         <div class="flex items-center gap-2 no-print">
           <button onclick="openCustomReportModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
@@ -303,6 +303,22 @@
             <i data-lucide="printer" class="w-4 h-4"></i>
             Cetak Laporan
           </button>
+        </div>
+      </div>
+
+      <!-- WIDGET BARANG KELUAR HARI INI -->
+      <div class="bg-gradient-to-r from-indigo-900 to-indigo-700 text-white p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div class="flex items-center gap-3">
+          <div class="bg-white/10 p-3 rounded-xl border border-white/20">
+            <i data-lucide="calendar-check" class="w-6 h-6 text-indigo-200"></i>
+          </div>
+          <div>
+            <p class="text-xs font-semibold text-indigo-200 uppercase tracking-wider">Total Barang Keluar Hari Ini</p>
+            <h3 id="stat-today-out" class="text-2xl font-black mt-0.5">0 Bungkus</h3>
+          </div>
+        </div>
+        <div class="text-right sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-indigo-600/50 pt-2 sm:pt-0">
+          <span id="widget-today-date" class="text-xs font-medium bg-indigo-800/60 px-3 py-1.5 rounded-lg border border-indigo-500/30"></span>
         </div>
       </div>
 
@@ -332,16 +348,22 @@
         </div>
       </div>
 
-      <!-- RIWAYAT LAPORAN HARI INI -->
+      <!-- RIWAYAT LAPORAN DENGAN FILTER TANGGAL -->
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <h3 class="font-bold text-slate-900 text-sm border-b pb-3 flex items-center justify-between">
-          <span class="flex items-center gap-2">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
+          <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
             <i data-lucide="history" class="w-4 h-4 text-indigo-600"></i>
-            Riwayat Laporan Hari Ini
-          </span>
-          <span id="label-report-date" class="text-xs bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-md border border-indigo-100"></span>
-        </h3>
-        <div id="reports-history-container" class="space-y-3"></div>
+            Riwayat Laporan Terkelompok Per Tanggal
+          </h3>
+          <!-- FILTER TANGGAL -->
+          <div class="flex items-center gap-2 no-print">
+            <label class="text-xs font-semibold text-slate-600">Filter Tanggal:</label>
+            <input type="date" id="filter-report-date" onchange="renderReportsHistory()" class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-medium">
+            <button onclick="resetDateFilter()" class="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg border border-slate-300 transition">Semua</button>
+          </div>
+        </div>
+
+        <div id="reports-history-container" class="space-y-6"></div>
       </div>
     </section>
 
@@ -564,18 +586,8 @@
         console.warn("Gagal membaca LocalStorage:", e);
       }
 
-      checkAndPerformDailyReset();
       initStockData();
       renderAllViews();
-    }
-
-    function checkAndPerformDailyReset() {
-      const today = new Date().toISOString().split('T')[0];
-      if (window.lastActiveDate !== today) {
-        window.generatedReports = [];
-        window.lastActiveDate = today;
-        saveToLocalStorage();
-      }
     }
 
     function updateSyncStatus(status) {
@@ -611,7 +623,6 @@
         if (data.monthlyTarget !== undefined) window.monthlyTarget = data.monthlyTarget;
         if (data.lastActiveDate) window.lastActiveDate = data.lastActiveDate;
 
-        checkAndPerformDailyReset();
         saveToLocalStorage();
       }
 
@@ -910,6 +921,7 @@
       }
 
       const now = new Date();
+      const isoDate = now.toISOString().split('T')[0];
       const finalItems = window.cart.map(item => ({
         product: item.product,
         qty: item.qty,
@@ -921,6 +933,7 @@
         id: Date.now(),
         toko: tokoName,
         items: finalItems,
+        rawDate: isoDate,
         createdAt: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
       };
 
@@ -998,7 +1011,7 @@
       }
     }
 
-    // DASHBOARD 3 LOGIKA PELAPORAN CUSTOM & AMBIL BARANG
+    // DASHBOARD 3 LOGIKA PELAPORAN CUSTOM, FILTER TANGGAL & WIDGET HARI INI
     function openCustomReportModal() {
       const listContainer = document.getElementById('custom-items-selection-list');
       if (!listContainer) return;
@@ -1166,12 +1179,17 @@
       document.getElementById('preview-custom-title').textContent = titleInput;
       document.getElementById('custom-report-preview-container').classList.remove('hidden');
 
+      const now = new Date();
+      const isoDate = now.toISOString().split('T')[0];
+
       window.generatedReports.unshift({
         id: Date.now(),
         title: titleInput,
         items: reportDetails,
         totalPacks: totalPacks,
-        createdAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
+        rawDate: isoDate,
+        createdAt: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+        fullDateStr: now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
       });
 
       closeModal('modal-custom-report');
@@ -1186,48 +1204,111 @@
       document.getElementById('custom-report-preview-container').classList.add('hidden');
     }
 
+    function resetDateFilter() {
+      const filterInput = document.getElementById('filter-report-date');
+      if (filterInput) filterInput.value = '';
+      renderReportsHistory();
+    }
+
     function renderReportsHistory() {
       const container = document.getElementById('reports-history-container');
-      const dateLabel = document.getElementById('label-report-date');
+      const todayStatEl = document.getElementById('stat-today-out');
+      const todayDateEl = document.getElementById('widget-today-date');
+      const filterInput = document.getElementById('filter-report-date');
+
       if (!container) return;
 
-      if (dateLabel) {
-        dateLabel.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      const todayIso = new Date().toISOString().split('T')[0];
+      const todayFormatted = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      if (todayDateEl) todayDateEl.textContent = todayFormatted;
+
+      // KELOLA HITUNGAN WIDGET BARANG KELUAR HARI INI
+      let todayPacks = 0;
+      (window.generatedReports || []).forEach(rep => {
+        const repDate = rep.rawDate || (rep.id ? new Date(rep.id).toISOString().split('T')[0] : '');
+        if (repDate === todayIso) {
+          todayPacks += (rep.totalPacks || 0);
+        }
+      });
+      if (todayStatEl) todayStatEl.textContent = `${todayPacks.toLocaleString('id-ID')} Bungkus`;
+
+      // FILTERING BERDASARKAN TANGGAL
+      const selectedFilter = filterInput ? filterInput.value : '';
+      let filteredReports = (window.generatedReports || []);
+
+      if (selectedFilter) {
+        filteredReports = filteredReports.filter(rep => {
+          const repDate = rep.rawDate || (rep.id ? new Date(rep.id).toISOString().split('T')[0] : '');
+          return repDate === selectedFilter;
+        });
       }
 
-      if (window.generatedReports.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada riwayat laporan hari ini (Otomatis ter-reset setiap tanggal baru)</p>`;
+      if (filteredReports.length === 0) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Tidak ada riwayat laporan yang ditemukan.</p>`;
         return;
       }
 
-      container.innerHTML = window.generatedReports.map(rep => `
-        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-          <div class="flex justify-between items-start">
-            <div>
-              <h4 class="font-bold text-slate-900 text-sm">${rep.title}</h4>
-              <p class="text-[11px] text-slate-500">${rep.createdAt}</p>
-            </div>
-            <div class="flex items-center gap-2">
-              <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-1 rounded-full">
-                Total: ${rep.totalPacks} Bungkus
+      // KELOMPOKKAN DENGAN TANGGAL SEBAGAI KEY (URUTAN TERBARU KELUAR PERTAMA)
+      const grouped = {};
+      filteredReports.forEach(rep => {
+        const dateKey = rep.fullDateStr || rep.createdAt || "Tanggal Tidak Diketahui";
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(rep);
+      });
+
+      let groupedHTML = '';
+      Object.keys(grouped).forEach(dateGroup => {
+        const items = grouped[dateGroup];
+        const groupTotalPacks = items.reduce((sum, r) => sum + r.totalPacks, 0);
+
+        groupedHTML += `
+          <div class="space-y-3">
+            <div class="flex items-center justify-between bg-indigo-50 border-l-4 border-indigo-600 px-4 py-2 rounded-r-xl">
+              <span class="font-bold text-indigo-950 text-xs flex items-center gap-1.5">
+                <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> ${dateGroup}
               </span>
-              <button onclick="deleteReport(${rep.id})" title="Hapus Riwayat Laporan Ini" class="text-slate-400 hover:text-red-600 transition p-1">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
+              <span class="text-xs bg-indigo-200 text-indigo-900 font-bold px-2.5 py-0.5 rounded-full">
+                Total Hari Ini: ${groupTotalPacks.toLocaleString('id-ID')} Bungkus
+              </span>
+            </div>
+
+            <div class="space-y-3 pl-2 sm:pl-4">
+              ${items.map(rep => `
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 shadow-sm">
+                  <div class="flex justify-between items-start">
+                    <div>
+                      <h4 class="font-bold text-slate-900 text-sm">${rep.title}</h4>
+                      <p class="text-[11px] text-slate-500">${rep.createdAt}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                      <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-1 rounded-full">
+                        ${rep.totalPacks} Bungkus
+                      </span>
+                      <button onclick="deleteReport(${rep.id})" title="Hapus Riwayat Laporan Ini" class="text-slate-400 hover:text-red-600 transition p-1">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="bg-white p-2.5 rounded-lg border border-slate-200 text-xs space-y-1">
+                    ${rep.items.map(i => `
+                      <div class="flex justify-between items-center border-b border-slate-100 pb-1 last:border-none">
+                        <span class="text-slate-700 font-medium">${i.tokoAsal} &bull; <b>${i.sku}</b></span>
+                        <span class="font-bold text-indigo-600">${i.qty} Bks</span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              `).join('')}
             </div>
           </div>
+        `;
+      });
 
-          <div class="bg-white p-2.5 rounded-lg border border-slate-200 text-xs space-y-1">
-            ${rep.items.map(i => `
-              <div class="flex justify-between items-center border-b border-slate-100 pb-1 last:border-none">
-                <span class="text-slate-700 font-medium">${i.tokoAsal} &bull; <b>${i.sku}</b></span>
-                <span class="font-bold text-indigo-600">${i.qty} Bks</span>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      `).join('');
-
+      container.innerHTML = groupedHTML;
       lucide.createIcons();
     }
 
