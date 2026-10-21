@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Asisten By Andreansyah - 3 Dashboard System</title>
+  <title>Aplikasi Asisten By Andreansyah - Multi Dashboard System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -38,60 +38,53 @@
     }
   </style>
 </head>
-<body class="text-slate-800 antialiased min-h-screen bg-slate-50 flex flex-col md:flex-row pb-20 md:pb-0">
+<body class="text-slate-800 antialiased min-h-screen bg-slate-50 flex flex-col md:flex-row pb-16 md:pb-0">
 
-  <!-- SIDEBAR NAVIGASI DESKTOP -->
-  <aside class="hidden md:flex flex-col w-64 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 no-print">
-    <div class="p-5 border-b border-slate-800 flex items-center space-x-3">
-      <div class="bg-red-600 p-2.5 rounded-xl text-white shadow-md shadow-red-900/50">
+  <!-- SIDEBAR NAVIGASI DESKTOP (RINGKAS/COMPACT) -->
+  <aside class="hidden md:flex flex-col w-20 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 items-center py-4 no-print">
+    <div class="mb-4 text-center">
+      <div class="bg-red-600 p-2.5 rounded-xl text-white shadow-md shadow-red-900/50 inline-block">
         <i data-lucide="layout-dashboard" class="w-6 h-6"></i>
       </div>
-      <div>
-        <h1 class="font-bold text-base leading-tight tracking-wide">Aplikasi Asisten</h1>
-        <p class="text-[11px] text-slate-400 font-medium">By Andreansyah</p>
-      </div>
     </div>
 
-    <!-- STATUS KONEKSI FIREBASE -->
-    <div class="px-5 py-2 bg-slate-950/60 border-b border-slate-800/80 flex items-center justify-between text-[11px]">
-      <span class="text-slate-400 flex items-center gap-1.5">
-        <span id="sync-indicator" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        Status Cloud
-      </span>
-      <span id="sync-status-text" class="text-amber-400 font-medium">Memuat...</span>
+    <!-- INDICATOR FIREBASE MINI -->
+    <div class="mb-6 flex flex-col items-center gap-1 text-[9px] text-slate-400">
+      <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+      <span id="sync-status-text" class="text-amber-400 font-medium">Sync</span>
     </div>
 
-    <nav class="flex-1 px-3 py-4 space-y-2 overflow-y-auto">
-      <button onclick="switchTab('stok')" id="nav-desk-stok" class="w-full px-4 py-3 rounded-xl font-medium text-xs flex items-center space-x-3 transition bg-red-600 text-white shadow-lg shadow-red-900/40">
-        <i data-lucide="boxes" class="w-4 h-4"></i>
-        <span>1. Menyimpan Stok</span>
+    <nav class="flex-1 space-y-3 w-full px-2">
+      <button onclick="switchTab('stok')" id="nav-desk-stok" title="1. Menyimpan Stok" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40">
+        <i data-lucide="boxes" class="w-5 h-5"></i>
       </button>
 
-      <button onclick="switchTab('omzet')" id="nav-desk-omzet" class="w-full px-4 py-3 rounded-xl font-medium text-xs flex items-center space-x-3 transition text-slate-400 hover:bg-slate-800 hover:text-white">
-        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-        <span>2. Barang Keluar per Toko</span>
+      <button onclick="switchTab('omzet')" id="nav-desk-omzet" title="2. Barang Keluar per Toko" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
       </button>
 
-      <button onclick="switchTab('laporan')" id="nav-desk-laporan" class="w-full px-4 py-3 rounded-xl font-medium text-xs flex items-center space-x-3 transition text-slate-400 hover:bg-slate-800 hover:text-white">
-        <i data-lucide="file-text" class="w-4 h-4"></i>
-        <span>3. Dashboard Pelaporan</span>
+      <button onclick="switchTab('laporan')" id="nav-desk-laporan" title="3. Dashboard Pelaporan" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+      </button>
+
+      <button onclick="switchTab('ringkasan')" id="nav-desk-ringkasan" title="4. Ringkasan Harian Per Produk" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
       </button>
     </nav>
 
-    <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v4.6 &bull; Strict Daily Sync
+    <div class="text-[9px] text-slate-500 font-bold">
+      v4.7
     </div>
   </aside>
 
   <!-- HEADER MOBILE -->
-  <header class="md:hidden bg-slate-900 text-white p-4 sticky top-0 z-40 shadow-md flex justify-between items-center no-print">
-    <div class="flex items-center space-x-3">
-      <div class="bg-red-600 p-2 rounded-lg text-white">
-        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+  <header class="md:hidden bg-slate-900 text-white p-3 sticky top-0 z-40 shadow-md flex justify-between items-center no-print">
+    <div class="flex items-center space-x-2">
+      <div class="bg-red-600 p-1.5 rounded-lg text-white">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
       </div>
       <div>
-        <h1 class="font-bold text-sm">Aplikasi Asisten</h1>
-        <p class="text-[10px] text-slate-400">By Andreansyah</p>
+        <h1 class="font-bold text-xs">Asisten Sales</h1>
       </div>
     </div>
     <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-full text-[10px]">
@@ -367,6 +360,37 @@
       </div>
     </section>
 
+    <!-- DASHBOARD 4: TAB RINGKASAN HARIAN PER PRODUK -->
+    <section id="tab-ringkasan" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i>
+            Dashboard 4: Ringkasan Barang Keluar Harian
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Hanya mencatat aktivitas khusus hari ini dan di-reset otomatis setiap pergantian tanggal.</p>
+        </div>
+        <span id="label-summary-today-date" class="text-xs font-bold bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl border border-emerald-200"></span>
+      </div>
+
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse border border-slate-200">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
+              <tr>
+                <th class="p-3 border border-slate-200 text-center">No</th>
+                <th class="p-3 border border-slate-200">Nama Barang</th>
+                <th class="p-3 border border-slate-200 text-right text-amber-700">Barang Keluar</th>
+                <th class="p-3 border border-slate-200 text-right text-emerald-700">Barang Sudah Dilaporkan</th>
+                <th class="p-3 border border-slate-200 text-right text-indigo-700">Barang Pending</th>
+              </tr>
+            </thead>
+            <tbody id="summary-daily-tbody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- MODAL SET TARGET BULANAN -->
@@ -493,19 +517,19 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION MOBILE -->
-  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2 flex justify-around items-center no-print">
-    <button onclick="switchTab('stok')" id="nav-mob-stok" class="flex flex-col items-center gap-1 text-red-500">
+  <!-- BOTTOM NAVIGATION MOBILE (MINIMALIS ICON ONLY) -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center no-print">
+    <button onclick="switchTab('stok')" id="nav-mob-stok" title="Stok" class="text-red-500 p-1">
       <i data-lucide="boxes" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">1. Stok</span>
     </button>
-    <button onclick="switchTab('omzet')" id="nav-mob-omzet" class="flex flex-col items-center gap-1 text-slate-400">
+    <button onclick="switchTab('omzet')" id="nav-mob-omzet" title="Toko" class="text-slate-400 p-1">
       <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">2. Toko</span>
     </button>
-    <button onclick="switchTab('laporan')" id="nav-mob-laporan" class="flex flex-col items-center gap-1 text-slate-400">
+    <button onclick="switchTab('laporan')" id="nav-mob-laporan" title="Laporan" class="text-slate-400 p-1">
       <i data-lucide="file-text" class="w-5 h-5"></i>
-      <span class="text-[10px] font-medium">3. Laporan</span>
+    </button>
+    <button onclick="switchTab('ringkasan')" id="nav-mob-ringkasan" title="Ringkasan" class="text-slate-400 p-1">
+      <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
     </button>
   </div>
 
@@ -597,18 +621,18 @@
       const mobTxt = document.getElementById("mob-sync-status-text");
 
       if (status === "connected") {
-        if (deskInd) deskInd.className = "w-2 h-2 rounded-full bg-emerald-500";
-        if (deskTxt) { deskTxt.textContent = "Terhubung"; deskTxt.className = "text-emerald-400 font-medium"; }
+        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+        if (deskTxt) { deskTxt.textContent = "Online"; deskTxt.className = "text-emerald-400 font-medium"; }
         if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-emerald-500";
         if (mobTxt) { mobTxt.textContent = "Online"; mobTxt.className = "text-emerald-400 font-medium"; }
       } else if (status === "saving") {
-        if (deskInd) deskInd.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
-        if (deskTxt) { deskTxt.textContent = "Menyimpan..."; deskTxt.className = "text-amber-400 font-medium"; }
+        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+        if (deskTxt) { deskTxt.textContent = "Sync"; deskTxt.className = "text-amber-400 font-medium"; }
         if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
         if (mobTxt) { mobTxt.textContent = "Syncing"; mobTxt.className = "text-amber-400 font-medium"; }
       } else {
-        if (deskInd) deskInd.className = "w-2 h-2 rounded-full bg-red-500";
-        if (deskTxt) { deskTxt.textContent = "Mode Lokal/Offline"; deskTxt.className = "text-red-400 font-medium"; }
+        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
+        if (deskTxt) { deskTxt.textContent = "Offline"; deskTxt.className = "text-red-400 font-medium"; }
         if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-red-500";
         if (mobTxt) { mobTxt.textContent = "Offline"; mobTxt.className = "text-red-400 font-medium"; }
       }
@@ -641,6 +665,7 @@
       if (typeof renderTransactions === 'function') renderTransactions();
       if (typeof renderStockTable === 'function') renderStockTable();
       if (typeof renderReportsHistory === 'function') renderReportsHistory();
+      if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -655,7 +680,6 @@
 
   <!-- JAVASCRIPT LOGIKA UTAMA -->
   <script>
-    // HELPER FUNCTION UNTUK FORMAT ISO DATE
     function getIsoDateStr(dateObj) {
       if (!dateObj || isNaN(dateObj.getTime())) return '';
       const year = dateObj.getFullYear();
@@ -688,6 +712,7 @@
       document.getElementById('tab-stok').classList.add('hidden');
       document.getElementById('tab-omzet').classList.add('hidden');
       document.getElementById('tab-laporan').classList.add('hidden');
+      document.getElementById('tab-ringkasan').classList.add('hidden');
 
       document.getElementById(`tab-${tabName}`).classList.remove('hidden');
 
@@ -697,18 +722,20 @@
         renderTransactions();
       } else if (tabName === 'laporan') {
         renderReportsHistory();
+      } else if (tabName === 'ringkasan') {
+        renderDailySummaryTable();
       }
 
-      ['stok', 'omzet', 'laporan'].forEach(t => {
+      ['stok', 'omzet', 'laporan', 'ringkasan'].forEach(t => {
         const deskBtn = document.getElementById(`nav-desk-${t}`);
         const mobBtn = document.getElementById(`nav-mob-${t}`);
         
         if (t === tabName) {
-          deskBtn.className = "w-full px-4 py-3 rounded-xl font-medium text-xs flex items-center space-x-3 transition bg-red-600 text-white shadow-lg shadow-red-900/40";
-          mobBtn.className = "flex flex-col items-center gap-1 text-red-500";
+          deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40";
+          mobBtn.className = "text-red-500 p-1";
         } else {
-          deskBtn.className = "w-full px-4 py-3 rounded-xl font-medium text-xs flex items-center space-x-3 transition text-slate-400 hover:bg-slate-800 hover:text-white";
-          mobBtn.className = "flex flex-col items-center gap-1 text-slate-400";
+          deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white";
+          mobBtn.className = "text-slate-400 p-1";
         }
       });
 
@@ -954,6 +981,7 @@
       window.syncToCloud();
       renderTransactions();
       renderStockTable();
+      renderDailySummaryTable();
     }
 
     function renderTransactions() {
@@ -1017,10 +1045,11 @@
         window.syncToCloud();
         renderTransactions();
         renderStockTable();
+        renderDailySummaryTable();
       }
     }
 
-    // DASHBOARD 3 LOGIKA PELAPORAN CUSTOM, FILTER TANGGAL & WIDGET HARI INI
+    // DASHBOARD 3 LOGIKA PELAPORAN
     function openCustomReportModal() {
       const listContainer = document.getElementById('custom-items-selection-list');
       if (!listContainer) return;
@@ -1207,6 +1236,7 @@
       renderTransactions();
       renderStockTable();
       renderReportsHistory();
+      renderDailySummaryTable();
     }
 
     function closeCustomPreview() {
@@ -1233,7 +1263,6 @@
 
       if (todayDateEl) todayDateEl.textContent = todayFormatted;
 
-      // PEMBENAHAN STRICT HITUNGAN WIDGET HARI INI
       let todayPacks = 0;
       (window.generatedReports || []).forEach(rep => {
         let repIso = rep.rawDate;
@@ -1246,7 +1275,6 @@
       });
       if (todayStatEl) todayStatEl.textContent = `${todayPacks.toLocaleString('id-ID')} Bungkus`;
 
-      // FILTERING TANGGAL
       const selectedFilter = filterInput ? filterInput.value : '';
       let filteredReports = (window.generatedReports || []);
 
@@ -1265,7 +1293,6 @@
         return;
       }
 
-      // KELOMPOKKAN LAPORAN BERDASARKAN TANGGAL KELUAR
       const grouped = {};
       const dateOrder = [];
 
@@ -1291,7 +1318,6 @@
         grouped[repIso].items.push(rep);
       });
 
-      // URUTKAN TANGGAL DARI TERBARU KE TERLAMA
       dateOrder.sort((a, b) => b.localeCompare(a));
 
       let groupedHTML = '';
@@ -1352,7 +1378,88 @@
         window.generatedReports = window.generatedReports.filter(r => r.id !== id);
         window.syncToCloud();
         renderReportsHistory();
+        renderDailySummaryTable();
       }
+    }
+
+    // DASHBOARD 4 LOGIKA TAB RINGKASAN HARIAN PER PRODUK
+    function renderDailySummaryTable() {
+      const tbody = document.getElementById('summary-daily-tbody');
+      const labelDate = document.getElementById('label-summary-today-date');
+      if (!tbody || !window.PRODUCT_LIST) return;
+
+      const now = new Date();
+      const todayIso = getIsoDateStr(now);
+      const todayFormatted = now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+      if (labelDate) labelDate.textContent = todayFormatted;
+
+      let summaryMap = {};
+      window.PRODUCT_LIST.forEach(sku => {
+        summaryMap[sku] = { keluar: 0, dilaporkan: 0, pending: 0 };
+      });
+
+      // 1. HITUNG BARANG KELUAR & PENDING KHUSUS HARI INI DARI TRANSAKSI TOKO
+      (window.transactions || []).forEach(tx => {
+        let txIso = tx.rawDate;
+        if (!txIso && tx.id) txIso = getIsoDateStr(new Date(tx.id));
+
+        if (txIso === todayIso) {
+          (tx.items || []).forEach(item => {
+            if (summaryMap[item.product]) {
+              summaryMap[item.product].keluar += (item.qty || 0);
+              summaryMap[item.product].pending += (item.pendingQty || 0);
+            }
+          });
+        }
+      });
+
+      // 2. HITUNG BARANG SUDAH DILAPORKAN KHUSUS HARI INI DARI RIWAYAT LAPORAN
+      (window.generatedReports || []).forEach(rep => {
+        let repIso = rep.rawDate;
+        if (!repIso && rep.id) repIso = getIsoDateStr(new Date(rep.id));
+
+        if (repIso === todayIso) {
+          (rep.items || []).forEach(item => {
+            if (summaryMap[item.sku]) {
+              summaryMap[item.sku].dilaporkan += (item.qty || 0);
+            }
+          });
+        }
+      });
+
+      let grandKeluar = 0;
+      let grandDilaporkan = 0;
+      let grandPending = 0;
+
+      const rowsHTML = window.PRODUCT_LIST.map((sku, idx) => {
+        const data = summaryMap[sku];
+        grandKeluar += data.keluar;
+        grandDilaporkan += data.dilaporkan;
+        grandPending += data.pending;
+
+        return `
+          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+            <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
+            <td class="p-3 border border-slate-200 font-bold text-slate-800">${sku}</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-amber-600">${data.keluar}</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-emerald-600">${data.dilaporkan}</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-indigo-600">${data.pending}</td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalRowHTML = `
+        <tr class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300">
+          <td colspan="2" class="p-3 border border-slate-200 text-center uppercase tracking-wider">Total Hari Ini</td>
+          <td class="p-3 border border-slate-200 text-right text-amber-700 text-sm">${grandKeluar} Bungkus</td>
+          <td class="p-3 border border-slate-200 text-right text-emerald-700 text-sm">${grandDilaporkan} Bungkus</td>
+          <td class="p-3 border border-slate-200 text-right text-indigo-700 text-sm">${grandPending} Bungkus</td>
+        </tr>
+      `;
+
+      tbody.innerHTML = rowsHTML + totalRowHTML;
+      lucide.createIcons();
     }
   </script>
 </body>
