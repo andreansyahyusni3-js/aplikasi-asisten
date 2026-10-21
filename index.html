@@ -79,7 +79,7 @@
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-[11px] text-slate-500 text-center">
-      v4.1 &bull; Fitur Hapus & Hitung Otomatis
+      v4.3 &bull; Auto-Reset & Pure Target System
     </div>
   </aside>
 
@@ -111,11 +111,54 @@
             <i data-lucide="boxes" class="w-6 h-6 text-red-600"></i>
             Dashboard 1: Penyimpanan & Kelola Stok
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, koreksi stok (tambah/kurang), dan pantau sisa stok real-time.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, atur target penjualan, koreksi stok, dan pantau sisa stok real-time.</p>
         </div>
         <button onclick="resetAllStock()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
           <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Semua Stok
         </button>
+      </div>
+
+      <!-- WIDGET TARGET BULANAN DAN PENCAPAIAN -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex justify-between items-center">
+          <div class="flex items-center gap-2">
+            <div class="bg-red-100 p-2 rounded-xl text-red-600">
+              <i data-lucide="target" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-slate-900 text-sm">Target Penjualan Bulanan</h3>
+              <p class="text-[11px] text-slate-500">Pencapaian tersimpan permanen meskipun laporan harian ter-reset</p>
+            </div>
+          </div>
+          <button onclick="openTargetModal()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-1.5 rounded-lg flex items-center gap-1 transition">
+            <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Set Target
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <p class="text-[10px] font-bold text-slate-500 uppercase">Target Bulan Ini</p>
+            <p id="widget-target-val" class="text-lg font-bold text-slate-800 mt-0.5">0 Bungkus</p>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <p class="text-[10px] font-bold text-slate-500 uppercase">Pencapaian Penjualan</p>
+            <p id="widget-achieved-val" class="text-lg font-bold text-emerald-600 mt-0.5">0 Bungkus</p>
+          </div>
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <p class="text-[10px] font-bold text-slate-500 uppercase">Kekurangan Target</p>
+            <p id="widget-remaining-val" class="text-lg font-bold text-amber-600 mt-0.5">0 Bungkus</p>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex justify-between text-[11px] font-semibold">
+            <span class="text-slate-600">Persentase Pencapaian</span>
+            <span id="widget-target-percent" class="text-red-600">0%</span>
+          </div>
+          <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden border border-slate-200">
+            <div id="widget-target-bar" class="bg-red-600 h-full transition-all duration-500 w-0"></div>
+          </div>
+        </div>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -177,7 +220,7 @@
           <i data-lucide="shopping-cart" class="w-6 h-6 text-red-600"></i>
           Dashboard 2: Pencatatan Barang Keluar per Toko
         </h2>
-        <p class="text-xs text-slate-500 mt-0.5">Catat barang yang keluar ke outlet/toko. Barang yang keluar otomatis mengurangi stok di Dashboard 1.</p>
+        <p class="text-xs text-slate-500 mt-0.5">Penjualan yang selesai dilaporkan otomatis disembunyikan dan dihitung ke target bulanan.</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -227,12 +270,12 @@
           </button>
         </div>
 
-        <!-- DAFTAR BARANG KELUAR DI TOKO -->
+        <!-- DAFTAR BARANG KELUAR DI TOKO (AKTIF / PENDING) -->
         <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div class="flex justify-between items-center pb-3 border-b border-slate-100">
             <h2 class="font-bold text-slate-900 flex items-center gap-2">
               <i data-lucide="list" class="w-5 h-5 text-red-600"></i>
-              Daftar Barang Di Toko (Status Sisa Stok Toko)
+              Daftar Barang Toko Aktif (Pending Lapor)
             </h2>
           </div>
 
@@ -247,9 +290,9 @@
         <div>
           <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
             <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i>
-            Dashboard 3: Pelaporan & Ambil Barang Toko
+            Dashboard 3: Pelaporan Harian
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Buat laporan dengan nama toko manual dan ambil barang spesifik dari toko yang ber-transaksi.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Laporan akan di-reset otomatis setiap hari. Total bungkus tetap aman tersimpan di Target Bulanan.</p>
         </div>
         <div class="flex items-center gap-2 no-print">
           <button onclick="openCustomReportModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
@@ -289,17 +332,45 @@
         </div>
       </div>
 
-      <!-- RIWAYAT LAPORAN YANG SUDAH DIBUAT -->
+      <!-- RIWAYAT LAPORAN HARI INI -->
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <h3 class="font-bold text-slate-900 text-sm border-b pb-3 flex items-center gap-2">
-          <i data-lucide="history" class="w-4 h-4 text-indigo-600"></i>
-          Riwayat Laporan Yang Sudah Dibuat
+        <h3 class="font-bold text-slate-900 text-sm border-b pb-3 flex items-center justify-between">
+          <span class="flex items-center gap-2">
+            <i data-lucide="history" class="w-4 h-4 text-indigo-600"></i>
+            Riwayat Laporan Hari Ini
+          </span>
+          <span id="label-report-date" class="text-xs bg-indigo-50 text-indigo-700 font-semibold px-2.5 py-1 rounded-md border border-indigo-100"></span>
         </h3>
         <div id="reports-history-container" class="space-y-3"></div>
       </div>
     </section>
 
   </main>
+
+  <!-- MODAL SET TARGET BULANAN -->
+  <div id="modal-target" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
+          <i data-lucide="target" class="w-4 h-4 text-red-600"></i>
+          Set Target Penjualan Bulanan
+        </h3>
+        <button onclick="closeModal('modal-target')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Penjualan (Bungkus)</label>
+          <input type="number" min="0" id="input-monthly-target" placeholder="Contoh: 5000" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
+        </div>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button onclick="closeModal('modal-target')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
+        <button onclick="saveMonthlyTarget()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Target</button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL EDIT STOK AWAL & KOREKSI -->
   <div id="modal-edit-stock" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
@@ -444,6 +515,8 @@
     window.stockData = {};
     window.transactions = [];
     window.generatedReports = [];
+    window.monthlyTarget = 0;
+    window.lastActiveDate = new Date().toISOString().split('T')[0];
 
     window.selectedStockSku = null;
 
@@ -456,6 +529,8 @@
         stockData: window.stockData || {},
         transactions: window.transactions || [],
         generatedReports: window.generatedReports || [],
+        monthlyTarget: window.monthlyTarget || 0,
+        lastActiveDate: window.lastActiveDate,
         updatedAt: new Date().toISOString()
       };
 
@@ -474,6 +549,8 @@
       localStorage.setItem('sales_stock_data_3dash', JSON.stringify(window.stockData));
       localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
       localStorage.setItem('sales_reports_3dash', JSON.stringify(window.generatedReports));
+      localStorage.setItem('sales_monthly_target_3dash', window.monthlyTarget);
+      localStorage.setItem('sales_last_active_date_3dash', window.lastActiveDate);
     }
 
     function loadFromLocalStorage() {
@@ -481,12 +558,26 @@
         window.stockData = JSON.parse(localStorage.getItem('sales_stock_data_3dash')) || {};
         window.transactions = JSON.parse(localStorage.getItem('sales_transactions_3dash')) || [];
         window.generatedReports = JSON.parse(localStorage.getItem('sales_reports_3dash')) || [];
+        window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target_3dash'), 10) || 0;
+        window.lastActiveDate = localStorage.getItem('sales_last_active_date_3dash') || new Date().toISOString().split('T')[0];
       } catch (e) {
         console.warn("Gagal membaca LocalStorage:", e);
       }
 
+      checkAndPerformDailyReset();
       initStockData();
       renderAllViews();
+    }
+
+    // CHECK DAN RESET OTOMATIS SAAT BERGANTI TANGGAL
+    function checkAndPerformDailyReset() {
+      const today = new Date().toISOString().split('T')[0];
+      if (window.lastActiveDate !== today) {
+        // Kosongkan riwayat tampilan laporan harian (Laporan hari lalu hilang dari layar)
+        window.generatedReports = [];
+        window.lastActiveDate = today;
+        saveToLocalStorage();
+      }
     }
 
     function updateSyncStatus(status) {
@@ -519,7 +610,10 @@
         if (data.stockData) window.stockData = data.stockData;
         if (data.transactions) window.transactions = data.transactions;
         if (data.generatedReports) window.generatedReports = data.generatedReports;
+        if (data.monthlyTarget !== undefined) window.monthlyTarget = data.monthlyTarget;
+        if (data.lastActiveDate) window.lastActiveDate = data.lastActiveDate;
 
+        checkAndPerformDailyReset();
         saveToLocalStorage();
       }
 
@@ -552,6 +646,19 @@
 
   <!-- JAVASCRIPT LOGIKA UTAMA -->
   <script>
+    function openTargetModal() {
+      document.getElementById('input-monthly-target').value = window.monthlyTarget || '';
+      document.getElementById('modal-target').classList.remove('hidden');
+    }
+
+    function saveMonthlyTarget() {
+      const val = parseInt(document.getElementById('input-monthly-target').value, 10);
+      window.monthlyTarget = isNaN(val) ? 0 : val;
+      closeModal('modal-target');
+      window.syncToCloud();
+      renderStockTable();
+    }
+
     function initProductDropdown() {
       const select = document.getElementById('select-produk');
       if (select && window.PRODUCT_LIST) {
@@ -590,7 +697,7 @@
       lucide.createIcons();
     }
 
-    // DASHBOARD 1 LOGIKA STOK
+    // DASHBOARD 1 LOGIKA STOK & TARGET BULANAN
     function renderStockTable() {
       const tbody = document.getElementById('stock-table-body');
       if (!tbody || !window.PRODUCT_LIST) return;
@@ -602,6 +709,7 @@
         const initial = window.stockData[sku] ? (window.stockData[sku].initial || 0) : 0;
         const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
 
+        // TOTAL PENJUALAN KELUAR = SEMUA TRANSAKSI TERMASUK YANG SUDAH DILAPORKAN / HILANG DARI D2
         let out = 0;
         window.transactions.forEach(t => {
           t.items.forEach(i => {
@@ -642,6 +750,26 @@
 
       document.getElementById('stat-stock-out').textContent = `${grandOut} Bungkus`;
       document.getElementById('stat-stock-remaining').textContent = `${grandRemaining} Bungkus`;
+
+      // UPDATE STATISTIK TARGET BULANAN
+      document.getElementById('widget-target-val').textContent = `${(window.monthlyTarget || 0).toLocaleString('id-ID')} Bungkus`;
+      document.getElementById('widget-achieved-val').textContent = `${grandOut.toLocaleString('id-ID')} Bungkus`;
+
+      const remainingTarget = Math.max(0, (window.monthlyTarget || 0) - grandOut);
+      document.getElementById('widget-remaining-val').textContent = `${remainingTarget.toLocaleString('id-ID')} Bungkus`;
+
+      const percent = window.monthlyTarget > 0 ? Math.min(100, Math.round((grandOut / window.monthlyTarget) * 100)) : 0;
+      document.getElementById('widget-target-percent').textContent = `${percent}%`;
+
+      const bar = document.getElementById('widget-target-bar');
+      if (bar) {
+        bar.style.width = `${percent}%`;
+        if (percent >= 100) {
+          bar.className = "bg-emerald-600 h-full transition-all duration-500";
+        } else {
+          bar.className = "bg-red-600 h-full transition-all duration-500";
+        }
+      }
 
       lucide.createIcons();
     }
@@ -814,25 +942,29 @@
       const container = document.getElementById('tx-list-container');
       if (!container) return;
 
-      if (window.transactions.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Belum ada data barang keluar toko</div>`;
+      // HANYA TAMPILKAN TRANSAKSI YANG MASIH MEMILIKI SISA STOK TOKO (PENDING > 0)
+      const activeTransactions = window.transactions.filter(t => {
+        const totalPendingInTx = t.items.reduce((sum, i) => sum + i.pendingQty, 0);
+        return totalPendingInTx > 0;
+      });
+
+      if (activeTransactions.length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Semua barang keluar toko sudah dilaporkan (Selesai)</div>`;
         return;
       }
 
-      container.innerHTML = window.transactions.map(t => {
+      container.innerHTML = activeTransactions.map(t => {
         const totalItemsInTx = t.items.reduce((sum, i) => sum + i.qty, 0);
-        const totalPendingInTx = t.items.reduce((sum, i) => sum + i.pendingQty, 0);
-        const isFullyReported = totalPendingInTx === 0;
 
         return `
-          <div class="bg-slate-50 p-4 rounded-xl border ${isFullyReported ? 'border-emerald-200 bg-emerald-50/30' : 'border-amber-200 bg-amber-50/30'} space-y-3">
+          <div class="bg-slate-50 p-4 rounded-xl border border-amber-200 bg-amber-50/30 space-y-3">
             <div class="flex justify-between items-start">
               <div>
                 <h4 class="font-bold text-slate-900 text-sm">${t.toko}</h4>
                 <p class="text-[11px] text-slate-500">${t.createdAt}</p>
               </div>
-              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold ${isFullyReported ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
-                ${isFullyReported ? 'Semua Ditransaksikan / Dilaporkan' : 'Sisa Stok Di Toko'}
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700">
+                Sisa Stok Di Toko
               </span>
             </div>
 
@@ -934,7 +1066,6 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // HITUNG AKUMULASI REAL-TIME PRODUK YANG DICENTANG
     function updateSelectedItemsSummary() {
       const checkboxes = document.querySelectorAll('.custom-item-chk:checked');
       const summaryBox = document.getElementById('selected-items-summary-box');
@@ -1040,7 +1171,7 @@
       document.getElementById('preview-custom-title').textContent = titleInput;
       document.getElementById('custom-report-preview-container').classList.remove('hidden');
 
-      // Simpan ke Riwayat Laporan
+      // Simpan ke Riwayat Laporan Harian
       window.generatedReports.unshift({
         id: Date.now(),
         title: titleInput,
@@ -1063,10 +1194,15 @@
 
     function renderReportsHistory() {
       const container = document.getElementById('reports-history-container');
+      const dateLabel = document.getElementById('label-report-date');
       if (!container) return;
 
+      if (dateLabel) {
+        dateLabel.textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
       if (window.generatedReports.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada riwayat laporan yang dibuat</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">Belum ada riwayat laporan hari ini (Otomatis ter-reset setiap tanggal baru)</p>`;
         return;
       }
 
@@ -1081,7 +1217,7 @@
               <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-1 rounded-full">
                 Total: ${rep.totalPacks} Bungkus
               </span>
-              <button onclick="deleteReport(${rep.id})" title="Hapus Riwayat Laporan" class="text-slate-400 hover:text-red-600 transition p-1">
+              <button onclick="deleteReport(${rep.id})" title="Hapus Riwayat Laporan Ini" class="text-slate-400 hover:text-red-600 transition p-1">
                 <i data-lucide="trash-2" class="w-4 h-4"></i>
               </button>
             </div>
@@ -1101,9 +1237,8 @@
       lucide.createIcons();
     }
 
-    // HAPUS RIWAYAT LAPORAN
     function deleteReport(id) {
-      if (confirm('Hapus riwayat laporan ini dari daftar?')) {
+      if (confirm('Hapus riwayat laporan ini dari daftar harian?')) {
         window.generatedReports = window.generatedReports.filter(r => r.id !== id);
         window.syncToCloud();
         renderReportsHistory();
