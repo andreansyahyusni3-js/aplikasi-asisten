@@ -72,7 +72,7 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v5.0
+      v5.1
     </div>
   </aside>
 
@@ -216,7 +216,6 @@
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <!-- FORM INPUT BARANG KELUAR PER TOKO -->
         <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
           <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
             <h2 class="font-bold text-slate-900 flex items-center gap-2">
@@ -262,7 +261,6 @@
           </button>
         </div>
 
-        <!-- DAFTAR BARANG KELUAR DI TOKO (AKTIF / PENDING) -->
         <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div class="flex justify-between items-center pb-3 border-b border-slate-100">
             <h2 class="font-bold text-slate-900 flex items-center gap-2">
@@ -298,7 +296,6 @@
         </div>
       </div>
 
-      <!-- WIDGET BARANG KELUAR HARI INI -->
       <div class="bg-gradient-to-r from-indigo-900 to-indigo-700 text-white p-5 rounded-2xl shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div class="flex items-center gap-3">
           <div class="bg-white/10 p-3 rounded-xl border border-white/20">
@@ -314,7 +311,6 @@
         </div>
       </div>
 
-      <!-- HASIL / PREVIEW LAPORAN YANG DIBUAT -->
       <div id="custom-report-preview-container" class="hidden bg-indigo-50 border-2 border-indigo-200 p-6 rounded-2xl space-y-4">
         <div class="flex justify-between items-center border-b border-indigo-200 pb-3">
           <div>
@@ -340,7 +336,6 @@
         </div>
       </div>
 
-      <!-- RIWAYAT LAPORAN DENGAN FILTER TANGGAL -->
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
           <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
@@ -358,15 +353,15 @@
       </div>
     </section>
 
-    <!-- DASHBOARD 4: TAB RINGKASAN HARIAN PER PRODUK (DENGAN FILTER TANGGAL & CETAK) -->
+    <!-- DASHBOARD 4: RINGKASAN HARIAN & RINCIAN TOKO PER PRODUK -->
     <section id="tab-ringkasan" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
             <i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i>
-            Dashboard 4: Ringkasan Barang Keluar Per Produk
+            Dashboard 4: Ringkasan & Rincian Per Produk
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Mempertahankan riwayat tanggal, meneruskan pending harian (carry forward), dan siap dicetak.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Mempertahankan riwayat tanggal, carry forward pending, dan rincian sebaran toko per SKU.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2 no-print">
           <input type="date" id="filter-summary-date" onchange="renderDailySummaryTable()" class="px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium">
@@ -376,10 +371,11 @@
         </div>
       </div>
 
+      <!-- TABEL 1: RINGKASAN HARIAN -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex justify-between items-center border-b pb-3">
           <span id="label-summary-today-date" class="text-xs font-bold bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-xl border border-emerald-200"></span>
-          <span class="text-xs text-slate-400 font-medium">Sistem Akumulasi Automatic Carry-Forward</span>
+          <span class="text-xs text-slate-400 font-medium">Ringkasan Total Seluruh Produk</span>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse border border-slate-200">
@@ -393,6 +389,39 @@
               </tr>
             </thead>
             <tbody id="summary-daily-tbody" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TABEL 2: RINCIAN TOKO PER PRODUK (BEBAS FILTER TANGGAL, HANYA YANG PENDING > 0) -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b pb-3">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="store" class="w-4 h-4 text-emerald-600"></i>
+              Rincian Sebaran Toko Per Produk (Khusus Sisa Pending &gt; 0)
+            </h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Menampilkan seluruh toko yang masih memiliki pendingan aktif (Real-time Akumulasi).</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-bold text-slate-700 uppercase">Pilih Produk SKU:</label>
+            <select id="select-product-breakdown" onchange="renderProductStoreBreakdown()" class="px-3 py-1.5 text-xs font-bold border border-slate-300 rounded-xl bg-slate-50 outline-none focus:ring-2 focus:ring-emerald-500"></select>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse border border-slate-200">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
+              <tr>
+                <th class="p-3 border border-slate-200 text-center">No</th>
+                <th class="p-3 border border-slate-200">Nama Toko / Outlet</th>
+                <th class="p-3 border border-slate-200 text-right text-amber-700">Total Barang Keluar</th>
+                <th class="p-3 border border-slate-200 text-right text-emerald-700">Barang Sudah Dilaporkan</th>
+                <th class="p-3 border border-slate-200 text-right text-indigo-700">Sisa Pending</th>
+                <th class="p-3 border border-slate-200 text-center">Status Toko</th>
+              </tr>
+            </thead>
+            <tbody id="store-breakdown-tbody" class="divide-y divide-slate-200"></tbody>
           </table>
         </div>
       </div>
@@ -708,6 +737,7 @@
       if (typeof setDefaultFilterToday === 'function') setDefaultFilterToday();
       if (typeof renderReportsHistory === 'function') renderReportsHistory();
       if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
+      if (typeof renderProductStoreBreakdown === 'function') renderProductStoreBreakdown();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -763,6 +793,10 @@
       if (selectModal && window.PRODUCT_LIST) {
         selectModal.innerHTML = window.PRODUCT_LIST.map(item => `<option value="${item}">${item}</option>`).join('');
       }
+      const selectBreakdown = document.getElementById('select-product-breakdown');
+      if (selectBreakdown && window.PRODUCT_LIST) {
+        selectBreakdown.innerHTML = window.PRODUCT_LIST.map(item => `<option value="${item}">${item}</option>`).join('');
+      }
     }
 
     function switchTab(tabName) {
@@ -781,6 +815,7 @@
         renderReportsHistory();
       } else if (tabName === 'ringkasan') {
         renderDailySummaryTable();
+        renderProductStoreBreakdown();
       }
 
       ['stok', 'omzet', 'laporan', 'ringkasan'].forEach(t => {
@@ -1040,6 +1075,7 @@
       renderTransactions();
       renderStockTable();
       renderDailySummaryTable();
+      renderProductStoreBreakdown();
     }
 
     function renderTransactions() {
@@ -1099,7 +1135,6 @@
       lucide.createIcons();
     }
 
-    // LOGIKA MODAL EDIT RINCIAN BARANG PADA TRANSAKSI TOKO
     function openEditTxModal(txId) {
       window.editingTxId = txId;
       const tx = window.transactions.find(t => t.id === txId);
@@ -1147,7 +1182,6 @@
         return;
       }
 
-      const qtyDiff = newQty - item.qty;
       item.qty = newQty;
       item.pendingQty = item.qty - item.reportedQty;
 
@@ -1155,6 +1189,7 @@
       renderTransactions();
       renderStockTable();
       renderDailySummaryTable();
+      renderProductStoreBreakdown();
     }
 
     function removeItemFromTx(itemIdx) {
@@ -1174,6 +1209,7 @@
         renderTransactions();
         renderStockTable();
         renderDailySummaryTable();
+        renderProductStoreBreakdown();
       }
     }
 
@@ -1208,6 +1244,7 @@
       renderTransactions();
       renderStockTable();
       renderDailySummaryTable();
+      renderProductStoreBreakdown();
     }
 
     function deleteTx(id) {
@@ -1217,6 +1254,7 @@
         renderTransactions();
         renderStockTable();
         renderDailySummaryTable();
+        renderProductStoreBreakdown();
       }
     }
 
@@ -1409,6 +1447,7 @@
       renderStockTable();
       renderReportsHistory();
       renderDailySummaryTable();
+      renderProductStoreBreakdown();
     }
 
     function closeCustomPreview() {
@@ -1578,6 +1617,7 @@
         renderTransactions();
         renderReportsHistory();
         renderDailySummaryTable();
+        renderProductStoreBreakdown();
       }
     }
 
@@ -1691,6 +1731,80 @@
           <td class="p-3 border border-slate-200 text-right text-amber-700 text-sm">${grandKeluar} Bungkus</td>
           <td class="p-3 border border-slate-200 text-right text-emerald-700 text-sm">${grandDilaporkan} Bungkus</td>
           <td class="p-3 border border-slate-200 text-right text-indigo-700 text-sm">${grandPending} Bungkus</td>
+        </tr>
+      `;
+
+      tbody.innerHTML = rowsHTML + totalRowHTML;
+      lucide.createIcons();
+    }
+
+    // DASHBOARD 4 LOGIKA RINCIAN SEBARAN TOKO PER PRODUK (REAL-TIME AKUMULASI, BEBAS FILTER TANGGAL, PENDING > 0)
+    function renderProductStoreBreakdown() {
+      const tbody = document.getElementById('store-breakdown-tbody');
+      const selectBreakdown = document.getElementById('select-product-breakdown');
+      if (!tbody || !selectBreakdown) return;
+
+      const selectedSku = selectBreakdown.value || (window.PRODUCT_LIST ? window.PRODUCT_LIST[0] : '');
+      if (!selectedSku) return;
+
+      let storeMap = {};
+
+      // POPULASI SELURUH PENJUALAN TOKO TANPA MEMPERHATIKAN TANGGAL
+      (window.transactions || []).forEach(tx => {
+        const toko = tx.toko;
+        (tx.items || []).forEach(item => {
+          if (item.product === selectedSku) {
+            if (!storeMap[toko]) {
+              storeMap[toko] = { keluar: 0, dilaporkan: 0, pending: 0 };
+            }
+            storeMap[toko].keluar += (item.qty || 0);
+            storeMap[toko].pending += (item.pendingQty || 0);
+            storeMap[toko].dilaporkan += (item.reportedQty || 0);
+          }
+        });
+      });
+
+      // FILTER TOKO: HANYA TAMPILKAN TOKO DENGAN SISA PENDING > 0
+      const activeStores = Object.keys(storeMap).filter(toko => storeMap[toko].pending > 0);
+
+      if (activeStores.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-8 text-center text-slate-400 text-xs">Tidak ada toko dengan sisa pendingan aktif untuk produk <b>${selectedSku}</b>.</td></tr>`;
+        return;
+      }
+
+      let grandKeluar = 0;
+      let grandDilaporkan = 0;
+      let grandPending = 0;
+
+      const rowsHTML = activeStores.map((toko, idx) => {
+        const data = storeMap[toko];
+        grandKeluar += data.keluar;
+        grandDilaporkan += data.dilaporkan;
+        grandPending += data.pending;
+
+        return `
+          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+            <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
+            <td class="p-3 border border-slate-200 font-bold text-slate-800">${toko}</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-amber-600">${data.keluar} Bungkus</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-emerald-600">${data.dilaporkan} Bungkus</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-indigo-600">${data.pending} Bungkus</td>
+            <td class="p-3 border border-slate-200 text-center">
+              <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
+                Proses (Pending)
+              </span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalRowHTML = `
+        <tr class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300">
+          <td colspan="2" class="p-3 border border-slate-200 text-center uppercase tracking-wider">Total Pending (${selectedSku})</td>
+          <td class="p-3 border border-slate-200 text-right text-amber-700 text-sm">${grandKeluar} Bungkus</td>
+          <td class="p-3 border border-slate-200 text-right text-emerald-700 text-sm">${grandDilaporkan} Bungkus</td>
+          <td class="p-3 border border-slate-200 text-right text-indigo-700 text-sm">${grandPending} Bungkus</td>
+          <td class="p-3 border border-slate-200 text-center text-xs text-slate-500">${activeStores.length} Toko</td>
         </tr>
       `;
 
