@@ -72,7 +72,7 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v5.1
+      v5.2
     </div>
   </aside>
 
@@ -1621,7 +1621,7 @@
       }
     }
 
-    // DASHBOARD 4 LOGIKA CARRY-FORWARD PENDING & FILTER TANGGAL PER PERIODE
+    // DASHBOARD 4 LOGIKA PERHITUNGAN REKAP & SINKRONISASI PENDING DENGAN TABEL 2
     function renderDailySummaryTable() {
       const tbody = document.getElementById('summary-daily-tbody');
       const labelDate = document.getElementById('label-summary-today-date');
@@ -1670,38 +1670,17 @@
         }
       });
 
-      // 3. LOGIKA CARRY FORWARD PENDING AKUMULASI (TRANSAKSI <= TANGGAL TARGET DIKURANGI LAPORAN <= TANGGAL TARGET)
+      // 3. PENDING AKUMULASI: LANGSUNG MENAMPUK DARI TRANSAKSI TOKO AKTIF (PERSISI SAMA DENGAN TABEL 2)
       window.PRODUCT_LIST.forEach(sku => {
-        let totalKeluarSampaiTgl = 0;
-        let totalDilaporSampaiTgl = 0;
-
+        let totalPendingToko = 0;
         (window.transactions || []).forEach(tx => {
-          let txIso = tx.rawDate;
-          if (!txIso && tx.id) txIso = getIsoDateStr(new Date(tx.id));
-
-          if (txIso <= targetIsoDate) {
-            (tx.items || []).forEach(item => {
-              if (item.product === sku) {
-                totalKeluarSampaiTgl += (item.qty || 0);
-              }
-            });
-          }
+          (tx.items || []).forEach(item => {
+            if (item.product === sku) {
+              totalPendingToko += (item.pendingQty || 0);
+            }
+          });
         });
-
-        (window.generatedReports || []).forEach(rep => {
-          let repIso = rep.rawDate;
-          if (!repIso && rep.id) repIso = getIsoDateStr(new Date(rep.id));
-
-          if (repIso <= targetIsoDate) {
-            (rep.items || []).forEach(item => {
-              if (item.sku === sku) {
-                totalDilaporSampaiTgl += (item.qty || 0);
-              }
-            });
-          }
-        });
-
-        summaryMap[sku].pendingAkumulasi = Math.max(0, totalKeluarSampaiTgl - totalDilaporSampaiTgl);
+        summaryMap[sku].pendingAkumulasi = totalPendingToko;
       });
 
       let grandKeluar = 0;
@@ -1749,7 +1728,6 @@
 
       let storeMap = {};
 
-      // POPULASI SELURUH PENJUALAN TOKO TANPA MEMPERHATIKAN TANGGAL
       (window.transactions || []).forEach(tx => {
         const toko = tx.toko;
         (tx.items || []).forEach(item => {
@@ -1764,7 +1742,6 @@
         });
       });
 
-      // FILTER TOKO: HANYA TAMPILKAN TOKO DENGAN SISA PENDING > 0
       const activeStores = Object.keys(storeMap).filter(toko => storeMap[toko].pending > 0);
 
       if (activeStores.length === 0) {
