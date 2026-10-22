@@ -73,7 +73,7 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v4.7
+      v4.8
     </div>
   </aside>
 
@@ -664,6 +664,7 @@
       if (typeof renderCartUI === 'function') renderCartUI();
       if (typeof renderTransactions === 'function') renderTransactions();
       if (typeof renderStockTable === 'function') renderStockTable();
+      if (typeof setDefaultFilterToday === 'function') setDefaultFilterToday();
       if (typeof renderReportsHistory === 'function') renderReportsHistory();
       if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
       if (typeof lucide !== 'undefined') lucide.createIcons();
@@ -686,6 +687,14 @@
       const month = String(dateObj.getMonth() + 1).padStart(2, '0');
       const day = String(dateObj.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
+    }
+
+    // SET DEFAULT FILTER TANGGAL HARUS TANGGAL HARI INI SAAT LOAD/REFRESH
+    function setDefaultFilterToday() {
+      const filterInput = document.getElementById('filter-report-date');
+      if (filterInput && !filterInput.value) {
+        filterInput.value = getIsoDateStr(new Date());
+      }
     }
 
     function openTargetModal() {
@@ -1029,7 +1038,7 @@
             <div class="flex justify-between items-center pt-1">
               <span class="text-xs text-slate-500 font-medium">Total: <b>${totalItemsInTx} Bungkus</b></span>
               <button onclick="deleteTx(${t.id})" class="text-slate-400 hover:text-red-600 transition flex items-center gap-1 text-xs">
-                <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus
+                <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus & Kembalikan ke Stok
               </button>
             </div>
           </div>
@@ -1039,8 +1048,9 @@
       lucide.createIcons();
     }
 
+    // ALUR HAPUS PENJUALAN: BARANG KEMBALI KE STOK UTAMA (TAB 1)
     function deleteTx(id) {
-      if (confirm('Hapus transaksi toko ini? Stok di Dashboard 1 akan dikembalikan.')) {
+      if (confirm('Hapus transaksi toko ini? Seluruh barang keluar dari toko ini akan dikembalikan ke Sisa Stok Utama.')) {
         window.transactions = window.transactions.filter(t => t.id !== id);
         window.syncToCloud();
         renderTransactions();
@@ -1189,6 +1199,7 @@
             totalPacks += actualQty;
 
             reportDetails.push({
+              txId: txId,
               tokoAsal: toko,
               sku: sku,
               qty: actualQty
@@ -1289,7 +1300,7 @@
       }
 
       if (filteredReports.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Tidak ada riwayat laporan yang ditemukan.</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Tidak ada riwayat laporan yang ditemukan pada tanggal ini.</p>`;
         return;
       }
 
@@ -1348,7 +1359,7 @@
                       <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-1 rounded-full">
                         ${rep.totalPacks} Bungkus
                       </span>
-                      <button onclick="deleteReport(${rep.id})" title="Hapus Riwayat Laporan Ini" class="text-slate-400 hover:text-red-600 transition p-1">
+                      <button onclick="deleteReport(${rep.id})" title="Hapus Laporan & Kembalikan ke Toko" class="text-slate-400 hover:text-red-600 transition p-1">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                       </button>
                     </div>
@@ -1373,10 +1384,38 @@
       lucide.createIcons();
     }
 
+    // ALUR HAPUS LAPORAN: BARANG KEMBALI KE PENJUALAN TOKO MASING-MASING (TAB 2)
     function deleteReport(id) {
-      if (confirm('Hapus riwayat laporan ini dari daftar harian?')) {
+      if (confirm('Hapus laporan ini? Seluruh barang yang dilaporkan akan dikembalikan ke sisa stok toko masing-masing.')) {
+        const reportToDelete = window.generatedReports.find(r => r.id === id);
+
+        if (reportToDelete && reportToDelete.items) {
+          reportToDelete.items.forEach(repItem => {
+            if (repItem.txId) {
+              const tx = window.transactions.find(t => t.id === repItem.txId);
+              if (tx) {
+                const item = tx.items.find(i => i.product === repItem.sku);
+                if (item) {
+                  item.pendingQty += repItem.qty;
+                  item.reportedQty = Math.max(0, item.reportedQty - repItem.qty);
+                }
+              }
+            } else if (repItem.tokoAsal) {
+              const tx = window.transactions.find(t => t.toko === repItem.tokoAsal);
+              if (tx) {
+                const item = tx.items.find(i => i.product === repItem.sku);
+                if (item) {
+                  item.pendingQty += repItem.qty;
+                  item.reportedQty = Math.max(0, item.reportedQty - repItem.qty);
+                }
+              }
+            }
+          });
+        }
+
         window.generatedReports = window.generatedReports.filter(r => r.id !== id);
         window.syncToCloud();
+        renderTransactions();
         renderReportsHistory();
         renderDailySummaryTable();
       }
