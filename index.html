@@ -46,7 +46,7 @@
 
   <!-- SIDEBAR NAVIGASI DESKTOP -->
   <aside class="hidden md:flex flex-col w-20 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 items-center py-4 no-print">
-    <!-- LOGO DESKTOP BARU DENGAN DUKUNGAN COLOR TO ALPHA -->
+    <!-- LOGO DESKTOP DENGAN COLOR TO ALPHA -->
     <div class="mb-4 text-center">
       <div class="p-1 bg-white rounded-xl inline-block border border-slate-700/50 shadow-sm overflow-hidden">
         <img src="https://lh3.googleusercontent.com/d/1OKWjaTTKKWzI4YmQVPs8XH0yaTLtSf8b" alt="Logo Asisten" class="w-10 h-10 object-contain rounded-lg mix-blend-multiply">
@@ -77,13 +77,13 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v6.6
+      v6.7
     </div>
   </aside>
 
   <!-- HEADER MOBILE -->
   <header class="md:hidden bg-slate-900 text-white p-3 sticky top-0 z-40 shadow-md flex justify-between items-center no-print">
-    <!-- LOGO MOBILE BARU DENGAN DUKUNGAN COLOR TO ALPHA -->
+    <!-- LOGO MOBILE DENGAN COLOR TO ALPHA -->
     <div class="flex items-center space-x-2">
       <div class="p-0.5 bg-white rounded-lg overflow-hidden">
         <img src="https://lh3.googleusercontent.com/d/1OKWjaTTKKWzI4YmQVPs8XH0yaTLtSf8b" alt="Logo Asisten" class="w-7 h-7 object-contain rounded-lg mix-blend-multiply">
@@ -1687,39 +1687,47 @@
         const inputId = chk.getAttribute('data-inputid');
         const qtyInputVal = parseInt(document.getElementById(inputId).value, 10);
 
-        const tx = window.transactions.find(t => t.id === txId);
-        if (tx && tx.items[itemIdx]) {
-          const item = tx.items[itemIdx];
-          const actualQty = isNaN(qtyInputVal) || qtyInputVal <= 0 ? 0 : Math.min(qtyInputVal, item.pendingQty);
+        let tx = window.transactions.find(t => t.id === txId) || window.transactions.find(t => t.toko === toko);
 
-          if (actualQty > 0) {
-            item.pendingQty -= actualQty;
-            item.reportedQty += actualQty;
-            totalPacks += actualQty;
+        if (tx) {
+          let item = tx.items[itemIdx] || tx.items.find(i => i.product === sku);
+          if (item) {
+            const actualQty = isNaN(qtyInputVal) || qtyInputVal <= 0 ? 0 : Math.min(qtyInputVal, item.pendingQty);
 
-            reportDetails.push({
-              txId: txId,
-              tokoAsal: toko,
-              sku: sku,
-              qty: actualQty
-            });
+            if (actualQty > 0) {
+              item.pendingQty = Math.max(0, item.pendingQty - actualQty);
+              item.reportedQty = (item.reportedQty || 0) + actualQty;
+              totalPacks += actualQty;
 
-            window.syncTxToCloud(tx);
+              reportDetails.push({
+                txId: tx.id,
+                tokoAsal: tx.toko,
+                sku: sku,
+                qty: actualQty
+              });
 
-            rowsHTML += `
-              <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-                <td class="p-2.5 border text-center font-medium">${idx + 1}</td>
-                <td class="p-2.5 border font-bold text-indigo-900">${toko}</td>
-                <td class="p-2.5 border font-semibold text-slate-800">${sku}</td>
-                <td class="p-2.5 border text-right font-bold text-indigo-600">
-                  ${actualQty} Bks
-                  <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(actualQty)}</span>
-                </td>
-              </tr>
-            `;
+              window.syncTxToCloud(tx);
+
+              rowsHTML += `
+                <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                  <td class="p-2.5 border text-center font-medium">${idx + 1}</td>
+                  <td class="p-2.5 border font-bold text-indigo-900">${tx.toko}</td>
+                  <td class="p-2.5 border font-semibold text-slate-800">${sku}</td>
+                  <td class="p-2.5 border text-right font-bold text-indigo-600">
+                    ${actualQty} Bks
+                    <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(actualQty)}</span>
+                  </td>
+                </tr>
+              `;
+            }
           }
         }
       });
+
+      if (reportDetails.length === 0) {
+        alert('Gagal memproses barang! Periksa kembali stok pending toko.');
+        return;
+      }
 
       rowsHTML += `
         <tr class="bg-indigo-100 font-bold text-indigo-950">
@@ -1905,25 +1913,13 @@
 
         if (reportToDelete && reportToDelete.items) {
           reportToDelete.items.forEach(repItem => {
-            if (repItem.txId) {
-              const tx = window.transactions.find(t => t.id === repItem.txId);
-              if (tx) {
-                const item = tx.items.find(i => i.product === repItem.sku);
-                if (item) {
-                  item.pendingQty += repItem.qty;
-                  item.reportedQty = Math.max(0, item.reportedQty - repItem.qty);
-                  window.syncTxToCloud(tx);
-                }
-              }
-            } else if (repItem.tokoAsal) {
-              const tx = window.transactions.find(t => t.toko === repItem.tokoAsal);
-              if (tx) {
-                const item = tx.items.find(i => i.product === repItem.sku);
-                if (item) {
-                  item.pendingQty += repItem.qty;
-                  item.reportedQty = Math.max(0, item.reportedQty - repItem.qty);
-                  window.syncTxToCloud(tx);
-                }
+            let tx = window.transactions.find(t => t.id === repItem.txId) || window.transactions.find(t => t.toko === repItem.tokoAsal);
+            if (tx) {
+              let item = tx.items.find(i => i.product === repItem.sku);
+              if (item) {
+                item.pendingQty += repItem.qty;
+                item.reportedQty = Math.max(0, item.reportedQty - repItem.qty);
+                window.syncTxToCloud(tx);
               }
             }
           });
@@ -1933,6 +1929,7 @@
         window.deleteReportFromCloud(id);
 
         renderTransactions();
+        renderStockTable();
         renderReportsHistory();
         renderDailySummaryTable();
         renderProductStoreBreakdown();
