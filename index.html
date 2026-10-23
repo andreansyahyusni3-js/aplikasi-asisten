@@ -6,6 +6,8 @@
   <title>Aplikasi Asisten By Andreansyah - Multi Dashboard System</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- LIBRARY EXPORT EXCEL (SHEETJS) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     body {
       overflow-x: hidden;
@@ -72,7 +74,7 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v6.0
+      v6.2
     </div>
   </aside>
 
@@ -284,14 +286,18 @@
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">Kelola laporan harian, filter tanggal, dan pantau barang keluar hari ini.</p>
         </div>
-        <div class="flex items-center gap-2 no-print">
-          <button onclick="openCustomReportModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2 no-print">
+          <button onclick="openCustomReportModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5">
             <i data-lucide="plus-circle" class="w-4 h-4"></i>
             + Buat Laporan Baru
           </button>
-          <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+          <button onclick="exportReportsToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            Export Excel
+          </button>
+          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5">
             <i data-lucide="printer" class="w-4 h-4"></i>
-            Cetak Laporan
+            Cetak
           </button>
         </div>
       </div>
@@ -365,7 +371,10 @@
         </div>
         <div class="flex flex-wrap items-center gap-2 no-print">
           <input type="date" id="filter-summary-date" onchange="renderDailySummaryTable()" class="px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium">
-          <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+          <button onclick="exportSummaryToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Export Excel
+          </button>
+          <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-900 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5">
             <i data-lucide="printer" class="w-4 h-4"></i> Cetak Ringkasan
           </button>
         </div>
@@ -602,11 +611,11 @@
     </button>
   </div>
 
-  <!-- FIREBASE SDK & SUB-COLLECTIONS ARCHITECTURE -->
+  <!-- FIREBASE SDK & AUTOMATIC MIGRATION SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot 
+      getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -622,7 +631,10 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // KOLEKSI MULTI-DOCUMENT (Bebas Batasan 1MB)
+    // DOKUMEN LAMA (SUMBER DATA LAMA KAMU)
+    const oldDocRef = doc(db, "app_data", "sales_pro_3dash_state");
+
+    // KOLEKSI BARU (SUB-COLLECTIONS)
     const stocksDocRef = doc(db, "app_stocks", "main_stock");
     const txCollectionRef = collection(db, "app_transactions");
     const reportsCollectionRef = collection(db, "app_reports");
@@ -644,7 +656,45 @@
 
     loadFromLocalStorage();
 
-    // SINKRONISASI MODULAR KE SUB-COLLECTIONS
+    // FUNGSI MIGRASI OTOMATIS DARI DOKUMEN LAMA KE SUB-COLLECTION BARU
+    async function checkAndMigrateOldData() {
+      try {
+        const oldSnap = await getDoc(oldDocRef);
+        if (oldSnap.exists()) {
+          console.log("Memulai proses migrasi data lama...");
+          const oldData = oldSnap.data();
+
+          if (oldData.stockData || oldData.monthlyTarget) {
+            await setDoc(stocksDocRef, {
+              stockData: oldData.stockData || {},
+              monthlyTarget: oldData.monthlyTarget || 0,
+              lastActiveDate: oldData.lastActiveDate || new Date().toISOString().split('T')[0],
+              updatedAt: new Date().toISOString()
+            }, { merge: true });
+          }
+
+          if (oldData.transactions && Array.isArray(oldData.transactions)) {
+            for (const tx of oldData.transactions) {
+              await setDoc(doc(txCollectionRef, String(tx.id)), tx);
+            }
+          }
+
+          if (oldData.generatedReports && Array.isArray(oldData.generatedReports)) {
+            for (const rep of oldData.generatedReports) {
+              await setDoc(doc(reportsCollectionRef, String(rep.id)), rep);
+            }
+          }
+
+          console.log("Migrasi Sukses! Seluruh data transaksi kembali.");
+          alert("Berhasil menarik kembali seluruh data transaksi lama Kamu!");
+        }
+      } catch (err) {
+        console.error("Gagal melakukan migrasi data:", err);
+      }
+    }
+
+    checkAndMigrateOldData();
+
     window.syncStockToCloud = async function() {
       updateSyncStatus("saving");
       saveToLocalStorage();
@@ -757,7 +807,6 @@
       }
     }
 
-    // REALTIME LISTENERS PER KOLEKSI
     onSnapshot(stocksDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -816,7 +865,7 @@
     }
   </script>
 
-  <!-- JAVASCRIPT LOGIKA UTAMA -->
+  <!-- JAVASCRIPT LOGIKA UTAMA & EXPORT EXCEL -->
   <script>
     function getIsoDateStr(dateObj) {
       if (!dateObj || isNaN(dateObj.getTime())) return '';
@@ -1694,7 +1743,7 @@
       }
     }
 
-    // DASHBOARD 4 LOGIKA PERHITUNGAN REKAP & SINKRONISASI PENDING DENGAN TABEL 2
+    // DASHBOARD 4 LOGIKA PERHITUNGAN REKAP
     function renderDailySummaryTable() {
       const tbody = document.getElementById('summary-daily-tbody');
       const labelDate = document.getElementById('label-summary-today-date');
@@ -1715,7 +1764,6 @@
         summaryMap[sku] = { keluar: 0, dilaporkan: 0, pendingAkumulasi: 0 };
       });
 
-      // 1. BARANG KELUAR SPESIFIK TANGGAL TARGET
       (window.transactions || []).forEach(tx => {
         let txIso = tx.rawDate;
         if (!txIso && tx.id) txIso = getIsoDateStr(new Date(tx.id));
@@ -1729,7 +1777,6 @@
         }
       });
 
-      // 2. BARANG DILAPORKAN SPESIFIK TANGGAL TARGET
       (window.generatedReports || []).forEach(rep => {
         let repIso = rep.rawDate;
         if (!repIso && rep.id) repIso = getIsoDateStr(new Date(rep.id));
@@ -1743,7 +1790,6 @@
         }
       });
 
-      // 3. PENDING AKUMULASI: SINKRON PRESISI DENGAN TRANSAKSI TOKO AKTIF (TABEL 2)
       window.PRODUCT_LIST.forEach(sku => {
         let totalPendingToko = 0;
         (window.transactions || []).forEach(tx => {
@@ -1860,6 +1906,105 @@
 
       tbody.innerHTML = rowsHTML + totalRowHTML;
       lucide.createIcons();
+    }
+
+    // FUNGSI UTAMA EXPORT EXCEL (DASHBOARD 3 & 4)
+    function exportReportsToExcel() {
+      if (!window.generatedReports || window.generatedReports.length === 0) {
+        alert("Belum ada data laporan yang dapat diexport!");
+        return;
+      }
+
+      const excelData = [];
+      window.generatedReports.forEach((rep, idx) => {
+        (rep.items || []).forEach(item => {
+          excelData.push({
+            "No": idx + 1,
+            "Tanggal Laporan": rep.createdAt || rep.fullDateStr,
+            "Judul / Keterangan Laporan": rep.title,
+            "Toko Asal": item.tokoAsal,
+            "Produk SKU": item.sku,
+            "Jumlah Dilaporkan (Bungkus)": item.qty
+          });
+        });
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Riwayat Laporan");
+
+      const todayStr = getIsoDateStr(new Date());
+      XLSX.writeFile(workbook, `Laporan_Penjualan_Harian_${todayStr}.xlsx`);
+    }
+
+    function exportSummaryToExcel() {
+      const summaryRows = [];
+      const filterSummaryInput = document.getElementById('filter-summary-date');
+      const targetIsoDate = (filterSummaryInput && filterSummaryInput.value) ? filterSummaryInput.value : getIsoDateStr(new Date());
+
+      window.PRODUCT_LIST.forEach((sku, idx) => {
+        let keluar = 0, dilaporkan = 0, pending = 0;
+
+        (window.transactions || []).forEach(tx => {
+          let txIso = tx.rawDate || (tx.id ? getIsoDateStr(new Date(tx.id)) : '');
+          if (txIso === targetIsoDate) {
+            (tx.items || []).forEach(i => {
+              if (i.product === sku) keluar += (i.qty || 0);
+            });
+          }
+          (tx.items || []).forEach(i => {
+            if (i.product === sku) pending += (i.pendingQty || 0);
+          });
+        });
+
+        (window.generatedReports || []).forEach(rep => {
+          let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
+          if (repIso === targetIsoDate) {
+            (rep.items || []).forEach(i => {
+              if (i.sku === sku) dilaporkan += (i.qty || 0);
+            });
+          }
+        });
+
+        summaryRows.push({
+          "No": idx + 1,
+          "Nama Produk SKU": sku,
+          "Keluar Tanggal Ini": keluar,
+          "Dilaporkan Tanggal Ini": dilaporkan,
+          "Total Pending Akumulasi": pending
+        });
+      });
+
+      const storeRows = [];
+      let storeCounter = 1;
+
+      (window.transactions || []).forEach(tx => {
+        (tx.items || []).forEach(i => {
+          if ((i.pendingQty || 0) > 0) {
+            storeRows.push({
+              "No": storeCounter++,
+              "Nama Toko / Outlet": tx.toko,
+              "Produk SKU": i.product,
+              "Total Barang Keluar": i.qty,
+              "Barang Dilaporkan": i.reportedQty,
+              "Sisa Pending": i.pendingQty,
+              "Tanggal Transaksi": tx.createdAt
+            });
+          }
+        });
+      });
+
+      const workbook = XLSX.utils.book_new();
+
+      const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+      XLSX.utils.book_append_sheet(workbook, wsSummary, "Ringkasan Produk");
+
+      if (storeRows.length > 0) {
+        const wsStores = XLSX.utils.json_to_sheet(storeRows);
+        XLSX.utils.book_append_sheet(workbook, wsStores, "Rincian Toko Pending");
+      }
+
+      XLSX.writeFile(workbook, `Rekap_Ringkasan_Penjualan_${targetIsoDate}.xlsx`);
     }
   </script>
 </body>
