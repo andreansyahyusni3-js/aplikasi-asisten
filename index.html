@@ -72,7 +72,7 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v5.2
+      v6.0
     </div>
   </aside>
 
@@ -393,7 +393,7 @@
         </div>
       </div>
 
-      <!-- TABEL 2: RINCIAN TOKO PER PRODUK (BEBAS FILTER TANGGAL, HANYA YANG PENDING > 0) -->
+      <!-- TABEL 2: RINCIAN TOKO PER PRODUK -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b pb-3">
           <div>
@@ -602,10 +602,12 @@
     </button>
   </div>
 
-  <!-- FIREBASE SDK & STATE MANAGEMENT -->
+  <!-- FIREBASE SDK & SUB-COLLECTIONS ARCHITECTURE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    import { 
+      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAjMsxk0__VsFf37h9vyAIBlNDoNwLghUY",
@@ -619,7 +621,11 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const appDocRef = doc(db, "app_data", "sales_pro_3dash_state");
+
+    // KOLEKSI MULTI-DOCUMENT (Bebas Batasan 1MB)
+    const stocksDocRef = doc(db, "app_stocks", "main_stock");
+    const txCollectionRef = collection(db, "app_transactions");
+    const reportsCollectionRef = collection(db, "app_reports");
 
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
@@ -638,25 +644,68 @@
 
     loadFromLocalStorage();
 
-    window.syncToCloud = async function() {
+    // SINKRONISASI MODULAR KE SUB-COLLECTIONS
+    window.syncStockToCloud = async function() {
       updateSyncStatus("saving");
-      
-      const payload = {
-        stockData: window.stockData || {},
-        transactions: window.transactions || [],
-        generatedReports: window.generatedReports || [],
-        monthlyTarget: window.monthlyTarget || 0,
-        lastActiveDate: window.lastActiveDate,
-        updatedAt: new Date().toISOString()
-      };
-
       saveToLocalStorage();
-
       try {
-        await setDoc(appDocRef, payload, { merge: true });
+        await setDoc(stocksDocRef, {
+          stockData: window.stockData || {},
+          monthlyTarget: window.monthlyTarget || 0,
+          lastActiveDate: window.lastActiveDate,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
         updateSyncStatus("connected");
       } catch (err) {
-        console.error("Gagal simpan ke Firebase:", err);
+        console.error("Gagal simpan stok ke Cloud:", err);
+        updateSyncStatus("error");
+      }
+    };
+
+    window.syncTxToCloud = async function(txObj) {
+      updateSyncStatus("saving");
+      saveToLocalStorage();
+      try {
+        await setDoc(doc(txCollectionRef, String(txObj.id)), txObj);
+        updateSyncStatus("connected");
+      } catch (err) {
+        console.error("Gagal simpan transaksi ke Cloud:", err);
+        updateSyncStatus("error");
+      }
+    };
+
+    window.deleteTxFromCloud = async function(txId) {
+      updateSyncStatus("saving");
+      saveToLocalStorage();
+      try {
+        await deleteDoc(doc(txCollectionRef, String(txId)));
+        updateSyncStatus("connected");
+      } catch (err) {
+        console.error("Gagal hapus transaksi di Cloud:", err);
+        updateSyncStatus("error");
+      }
+    };
+
+    window.syncReportToCloud = async function(repObj) {
+      updateSyncStatus("saving");
+      saveToLocalStorage();
+      try {
+        await setDoc(doc(reportsCollectionRef, String(repObj.id)), repObj);
+        updateSyncStatus("connected");
+      } catch (err) {
+        console.error("Gagal simpan laporan ke Cloud:", err);
+        updateSyncStatus("error");
+      }
+    };
+
+    window.deleteReportFromCloud = async function(repId) {
+      updateSyncStatus("saving");
+      saveToLocalStorage();
+      try {
+        await deleteDoc(doc(reportsCollectionRef, String(repId)));
+        updateSyncStatus("connected");
+      } catch (err) {
+        console.error("Gagal hapus laporan di Cloud:", err);
         updateSyncStatus("error");
       }
     };
@@ -708,25 +757,42 @@
       }
     }
 
-    onSnapshot(appDocRef, (docSnap) => {
+    // REALTIME LISTENERS PER KOLEKSI
+    onSnapshot(stocksDocRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.stockData) window.stockData = data.stockData;
-        if (data.transactions) window.transactions = data.transactions;
-        if (data.generatedReports) window.generatedReports = data.generatedReports;
         if (data.monthlyTarget !== undefined) window.monthlyTarget = data.monthlyTarget;
         if (data.lastActiveDate) window.lastActiveDate = data.lastActiveDate;
-
         saveToLocalStorage();
       }
-
       initStockData();
       renderAllViews();
       updateSyncStatus("connected");
-    }, (err) => {
-      console.warn("Koneksi Firebase gagal, menggunakan mode lokal:", err);
-      updateSyncStatus("error");
+    });
+
+    onSnapshot(txCollectionRef, (snapshot) => {
+      let loadedTx = [];
+      snapshot.forEach(doc => {
+        loadedTx.push(doc.data());
+      });
+      loadedTx.sort((a, b) => b.id - a.id);
+      window.transactions = loadedTx;
+      saveToLocalStorage();
       renderAllViews();
+      updateSyncStatus("connected");
+    });
+
+    onSnapshot(reportsCollectionRef, (snapshot) => {
+      let loadedReps = [];
+      snapshot.forEach(doc => {
+        loadedReps.push(doc.data());
+      });
+      loadedReps.sort((a, b) => b.id - a.id);
+      window.generatedReports = loadedReps;
+      saveToLocalStorage();
+      renderAllViews();
+      updateSyncStatus("connected");
     });
 
     function renderAllViews() {
@@ -780,7 +846,7 @@
       const val = parseInt(document.getElementById('input-monthly-target').value, 10);
       window.monthlyTarget = isNaN(val) ? 0 : val;
       closeModal('modal-target');
-      window.syncToCloud();
+      window.syncStockToCloud();
       renderStockTable();
     }
 
@@ -928,7 +994,7 @@
       window.stockData[window.selectedStockSku].initial = val;
 
       closeModal('modal-edit-stock');
-      window.syncToCloud();
+      window.syncStockToCloud();
       renderStockTable();
     }
 
@@ -955,7 +1021,7 @@
       window.stockData[window.selectedStockSku].added = (window.stockData[window.selectedStockSku].added || 0) + changeVal;
 
       closeModal('modal-add-stock');
-      window.syncToCloud();
+      window.syncStockToCloud();
       renderStockTable();
     }
 
@@ -964,7 +1030,7 @@
         window.PRODUCT_LIST.forEach(sku => {
           window.stockData[sku] = { initial: 0, added: 0 };
         });
-        window.syncToCloud();
+        window.syncStockToCloud();
         renderStockTable();
       }
     }
@@ -975,7 +1041,7 @@
       window.editingTxId = null;
     }
 
-    // DASHBOARD 2 LOGIKA BARANG KELUAR PER TOKO & EDIT RINCIAN
+    // DASHBOARD 2 LOGIKA BARANG KELUAR PER TOKO
     function addToCart() {
       const product = document.getElementById('select-produk').value;
       const qtyInput = document.getElementById('input-jumlah');
@@ -1071,7 +1137,7 @@
       window.cart = [];
 
       renderCartUI();
-      window.syncToCloud();
+      window.syncTxToCloud(newTx);
       renderTransactions();
       renderStockTable();
       renderDailySummaryTable();
@@ -1185,7 +1251,7 @@
       item.qty = newQty;
       item.pendingQty = item.qty - item.reportedQty;
 
-      window.syncToCloud();
+      window.syncTxToCloud(tx);
       renderTransactions();
       renderStockTable();
       renderDailySummaryTable();
@@ -1204,7 +1270,7 @@
 
       if (confirm(`Hapus ${item.product} dari transaksi toko ${tx.toko}?`)) {
         tx.items.splice(itemIdx, 1);
-        window.syncToCloud();
+        window.syncTxToCloud(tx);
         renderModalEditItems();
         renderTransactions();
         renderStockTable();
@@ -1239,7 +1305,7 @@
       }
 
       document.getElementById('modal-add-prod-qty').value = '';
-      window.syncToCloud();
+      window.syncTxToCloud(tx);
       renderModalEditItems();
       renderTransactions();
       renderStockTable();
@@ -1250,7 +1316,7 @@
     function deleteTx(id) {
       if (confirm('Hapus seluruh transaksi toko ini? Seluruh sisa barang yang pending akan dikembalikan ke Stok Utama.')) {
         window.transactions = window.transactions.filter(t => t.id !== id);
-        window.syncToCloud();
+        window.deleteTxFromCloud(id);
         renderTransactions();
         renderStockTable();
         renderDailySummaryTable();
@@ -1404,6 +1470,8 @@
               qty: actualQty
             });
 
+            window.syncTxToCloud(tx);
+
             rowsHTML += `
               <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
                 <td class="p-2.5 border text-center font-medium">${idx + 1}</td>
@@ -1430,7 +1498,7 @@
       const now = new Date();
       const isoDate = getIsoDateStr(now);
 
-      window.generatedReports.unshift({
+      const newReport = {
         id: Date.now(),
         title: titleInput,
         items: reportDetails,
@@ -1438,11 +1506,13 @@
         rawDate: isoDate,
         createdAt: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
         fullDateStr: now.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
-      });
+      };
+
+      window.generatedReports.unshift(newReport);
+      window.syncReportToCloud(newReport);
 
       closeModal('modal-custom-report');
 
-      window.syncToCloud();
       renderTransactions();
       renderStockTable();
       renderReportsHistory();
@@ -1597,6 +1667,7 @@
                 if (item) {
                   item.pendingQty += repItem.qty;
                   item.reportedQty = Math.max(0, item.reportedQty - repItem.qty);
+                  window.syncTxToCloud(tx);
                 }
               }
             } else if (repItem.tokoAsal) {
@@ -1606,6 +1677,7 @@
                 if (item) {
                   item.pendingQty += repItem.qty;
                   item.reportedQty = Math.max(0, item.reportedQty - repItem.qty);
+                  window.syncTxToCloud(tx);
                 }
               }
             }
@@ -1613,7 +1685,8 @@
         }
 
         window.generatedReports = window.generatedReports.filter(r => r.id !== id);
-        window.syncToCloud();
+        window.deleteReportFromCloud(id);
+
         renderTransactions();
         renderReportsHistory();
         renderDailySummaryTable();
@@ -1670,7 +1743,7 @@
         }
       });
 
-      // 3. PENDING AKUMULASI: LANGSUNG MENAMPUK DARI TRANSAKSI TOKO AKTIF (PERSISI SAMA DENGAN TABEL 2)
+      // 3. PENDING AKUMULASI: SINKRON PRESISI DENGAN TRANSAKSI TOKO AKTIF (TABEL 2)
       window.PRODUCT_LIST.forEach(sku => {
         let totalPendingToko = 0;
         (window.transactions || []).forEach(tx => {
@@ -1717,7 +1790,7 @@
       lucide.createIcons();
     }
 
-    // DASHBOARD 4 LOGIKA RINCIAN SEBARAN TOKO PER PRODUK (REAL-TIME AKUMULASI, BEBAS FILTER TANGGAL, PENDING > 0)
+    // DASHBOARD 4 LOGIKA RINCIAN SEBARAN TOKO PER PRODUK
     function renderProductStoreBreakdown() {
       const tbody = document.getElementById('store-breakdown-tbody');
       const selectBreakdown = document.getElementById('select-product-breakdown');
