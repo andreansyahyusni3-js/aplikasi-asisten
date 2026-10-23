@@ -8,6 +8,8 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- LIBRARY EXPORT EXCEL (SHEETJS) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <!-- LIBRARY GRAFIK (CHART.JS) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
       overflow-x: hidden;
@@ -74,7 +76,7 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v6.2
+      v6.4
     </div>
   </aside>
 
@@ -97,15 +99,15 @@
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
 
-    <!-- DASHBOARD 1: MENYIMPAN STOK -->
+    <!-- DASHBOARD 1: MENYIMPAN STOK & GRAFIK -->
     <section id="tab-stok" class="block space-y-6">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
             <i data-lucide="boxes" class="w-6 h-6 text-red-600"></i>
-            Dashboard 1: Penyimpanan & Kelola Stok
+            Dashboard 1: Penyimpanan, Kelola Stok & Grafik Tren
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, atur target penjualan, koreksi stok, dan pantau sisa stok real-time.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, atur target penjualan, koreksi stok, pantau sisa stok dan grafik performa real-time.</p>
         </div>
         <button onclick="resetAllStock()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
           <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Semua Stok
@@ -133,14 +135,17 @@
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
             <p class="text-[10px] font-bold text-slate-500 uppercase">Target Bulan Ini</p>
             <p id="widget-target-val" class="text-lg font-bold text-slate-800 mt-0.5">0 Bungkus</p>
+            <p id="widget-target-detail" class="text-[10px] text-slate-500 font-medium mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
             <p class="text-[10px] font-bold text-slate-500 uppercase">Pencapaian Penjualan</p>
             <p id="widget-achieved-val" class="text-lg font-bold text-emerald-600 mt-0.5">0 Bungkus</p>
+            <p id="widget-achieved-detail" class="text-[10px] text-emerald-600/80 font-medium mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
           <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
             <p class="text-[10px] font-bold text-slate-500 uppercase">Kekurangan Target</p>
             <p id="widget-remaining-val" class="text-lg font-bold text-amber-600 mt-0.5">0 Bungkus</p>
+            <p id="widget-remaining-detail" class="text-[10px] text-amber-600/80 font-medium mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
         </div>
 
@@ -160,7 +165,7 @@
           <div>
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Barang Keluar (Toko)</p>
             <h3 id="stat-stock-out" class="text-2xl font-bold text-amber-600 mt-1">0 Bungkus</h3>
-            <p class="text-[10px] text-slate-400 mt-0.5">Dikeluarkan ke Toko</p>
+            <p id="stat-stock-out-detail" class="text-[11px] text-amber-600/80 font-semibold mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
           <div class="bg-amber-100 p-3 rounded-xl text-amber-600">
             <i data-lucide="shopping-bag" class="w-6 h-6"></i>
@@ -171,10 +176,41 @@
           <div>
             <p class="text-xs font-semibold text-red-200 uppercase tracking-wider">Sisa Stok Siap Keluar</p>
             <h3 id="stat-stock-remaining" class="text-2xl font-black text-white mt-1">0 Bungkus</h3>
-            <p class="text-[10px] text-red-300 mt-0.5">Siap didistribusikan</p>
+            <p id="stat-stock-remaining-detail" class="text-[11px] text-red-200 font-semibold mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
           <div class="bg-red-800/50 p-3 rounded-xl text-red-100 border border-red-700/50">
             <i data-lucide="package-check" class="w-6 h-6"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRAFIK TREN (TAHAP 3) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- GRAFIK 1: PENJUALAN HARIAN PER PRODUK -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+              <i data-lucide="bar-chart-3" class="w-4 h-4 text-red-600"></i>
+              Grafik 1: Penjualan Produk Hari Ini
+            </h3>
+            <span class="text-[10px] bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-md border border-red-100">Satuan Bungkus</span>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartDailyProducts"></canvas>
+          </div>
+        </div>
+
+        <!-- GRAFIK 2: TREN PENJUALAN BULANAN -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div class="flex justify-between items-center border-b pb-2">
+            <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5 uppercase tracking-wider">
+              <i data-lucide="trending-up" class="w-4 h-4 text-emerald-600"></i>
+              Grafik 2: Tren Pencapaian Target Bulanan
+            </h3>
+            <span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-md border border-emerald-100">Tahun 2026</span>
+          </div>
+          <div class="relative h-64 w-full">
+            <canvas id="chartMonthlyTrend"></canvas>
           </div>
         </div>
       </div>
@@ -185,7 +221,7 @@
             <i data-lucide="list-checks" class="w-4 h-4 text-red-600"></i>
             Rincian Stok Per Jenis Rokok (SKU)
           </h3>
-          <span class="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-full">Satuan: Bungkus</span>
+          <span class="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-full">Format: Bungkus & (Kemasan)</span>
         </div>
 
         <div class="overflow-x-auto">
@@ -284,7 +320,7 @@
             <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i>
             Dashboard 3: Pelaporan Harian
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Kelola laporan harian, filter tanggal, dan pantau barang keluar hari ini.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Kelola laporan harian, filter rentang tanggal, dan pantau barang keluar.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2 no-print">
           <button onclick="openCustomReportModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5">
@@ -310,6 +346,7 @@
           <div>
             <p class="text-xs font-semibold text-indigo-200 uppercase tracking-wider">Total Barang Keluar Hari Ini</p>
             <h3 id="stat-today-out" class="text-2xl font-black mt-0.5">0 Bungkus</h3>
+            <p id="stat-today-out-detail" class="text-xs text-indigo-200 font-medium">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
         </div>
         <div class="text-right sm:text-right w-full sm:w-auto border-t sm:border-t-0 border-indigo-600/50 pt-2 sm:pt-0">
@@ -334,7 +371,7 @@
                 <th class="p-2.5 border">No</th>
                 <th class="p-2.5 border">Nama Toko Asal Barang</th>
                 <th class="p-2.5 border">Produk SKU</th>
-                <th class="p-2.5 border text-right">Jumlah Dilaporkan (Bungkus)</th>
+                <th class="p-2.5 border text-right">Jumlah Dilaporkan</th>
               </tr>
             </thead>
             <tbody id="custom-report-tbody"></tbody>
@@ -343,15 +380,17 @@
       </div>
 
       <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b pb-3">
           <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
             <i data-lucide="history" class="w-4 h-4 text-indigo-600"></i>
             Riwayat Laporan Terkelompok Per Tanggal
           </h3>
-          <div class="flex items-center gap-2 no-print">
-            <label class="text-xs font-semibold text-slate-600">Filter Tanggal:</label>
-            <input type="date" id="filter-report-date" onchange="renderReportsHistory()" class="px-3 py-1.5 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-medium">
-            <button onclick="resetDateFilter()" class="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg border border-slate-300 transition">Semua</button>
+          <div class="flex flex-wrap items-center gap-2 no-print">
+            <span class="text-xs font-semibold text-slate-600">Rentang:</span>
+            <input type="date" id="filter-report-start-date" onchange="renderReportsHistory()" class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-medium">
+            <span class="text-xs text-slate-400">s/d</span>
+            <input type="date" id="filter-report-end-date" onchange="renderReportsHistory()" class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-slate-50 font-medium">
+            <button onclick="resetDateFilter()" class="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-lg border border-slate-300 transition">Reset</button>
           </div>
         </div>
 
@@ -370,7 +409,11 @@
           <p class="text-xs text-slate-500 mt-0.5">Mempertahankan riwayat tanggal, carry forward pending, dan rincian sebaran toko per SKU.</p>
         </div>
         <div class="flex flex-wrap items-center gap-2 no-print">
-          <input type="date" id="filter-summary-date" onchange="renderDailySummaryTable()" class="px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium">
+          <span class="text-xs font-semibold text-slate-600">Rentang:</span>
+          <input type="date" id="filter-summary-start-date" onchange="renderDailySummaryTable()" class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium">
+          <span class="text-xs text-slate-400">s/d</span>
+          <input type="date" id="filter-summary-end-date" onchange="renderDailySummaryTable()" class="px-2.5 py-1.5 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-medium">
+          <button onclick="resetSummaryDateFilter()" class="px-2.5 py-1.5 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl border border-slate-300 transition">Reset</button>
           <button onclick="exportSummaryToExcel()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-2 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-1.5">
             <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Export Excel
           </button>
@@ -392,8 +435,8 @@
               <tr>
                 <th class="p-3 border border-slate-200 text-center">No</th>
                 <th class="p-3 border border-slate-200">Nama Barang</th>
-                <th class="p-3 border border-slate-200 text-right text-amber-700">Barang Keluar Tanggal Ini</th>
-                <th class="p-3 border border-slate-200 text-right text-emerald-700">Barang Sudah Dilaporkan</th>
+                <th class="p-3 border border-slate-200 text-right text-amber-700">Barang Keluar (Periode)</th>
+                <th class="p-3 border border-slate-200 text-right text-emerald-700">Barang Sudah Dilaporkan (Periode)</th>
                 <th class="p-3 border border-slate-200 text-right text-indigo-700">Barang Pending Akumulasi</th>
               </tr>
             </thead>
@@ -631,10 +674,8 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // DOKUMEN LAMA (SUMBER DATA LAMA KAMU)
     const oldDocRef = doc(db, "app_data", "sales_pro_3dash_state");
 
-    // KOLEKSI BARU (SUB-COLLECTIONS)
     const stocksDocRef = doc(db, "app_stocks", "main_stock");
     const txCollectionRef = collection(db, "app_transactions");
     const reportsCollectionRef = collection(db, "app_reports");
@@ -656,7 +697,6 @@
 
     loadFromLocalStorage();
 
-    // FUNGSI MIGRASI OTOMATIS DARI DOKUMEN LAMA KE SUB-COLLECTION BARU
     async function checkAndMigrateOldData() {
       try {
         const oldSnap = await getDoc(oldDocRef);
@@ -853,6 +893,7 @@
       if (typeof renderReportsHistory === 'function') renderReportsHistory();
       if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
       if (typeof renderProductStoreBreakdown === 'function') renderProductStoreBreakdown();
+      if (typeof renderCharts === 'function') renderCharts();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
@@ -865,8 +906,33 @@
     }
   </script>
 
-  <!-- JAVASCRIPT LOGIKA UTAMA & EXPORT EXCEL -->
+  <!-- JAVASCRIPT LOGIKA UTAMA, KONVERSI KEMASAN & GRAFIK -->
   <script>
+    let chart1Instance = null;
+    let chart2Instance = null;
+
+    // FUNGSI UTAMA KONVERSI DUS, BAL, SLOP, BKS
+    function formatPackToKemasan(totalBungkus) {
+      if (!totalBungkus || totalBungkus <= 0) return '0 Dus 0 Bal 0 Slop 0 Bks';
+      
+      const dus = Math.floor(totalBungkus / 800);
+      let sisa = totalBungkus % 800;
+      
+      const bal = Math.floor(sisa / 200);
+      sisa = sisa % 200;
+      
+      const slop = Math.floor(sisa / 10);
+      const bks = sisa % 10;
+      
+      let result = [];
+      if (dus > 0) result.push(`${dus} Dus`);
+      if (bal > 0) result.push(`${bal} Bal`);
+      if (slop > 0) result.push(`${slop} Slop`);
+      if (bks > 0 || result.length === 0) result.push(`${bks} Bks`);
+      
+      return result.join(' ');
+    }
+
     function getIsoDateStr(dateObj) {
       if (!dateObj || isNaN(dateObj.getTime())) return '';
       const year = dateObj.getFullYear();
@@ -876,14 +942,7 @@
     }
 
     function setDefaultFilterToday() {
-      const filterInput = document.getElementById('filter-report-date');
-      if (filterInput && !filterInput.value) {
-        filterInput.value = getIsoDateStr(new Date());
-      }
-      const filterSummary = document.getElementById('filter-summary-date');
-      if (filterSummary && !filterSummary.value) {
-        filterSummary.value = getIsoDateStr(new Date());
-      }
+      // Tidak mengunci tanggal tunggal agar luas saat date-range
     }
 
     function openTargetModal() {
@@ -924,6 +983,7 @@
 
       if (tabName === 'stok') {
         renderStockTable();
+        renderCharts();
       } else if (tabName === 'omzet') {
         renderTransactions();
       } else if (tabName === 'laporan') {
@@ -947,6 +1007,100 @@
       });
 
       lucide.createIcons();
+    }
+
+    // RENDER GRAFIK TREN (TAHAP 3)
+    function renderCharts() {
+      const todayIso = getIsoDateStr(new Date());
+
+      // 1. DATA GRAFIK 1: PRODUK TERJUAL HARI INI
+      let todaySalesPerSku = {};
+      window.PRODUCT_LIST.forEach(sku => todaySalesPerSku[sku] = 0);
+
+      (window.transactions || []).forEach(tx => {
+        let txIso = tx.rawDate || (tx.id ? getIsoDateStr(new Date(tx.id)) : '');
+        if (txIso === todayIso) {
+          (tx.items || []).forEach(item => {
+            if (todaySalesPerSku[item.product] !== undefined) {
+              todaySalesPerSku[item.product] += (item.qty || 0);
+            }
+          });
+        }
+      });
+
+      const chart1Labels = window.PRODUCT_LIST;
+      const chart1Data = window.PRODUCT_LIST.map(sku => todaySalesPerSku[sku]);
+
+      const ctx1 = document.getElementById('chartDailyProducts');
+      if (ctx1) {
+        if (chart1Instance) chart1Instance.destroy();
+        chart1Instance = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels: chart1Labels,
+            datasets: [{
+              label: 'Bungkus Terjual Hari Ini',
+              data: chart1Data,
+              backgroundColor: '#dc2626',
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+          }
+        });
+      }
+
+      // 2. DATA GRAFIK 2: TREN PENJUALAN BULANAN (JAN - DES)
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
+      let monthlyPacks = new Array(12).fill(0);
+
+      (window.transactions || []).forEach(tx => {
+        let dateObj = tx.id ? new Date(tx.id) : null;
+        if (dateObj && !isNaN(dateObj.getTime())) {
+          const mIdx = dateObj.getMonth();
+          const totalInTx = (tx.items || []).reduce((sum, i) => sum + (i.qty || 0), 0);
+          monthlyPacks[mIdx] += totalInTx;
+        }
+      });
+
+      const ctx2 = document.getElementById('chartMonthlyTrend');
+      if (ctx2) {
+        if (chart2Instance) chart2Instance.destroy();
+        chart2Instance = new Chart(ctx2, {
+          type: 'line',
+          data: {
+            labels: months,
+            datasets: [{
+              label: 'Penjualan Bulanan (Bungkus)',
+              data: monthlyPacks,
+              borderColor: '#059669',
+              backgroundColor: 'rgba(5, 150, 105, 0.1)',
+              fill: true,
+              tension: 0.3,
+              pointRadius: 4,
+              pointBackgroundColor: '#059669'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false }
+            },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } }
+            }
+          }
+        });
+      }
     }
 
     // DASHBOARD 1 LOGIKA STOK & TARGET BULANAN
@@ -979,10 +1133,22 @@
           <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
             <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
             <td class="p-3 border border-slate-200 font-bold text-slate-800">${sku}</td>
-            <td class="p-3 border border-slate-200 text-right font-medium text-slate-700">${initial}</td>
-            <td class="p-3 border border-slate-200 text-right font-medium ${added >= 0 ? 'text-blue-600' : 'text-red-600'}">${added > 0 ? '+' + added : added}</td>
-            <td class="p-3 border border-slate-200 text-right font-medium text-amber-600">${out}</td>
-            <td class="p-3 border border-slate-200 text-right font-bold ${remaining < 0 ? 'text-red-600' : 'text-slate-900'}">${remaining}</td>
+            <td class="p-3 border border-slate-200 text-right font-medium text-slate-700">
+              ${initial} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(initial)}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-right font-medium ${added >= 0 ? 'text-blue-600' : 'text-red-600'}">
+              ${added > 0 ? '+' + added : added} Bks
+              <span class="text-[10px] block font-normal opacity-80">${formatPackToKemasan(Math.abs(added))}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-right font-medium text-amber-600">
+              ${out} Bks
+              <span class="text-[10px] text-amber-600/80 block font-normal">${formatPackToKemasan(out)}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-right font-bold ${remaining < 0 ? 'text-red-600' : 'text-slate-900'}">
+              ${remaining} Bks
+              <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(remaining)}</span>
+            </td>
             <td class="p-3 border border-slate-200 text-center">
               <div class="flex items-center justify-center gap-1.5">
                 <button onclick="openAddStockModal('${sku}')" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-[11px] font-bold transition flex items-center gap-1">
@@ -1000,15 +1166,23 @@
       tbody.innerHTML = rowsHTML;
 
       document.getElementById('stat-stock-out').textContent = `${grandOut} Bungkus`;
+      document.getElementById('stat-stock-out-detail').textContent = formatPackToKemasan(grandOut);
+
       document.getElementById('stat-stock-remaining').textContent = `${grandRemaining} Bungkus`;
+      document.getElementById('stat-stock-remaining-detail').textContent = formatPackToKemasan(grandRemaining);
 
-      document.getElementById('widget-target-val').textContent = `${(window.monthlyTarget || 0).toLocaleString('id-ID')} Bungkus`;
+      const targetVal = window.monthlyTarget || 0;
+      document.getElementById('widget-target-val').textContent = `${targetVal.toLocaleString('id-ID')} Bungkus`;
+      document.getElementById('widget-target-detail').textContent = formatPackToKemasan(targetVal);
+
       document.getElementById('widget-achieved-val').textContent = `${grandOut.toLocaleString('id-ID')} Bungkus`;
+      document.getElementById('widget-achieved-detail').textContent = formatPackToKemasan(grandOut);
 
-      const remainingTarget = Math.max(0, (window.monthlyTarget || 0) - grandOut);
+      const remainingTarget = Math.max(0, targetVal - grandOut);
       document.getElementById('widget-remaining-val').textContent = `${remainingTarget.toLocaleString('id-ID')} Bungkus`;
+      document.getElementById('widget-remaining-detail').textContent = formatPackToKemasan(remainingTarget);
 
-      const percent = window.monthlyTarget > 0 ? Math.min(100, Math.round((grandOut / window.monthlyTarget) * 100)) : 0;
+      const percent = targetVal > 0 ? Math.min(100, Math.round((grandOut / targetVal) * 100)) : 0;
       document.getElementById('widget-target-percent').textContent = `${percent}%`;
 
       const bar = document.getElementById('widget-target-bar');
@@ -1140,7 +1314,10 @@
             <span class="font-bold text-slate-800">${item.product}</span>
           </div>
           <div class="flex items-center gap-3">
-            <span class="font-semibold text-slate-600 bg-slate-100 px-2 py-1 rounded-md">${item.qty} Bungkus</span>
+            <div class="text-right">
+              <span class="font-semibold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md block">${item.qty} Bungkus</span>
+              <span class="text-[10px] text-slate-400 block">${formatPackToKemasan(item.qty)}</span>
+            </div>
             <button onclick="removeFromCart(${idx})" class="text-red-500 hover:text-red-700">
               <i data-lucide="trash-2" class="w-4 h-4"></i>
             </button>
@@ -1191,6 +1368,7 @@
       renderStockTable();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderCharts();
     }
 
     function renderTransactions() {
@@ -1227,7 +1405,10 @@
             <div class="bg-white rounded-lg border border-slate-200 p-2.5 space-y-1.5 text-xs">
               ${t.items.map(item => `
                 <div class="flex justify-between items-center py-1 border-b border-slate-100 last:border-none">
-                  <span class="font-semibold text-slate-700">${item.product}</span>
+                  <div>
+                    <span class="font-semibold text-slate-700 block">${item.product}</span>
+                    <span class="text-[10px] text-slate-400 block">${formatPackToKemasan(item.qty)}</span>
+                  </div>
                   <div class="flex items-center gap-2">
                     <span class="text-slate-500">Total: ${item.qty} Bks</span>
                     <span class="text-amber-600 font-bold">(Pending: ${item.pendingQty})</span>
@@ -1238,7 +1419,7 @@
             </div>
 
             <div class="flex justify-between items-center pt-1">
-              <span class="text-xs text-slate-500 font-medium">Total: <b>${totalItemsInTx} Bungkus</b></span>
+              <span class="text-xs text-slate-500 font-medium">Total: <b>${totalItemsInTx} Bungkus</b> (${formatPackToKemasan(totalItemsInTx)})</span>
               <button onclick="deleteTx(${t.id})" class="text-slate-400 hover:text-red-600 transition flex items-center gap-1 text-xs">
                 <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Seluruh Transaksi
               </button>
@@ -1305,6 +1486,7 @@
       renderStockTable();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderCharts();
     }
 
     function removeItemFromTx(itemIdx) {
@@ -1325,6 +1507,7 @@
         renderStockTable();
         renderDailySummaryTable();
         renderProductStoreBreakdown();
+        renderCharts();
       }
     }
 
@@ -1360,6 +1543,7 @@
       renderStockTable();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderCharts();
     }
 
     function deleteTx(id) {
@@ -1370,10 +1554,11 @@
         renderStockTable();
         renderDailySummaryTable();
         renderProductStoreBreakdown();
+        renderCharts();
       }
     }
 
-    // DASHBOARD 3 LOGIKA PELAPORAN
+    // DASHBOARD 3 LOGIKA PELAPORAN & RENTANG TANGGAL
     function openCustomReportModal() {
       const listContainer = document.getElementById('custom-items-selection-list');
       if (!listContainer) return;
@@ -1407,7 +1592,7 @@
                       <input type="checkbox" id="${checkboxId}" data-txid="${tx.id}" data-itemidx="${itemIdx}" data-toko="${tx.toko}" data-sku="${item.product}" data-inputid="${inputQtyId}" onchange="updateSelectedItemsSummary()" class="custom-item-chk rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
                       <span class="font-bold text-slate-800">${item.product}</span>
                     </div>
-                    <span class="text-[10px] text-amber-600 font-bold">Tersisa Di Toko: <b>${item.pendingQty} Bks</b></span>
+                    <span class="text-[10px] text-amber-600 font-bold">Pending: <b>${item.pendingQty} Bks</b></span>
                   </label>
 
                   <div class="flex items-center gap-2 pt-1 border-t border-slate-200/60">
@@ -1465,7 +1650,7 @@
       Object.keys(totalsPerSku).forEach(sku => {
         summaryHTML += `
           <span class="bg-indigo-600 text-white text-[11px] font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 shadow-sm">
-            ${sku}: <b>${totalsPerSku[sku]} Bks</b>
+            ${sku}: <b>${totalsPerSku[sku]} Bks</b> (${formatPackToKemasan(totalsPerSku[sku])})
           </span>
         `;
       });
@@ -1526,7 +1711,10 @@
                 <td class="p-2.5 border text-center font-medium">${idx + 1}</td>
                 <td class="p-2.5 border font-bold text-indigo-900">${toko}</td>
                 <td class="p-2.5 border font-semibold text-slate-800">${sku}</td>
-                <td class="p-2.5 border text-right font-bold text-indigo-600">${actualQty} Bungkus</td>
+                <td class="p-2.5 border text-right font-bold text-indigo-600">
+                  ${actualQty} Bks
+                  <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(actualQty)}</span>
+                </td>
               </tr>
             `;
           }
@@ -1536,7 +1724,10 @@
       rowsHTML += `
         <tr class="bg-indigo-100 font-bold text-indigo-950">
           <td colspan="3" class="p-2.5 border text-center">TOTAL DILAPORKAN</td>
-          <td class="p-2.5 border text-right text-indigo-700 text-sm">${totalPacks} Bungkus</td>
+          <td class="p-2.5 border text-right text-indigo-700 text-sm">
+            ${totalPacks} Bungkus
+            <span class="text-[10px] text-indigo-900 block font-normal">${formatPackToKemasan(totalPacks)}</span>
+          </td>
         </tr>
       `;
 
@@ -1567,6 +1758,7 @@
       renderReportsHistory();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderCharts();
     }
 
     function closeCustomPreview() {
@@ -1574,16 +1766,16 @@
     }
 
     function resetDateFilter() {
-      const filterInput = document.getElementById('filter-report-date');
-      if (filterInput) filterInput.value = '';
+      document.getElementById('filter-report-start-date').value = '';
+      document.getElementById('filter-report-end-date').value = '';
       renderReportsHistory();
     }
 
     function renderReportsHistory() {
       const container = document.getElementById('reports-history-container');
       const todayStatEl = document.getElementById('stat-today-out');
+      const todayDetailEl = document.getElementById('stat-today-out-detail');
       const todayDateEl = document.getElementById('widget-today-date');
-      const filterInput = document.getElementById('filter-report-date');
 
       if (!container) return;
 
@@ -1595,31 +1787,38 @@
 
       let todayPacks = 0;
       (window.generatedReports || []).forEach(rep => {
-        let repIso = rep.rawDate;
-        if (!repIso && rep.id) {
-          repIso = getIsoDateStr(new Date(rep.id));
-        }
+        let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
         if (repIso === todayIso) {
           todayPacks += (rep.totalPacks || 0);
         }
       });
       if (todayStatEl) todayStatEl.textContent = `${todayPacks.toLocaleString('id-ID')} Bungkus`;
+      if (todayDetailEl) todayDetailEl.textContent = formatPackToKemasan(todayPacks);
 
-      const selectedFilter = filterInput ? filterInput.value : '';
+      const startDate = document.getElementById('filter-report-start-date').value;
+      const endDate = document.getElementById('filter-report-end-date').value;
+
       let filteredReports = (window.generatedReports || []);
 
-      if (selectedFilter) {
+      if (startDate && endDate) {
         filteredReports = filteredReports.filter(rep => {
-          let repIso = rep.rawDate;
-          if (!repIso && rep.id) {
-            repIso = getIsoDateStr(new Date(rep.id));
-          }
-          return repIso === selectedFilter;
+          let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
+          return repIso >= startDate && repIso <= endDate;
+        });
+      } else if (startDate) {
+        filteredReports = filteredReports.filter(rep => {
+          let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
+          return repIso >= startDate;
+        });
+      } else if (endDate) {
+        filteredReports = filteredReports.filter(rep => {
+          let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
+          return repIso <= endDate;
         });
       }
 
       if (filteredReports.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Tidak ada riwayat laporan yang ditemukan pada tanggal ini.</p>`;
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-8">Tidak ada riwayat laporan yang ditemukan pada rentang tanggal ini.</p>`;
         return;
       }
 
@@ -1627,10 +1826,7 @@
       const dateOrder = [];
 
       filteredReports.forEach(rep => {
-        let repIso = rep.rawDate;
-        if (!repIso && rep.id) {
-          repIso = getIsoDateStr(new Date(rep.id));
-        }
+        let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
         
         let dateKey = rep.fullDateStr;
         if (!dateKey && rep.id) {
@@ -1662,7 +1858,7 @@
                 <i data-lucide="calendar" class="w-4 h-4 text-indigo-600"></i> ${groupObj.label}
               </span>
               <span class="text-xs bg-indigo-200 text-indigo-900 font-bold px-2.5 py-0.5 rounded-full">
-                Total Hari Ini: ${groupTotalPacks.toLocaleString('id-ID')} Bungkus
+                Total Hari Ini: ${groupTotalPacks.toLocaleString('id-ID')} Bungkus (${formatPackToKemasan(groupTotalPacks)})
               </span>
             </div>
 
@@ -1688,7 +1884,7 @@
                     ${rep.items.map(i => `
                       <div class="flex justify-between items-center border-b border-slate-100 pb-1 last:border-none">
                         <span class="text-slate-700 font-medium">${i.tokoAsal} &bull; <b>${i.sku}</b></span>
-                        <span class="font-bold text-indigo-600">${i.qty} Bks</span>
+                        <span class="font-bold text-indigo-600">${i.qty} Bks <i class="text-[10px] font-normal text-slate-400">(${formatPackToKemasan(i.qty)})</i></span>
                       </div>
                     `).join('')}
                   </div>
@@ -1740,23 +1936,36 @@
         renderReportsHistory();
         renderDailySummaryTable();
         renderProductStoreBreakdown();
+        renderCharts();
       }
     }
 
-    // DASHBOARD 4 LOGIKA PERHITUNGAN REKAP
+    // DASHBOARD 4 LOGIKA PERHITUNGAN REKAP & RENTANG TANGGAL
+    function resetSummaryDateFilter() {
+      document.getElementById('filter-summary-start-date').value = '';
+      document.getElementById('filter-summary-end-date').value = '';
+      renderDailySummaryTable();
+    }
+
     function renderDailySummaryTable() {
       const tbody = document.getElementById('summary-daily-tbody');
       const labelDate = document.getElementById('label-summary-today-date');
-      const filterSummaryInput = document.getElementById('filter-summary-date');
 
       if (!tbody || !window.PRODUCT_LIST) return;
 
-      const targetIsoDate = (filterSummaryInput && filterSummaryInput.value) ? filterSummaryInput.value : getIsoDateStr(new Date());
+      const startDate = document.getElementById('filter-summary-start-date').value;
+      const endDate = document.getElementById('filter-summary-end-date').value;
 
       if (labelDate) {
-        const parts = targetIsoDate.split('-');
-        const dObj = new Date(parts[0], parts[1] - 1, parts[2]);
-        labelDate.textContent = dObj.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+        if (startDate && endDate) {
+          labelDate.textContent = `Periode: ${startDate} s/d ${endDate}`;
+        } else if (startDate) {
+          labelDate.textContent = `Mulai Tanggal: ${startDate}`;
+        } else if (endDate) {
+          labelDate.textContent = `Sampai Tanggal: ${endDate}`;
+        } else {
+          labelDate.textContent = `Semua Periode Transaksi`;
+        }
       }
 
       let summaryMap = {};
@@ -1765,10 +1974,12 @@
       });
 
       (window.transactions || []).forEach(tx => {
-        let txIso = tx.rawDate;
-        if (!txIso && tx.id) txIso = getIsoDateStr(new Date(tx.id));
+        let txIso = tx.rawDate || (tx.id ? getIsoDateStr(new Date(tx.id)) : '');
+        let inRange = true;
+        if (startDate && txIso < startDate) inRange = false;
+        if (endDate && txIso > endDate) inRange = false;
 
-        if (txIso === targetIsoDate) {
+        if (inRange) {
           (tx.items || []).forEach(item => {
             if (summaryMap[item.product]) {
               summaryMap[item.product].keluar += (item.qty || 0);
@@ -1778,10 +1989,12 @@
       });
 
       (window.generatedReports || []).forEach(rep => {
-        let repIso = rep.rawDate;
-        if (!repIso && rep.id) repIso = getIsoDateStr(new Date(rep.id));
+        let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
+        let inRange = true;
+        if (startDate && repIso < startDate) inRange = false;
+        if (endDate && repIso > endDate) inRange = false;
 
-        if (repIso === targetIsoDate) {
+        if (inRange) {
           (rep.items || []).forEach(item => {
             if (summaryMap[item.sku]) {
               summaryMap[item.sku].dilaporkan += (item.qty || 0);
@@ -1816,9 +2029,18 @@
           <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
             <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
             <td class="p-3 border border-slate-200 font-bold text-slate-800">${sku}</td>
-            <td class="p-3 border border-slate-200 text-right font-bold text-amber-600">${data.keluar}</td>
-            <td class="p-3 border border-slate-200 text-right font-bold text-emerald-600">${data.dilaporkan}</td>
-            <td class="p-3 border border-slate-200 text-right font-bold text-indigo-600">${data.pendingAkumulasi}</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-amber-600">
+              ${data.keluar} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(data.keluar)}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-emerald-600">
+              ${data.dilaporkan} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(data.dilaporkan)}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-indigo-600">
+              ${data.pendingAkumulasi} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(data.pendingAkumulasi)}</span>
+            </td>
           </tr>
         `;
       }).join('');
@@ -1826,9 +2048,18 @@
       const totalRowHTML = `
         <tr class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300">
           <td colspan="2" class="p-3 border border-slate-200 text-center uppercase tracking-wider">Total Ringkasan</td>
-          <td class="p-3 border border-slate-200 text-right text-amber-700 text-sm">${grandKeluar} Bungkus</td>
-          <td class="p-3 border border-slate-200 text-right text-emerald-700 text-sm">${grandDilaporkan} Bungkus</td>
-          <td class="p-3 border border-slate-200 text-right text-indigo-700 text-sm">${grandPending} Bungkus</td>
+          <td class="p-3 border border-slate-200 text-right text-amber-700 text-sm">
+            ${grandKeluar} Bungkus
+            <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(grandKeluar)}</span>
+          </td>
+          <td class="p-3 border border-slate-200 text-right text-emerald-700 text-sm">
+            ${grandDilaporkan} Bungkus
+            <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(grandDilaporkan)}</span>
+          </td>
+          <td class="p-3 border border-slate-200 text-right text-indigo-700 text-sm">
+            ${grandPending} Bungkus
+            <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(grandPending)}</span>
+          </td>
         </tr>
       `;
 
@@ -1882,9 +2113,18 @@
           <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
             <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
             <td class="p-3 border border-slate-200 font-bold text-slate-800">${toko}</td>
-            <td class="p-3 border border-slate-200 text-right font-bold text-amber-600">${data.keluar} Bungkus</td>
-            <td class="p-3 border border-slate-200 text-right font-bold text-emerald-600">${data.dilaporkan} Bungkus</td>
-            <td class="p-3 border border-slate-200 text-right font-bold text-indigo-600">${data.pending} Bungkus</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-amber-600">
+              ${data.keluar} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(data.keluar)}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-emerald-600">
+              ${data.dilaporkan} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(data.dilaporkan)}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-indigo-600">
+              ${data.pending} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(data.pending)}</span>
+            </td>
             <td class="p-3 border border-slate-200 text-center">
               <span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">
                 Proses (Pending)
@@ -1897,9 +2137,18 @@
       const totalRowHTML = `
         <tr class="bg-slate-100 font-bold text-slate-900 border-t-2 border-slate-300">
           <td colspan="2" class="p-3 border border-slate-200 text-center uppercase tracking-wider">Total Pending (${selectedSku})</td>
-          <td class="p-3 border border-slate-200 text-right text-amber-700 text-sm">${grandKeluar} Bungkus</td>
-          <td class="p-3 border border-slate-200 text-right text-emerald-700 text-sm">${grandDilaporkan} Bungkus</td>
-          <td class="p-3 border border-slate-200 text-right text-indigo-700 text-sm">${grandPending} Bungkus</td>
+          <td class="p-3 border border-slate-200 text-right text-amber-700 text-sm">
+            ${grandKeluar} Bks
+            <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(grandKeluar)}</span>
+          </td>
+          <td class="p-3 border border-slate-200 text-right text-emerald-700 text-sm">
+            ${grandDilaporkan} Bks
+            <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(grandDilaporkan)}</span>
+          </td>
+          <td class="p-3 border border-slate-200 text-right text-indigo-700 text-sm">
+            ${grandPending} Bks
+            <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(grandPending)}</span>
+          </td>
           <td class="p-3 border border-slate-200 text-center text-xs text-slate-500">${activeStores.length} Toko</td>
         </tr>
       `;
@@ -1908,15 +2157,27 @@
       lucide.createIcons();
     }
 
-    // FUNGSI UTAMA EXPORT EXCEL (DASHBOARD 3 & 4)
+    // EXPORT EXCEL DENGAN TAMBAHAN DUS & BAL & SLOP
     function exportReportsToExcel() {
       if (!window.generatedReports || window.generatedReports.length === 0) {
         alert("Belum ada data laporan yang dapat diexport!");
         return;
       }
 
+      const startDate = document.getElementById('filter-report-start-date').value;
+      const endDate = document.getElementById('filter-report-end-date').value;
+
+      let filteredReports = window.generatedReports;
+
+      if (startDate && endDate) {
+        filteredReports = filteredReports.filter(rep => {
+          let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
+          return repIso >= startDate && repIso <= endDate;
+        });
+      }
+
       const excelData = [];
-      window.generatedReports.forEach((rep, idx) => {
+      filteredReports.forEach((rep, idx) => {
         (rep.items || []).forEach(item => {
           excelData.push({
             "No": idx + 1,
@@ -1924,7 +2185,8 @@
             "Judul / Keterangan Laporan": rep.title,
             "Toko Asal": item.tokoAsal,
             "Produk SKU": item.sku,
-            "Jumlah Dilaporkan (Bungkus)": item.qty
+            "Jumlah Dilaporkan (Bungkus)": item.qty,
+            "Rincian Kemasan": formatPackToKemasan(item.qty)
           });
         });
       });
@@ -1939,15 +2201,19 @@
 
     function exportSummaryToExcel() {
       const summaryRows = [];
-      const filterSummaryInput = document.getElementById('filter-summary-date');
-      const targetIsoDate = (filterSummaryInput && filterSummaryInput.value) ? filterSummaryInput.value : getIsoDateStr(new Date());
+      const startDate = document.getElementById('filter-summary-start-date').value;
+      const endDate = document.getElementById('filter-summary-end-date').value;
 
       window.PRODUCT_LIST.forEach((sku, idx) => {
         let keluar = 0, dilaporkan = 0, pending = 0;
 
         (window.transactions || []).forEach(tx => {
           let txIso = tx.rawDate || (tx.id ? getIsoDateStr(new Date(tx.id)) : '');
-          if (txIso === targetIsoDate) {
+          let inRange = true;
+          if (startDate && txIso < startDate) inRange = false;
+          if (endDate && txIso > endDate) inRange = false;
+
+          if (inRange) {
             (tx.items || []).forEach(i => {
               if (i.product === sku) keluar += (i.qty || 0);
             });
@@ -1959,7 +2225,11 @@
 
         (window.generatedReports || []).forEach(rep => {
           let repIso = rep.rawDate || (rep.id ? getIsoDateStr(new Date(rep.id)) : '');
-          if (repIso === targetIsoDate) {
+          let inRange = true;
+          if (startDate && repIso < startDate) inRange = false;
+          if (endDate && repIso > endDate) inRange = false;
+
+          if (inRange) {
             (rep.items || []).forEach(i => {
               if (i.sku === sku) dilaporkan += (i.qty || 0);
             });
@@ -1969,9 +2239,12 @@
         summaryRows.push({
           "No": idx + 1,
           "Nama Produk SKU": sku,
-          "Keluar Tanggal Ini": keluar,
-          "Dilaporkan Tanggal Ini": dilaporkan,
-          "Total Pending Akumulasi": pending
+          "Keluar (Bungkus)": keluar,
+          "Kemasan Keluar": formatPackToKemasan(keluar),
+          "Dilaporkan (Bungkus)": dilaporkan,
+          "Kemasan Dilaporkan": formatPackToKemasan(dilaporkan),
+          "Pending Akumulasi (Bungkus)": pending,
+          "Kemasan Pending": formatPackToKemasan(pending)
         });
       });
 
@@ -1987,7 +2260,8 @@
               "Produk SKU": i.product,
               "Total Barang Keluar": i.qty,
               "Barang Dilaporkan": i.reportedQty,
-              "Sisa Pending": i.pendingQty,
+              "Sisa Pending (Bungkus)": i.pendingQty,
+              "Kemasan Pending": formatPackToKemasan(i.pendingQty),
               "Tanggal Transaksi": tx.createdAt
             });
           }
@@ -2004,7 +2278,8 @@
         XLSX.utils.book_append_sheet(workbook, wsStores, "Rincian Toko Pending");
       }
 
-      XLSX.writeFile(workbook, `Rekap_Ringkasan_Penjualan_${targetIsoDate}.xlsx`);
+      const todayStr = getIsoDateStr(new Date());
+      XLSX.writeFile(workbook, `Rekap_Ringkasan_Penjualan_${todayStr}.xlsx`);
     }
   </script>
 </body>
