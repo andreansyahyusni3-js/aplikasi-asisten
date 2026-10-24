@@ -88,7 +88,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v8.0
+      v8.1
     </div>
   </aside>
 
@@ -313,7 +313,7 @@
             </div>
           </div>
 
-          <button type="button" onclick="saveTransaction()" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-red-200 transition flex items-center justify-center gap-2">
+          <button type="button" id="btn-save-tx" onclick="saveTransaction()" class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-400 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-red-200 transition flex items-center justify-center gap-2">
             <i data-lucide="save" class="w-5 h-5"></i>
             Simpan Barang Keluar Toko
           </button>
@@ -499,7 +499,7 @@
       </div>
     </section>
 
-    <!-- DASHBOARD 5: REVIEW STOK VS PBUC (FITUR BARU) -->
+    <!-- DASHBOARD 5: REVIEW STOK VS PBUC -->
     <section id="tab-pbuc" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -510,7 +510,7 @@
           <p class="text-xs text-slate-500 mt-0.5">Membandingkan sisa stok riil aplikasi dengan laporan fisik/PBUC secara manual untuk mengetahui selisih data.</p>
         </div>
         <div class="flex items-center gap-2 no-print">
-          <button onclick="savePbucData()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+          <button onclick="savePbucData()" class="btn-save-pbuc bg-purple-600 hover:bg-purple-700 disabled:bg-slate-400 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
             <i data-lucide="save" class="w-4 h-4"></i> Simpan Data PBUC
           </button>
         </div>
@@ -567,7 +567,7 @@
           <p class="text-[11px] text-slate-400">
             * Isikan angka pada kolom PBUC sesuai laporan fisik, lalu tekan tombol <b>Simpan Data PBUC</b> di pojok kanan atas.
           </p>
-          <button onclick="savePbucData()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 no-print">
+          <button onclick="savePbucData()" class="btn-save-pbuc bg-purple-600 hover:bg-purple-700 disabled:bg-slate-400 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 no-print">
             <i data-lucide="save" class="w-4 h-4"></i> Simpan Data PBUC
           </button>
         </div>
@@ -576,7 +576,7 @@
 
   </main>
 
-  <!-- MODAL RESET DATABASE TOTAL (KONFIRMASI BES) -->
+  <!-- MODAL RESET DATABASE TOTAL -->
   <div id="modal-reset-db" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-rose-100">
       <div class="flex justify-between items-center border-b border-rose-100 pb-3">
@@ -615,7 +615,7 @@
     </div>
   </div>
 
-  <!-- MODAL EDIT ITEMS TRANSAKSI TOKO (DASHBOARD 2) -->
+  <!-- MODAL EDIT ITEMS TRANSAKSI TOKO -->
   <div id="modal-edit-tx" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
     <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-100">
       <div class="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -767,7 +767,7 @@
 
       <div class="flex gap-2 pt-2">
         <button onclick="closeModal('modal-custom-report')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-sm">Batal</button>
-        <button onclick="generateCustomReport()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-xl text-sm">Simpan & Laporkan</button>
+        <button type="button" id="btn-save-report" onclick="generateCustomReport()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 text-white font-bold py-2.5 rounded-xl text-sm">Simpan & Laporkan</button>
       </div>
     </div>
   </div>
@@ -825,12 +825,17 @@
     window.stockData = {};
     window.transactions = [];
     window.generatedReports = [];
-    window.pbucData = {}; // DATA INPUT PBUC PER SKU
+    window.pbucData = {};
     window.monthlyTarget = 0;
     window.lastActiveDate = new Date().toISOString().split('T')[0];
 
     window.selectedStockSku = null;
     window.editingTxId = null;
+
+    // GENERATOR ID UNIK AMAN KLASTER (MENCEGAH DUPLIKASI ID)
+    window.generateUniqueId = function() {
+      return Date.now().toString() + '_' + Math.random().toString(36).substr(2, 7);
+    };
 
     window.saveToLocalStorage = function() {
       localStorage.setItem('sales_stock_data_3dash', JSON.stringify(window.stockData));
@@ -937,25 +942,21 @@
       }
     };
 
-    // FUNGSI UTAMA RESET SELURUH DATABASE
+    // RESET TOTAL DATABASE CLOUD & LOCAL
     window.resetAllDatabaseCloud = async function() {
       updateSyncStatus("saving");
       try {
-        // 1. Hapus dokumen stok & PBUC
         await deleteDoc(stocksDocRef);
         await deleteDoc(pbucDocRef);
 
-        // 2. Hapus seluruh koleksi transaksi
         const txSnaps = await getDocs(txCollectionRef);
         const txDeletes = txSnaps.docs.map(d => deleteDoc(d.ref));
         await Promise.all(txDeletes);
 
-        // 3. Hapus seluruh koleksi laporan
         const repSnaps = await getDocs(reportsCollectionRef);
         const repDeletes = repSnaps.docs.map(d => deleteDoc(d.ref));
         await Promise.all(repDeletes);
 
-        // 4. Bersihkan memori dan LocalStorage
         window.stockData = {};
         window.transactions = [];
         window.generatedReports = [];
@@ -1027,24 +1028,28 @@
       updateSyncStatus("connected");
     });
 
+    // LISTENER TRANSAKSI DENGAN MAP DEDUPING (BEBAS DATA GANDA)
     onSnapshot(txCollectionRef, (snapshot) => {
-      let loadedTx = [];
+      const txMap = new Map();
       snapshot.forEach(doc => {
-        loadedTx.push(doc.data());
+        txMap.set(String(doc.id), doc.data());
       });
-      loadedTx.sort((a, b) => b.id - a.id);
+      const loadedTx = Array.from(txMap.values());
+      loadedTx.sort((a, b) => String(b.id).localeCompare(String(a.id)));
       window.transactions = loadedTx;
       window.saveToLocalStorage();
       renderAllViews();
       updateSyncStatus("connected");
     });
 
+    // LISTENER LAPORAN DENGAN MAP DEDUPING (BEBAS DATA GANDA)
     onSnapshot(reportsCollectionRef, (snapshot) => {
-      let loadedReps = [];
+      const repMap = new Map();
       snapshot.forEach(doc => {
-        loadedReps.push(doc.data());
+        repMap.set(String(doc.id), doc.data());
       });
-      loadedReps.sort((a, b) => b.id - a.id);
+      const loadedReps = Array.from(repMap.values());
+      loadedReps.sort((a, b) => String(b.id).localeCompare(String(a.id)));
       window.generatedReports = loadedReps;
       window.saveToLocalStorage();
       renderAllViews();
@@ -1189,7 +1194,6 @@
       lucide.createIcons();
     }
 
-    /* LOGIKA DAN RENDER UNTUK DASHBOARD 5: REVIEW STOK VS PBUC */
     function renderPbucTable() {
       const tbody = document.getElementById('pbuc-table-body');
       if (!tbody || !window.PRODUCT_LIST) return;
@@ -1293,6 +1297,9 @@
     }
 
     function savePbucData() {
+      const btns = document.querySelectorAll('.btn-save-pbuc');
+      btns.forEach(b => b.disabled = true);
+
       let updatedPbuc = {};
       window.PRODUCT_LIST.forEach(sku => {
         const inputEl = document.getElementById(`input-pbuc-${sku}`);
@@ -1310,6 +1317,7 @@
       }
       renderPbucTable();
       alert('Data Input PBUC berhasil disimpan!');
+      btns.forEach(b => b.disabled = false);
     }
 
     function renderCharts() {
@@ -1621,7 +1629,11 @@
       lucide.createIcons();
     }
 
+    // SIMPAN TRANSAKSI DENGAN PROTEKSI DOUBLE-CLICK & UNIQUE ID
     function saveTransaction() {
+      const btn = document.getElementById('btn-save-tx');
+      if (btn.disabled) return;
+
       const tokoName = document.getElementById('input-toko').value.trim();
 
       if (!tokoName) {
@@ -1634,6 +1646,8 @@
         return;
       }
 
+      btn.disabled = true;
+
       const now = new Date();
       const isoDate = getIsoDateStr(now);
       const finalItems = window.cart.map(item => ({
@@ -1644,7 +1658,7 @@
       }));
 
       const newTx = {
-        id: Date.now(),
+        id: window.generateUniqueId(),
         toko: tokoName,
         items: finalItems,
         rawDate: isoDate,
@@ -1663,6 +1677,8 @@
       renderProductStoreBreakdown();
       renderPbucTable();
       renderCharts();
+
+      btn.disabled = false;
     }
 
     function renderTransactions() {
@@ -1690,7 +1706,7 @@
                 <p class="text-[11px] text-slate-500">${t.createdAt}</p>
               </div>
               <div class="flex items-center gap-1.5">
-                <button onclick="openEditTxModal(${t.id})" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-900 text-white hover:bg-slate-800 transition flex items-center gap-1">
+                <button onclick="openEditTxModal('${t.id}')" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-900 text-white hover:bg-slate-800 transition flex items-center gap-1">
                   <i data-lucide="edit-3" class="w-3 h-3"></i> Edit Barang
                 </button>
               </div>
@@ -1714,7 +1730,7 @@
 
             <div class="flex justify-between items-center pt-1">
               <span class="text-xs text-slate-500 font-medium">Total: <b>${totalItemsInTx} Bungkus</b> (${formatPackToKemasan(totalItemsInTx)})</span>
-              <button onclick="deleteTx(${t.id})" class="text-slate-400 hover:text-red-600 transition flex items-center gap-1 text-xs">
+              <button onclick="deleteTx('${t.id}')" class="text-slate-400 hover:text-red-600 transition flex items-center gap-1 text-xs">
                 <i data-lucide="trash-2" class="w-4 h-4"></i> Hapus Seluruh Transaksi
               </button>
             </div>
@@ -1726,8 +1742,8 @@
     }
 
     function openEditTxModal(txId) {
-      window.editingTxId = Number(txId);
-      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
+      window.editingTxId = String(txId);
+      const tx = window.transactions.find(t => String(t.id) === window.editingTxId);
       if (!tx) return;
 
       document.getElementById('modal-edit-tx-toko').textContent = tx.toko;
@@ -1737,7 +1753,7 @@
 
     function renderModalEditItems() {
       const listContainer = document.getElementById('modal-edit-tx-items-list');
-      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
+      const tx = window.transactions.find(t => String(t.id) === window.editingTxId);
       if (!tx || !listContainer) return;
 
       listContainer.innerHTML = tx.items.map((item, idx) => `
@@ -1760,7 +1776,7 @@
     }
 
     function updateItemQtyInTx(itemIdx, newQtyVal) {
-      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
+      const tx = window.transactions.find(t => String(t.id) === window.editingTxId);
       if (!tx || !tx.items[itemIdx]) return;
 
       const newQty = parseInt(newQtyVal, 10);
@@ -1785,7 +1801,7 @@
     }
 
     function removeItemFromTx(itemIdx) {
-      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
+      const tx = window.transactions.find(t => String(t.id) === window.editingTxId);
       if (!tx || !tx.items[itemIdx]) return;
 
       const item = tx.items[itemIdx];
@@ -1808,7 +1824,7 @@
     }
 
     function addItemToExistingTx() {
-      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
+      const tx = window.transactions.find(t => String(t.id) === window.editingTxId);
       if (!tx) return;
 
       const prodSelect = document.getElementById('modal-add-prod-select').value;
@@ -1845,9 +1861,9 @@
 
     function deleteTx(id) {
       if (confirm('Hapus seluruh transaksi toko ini? Seluruh sisa barang yang pending akan dikembalikan ke Stok Utama.')) {
-        const targetId = Number(id);
+        const targetId = String(id);
         
-        window.transactions = window.transactions.filter(t => Number(t.id) !== targetId);
+        window.transactions = window.transactions.filter(t => String(t.id) !== targetId);
         
         if (typeof window.saveToLocalStorage === 'function') {
           window.saveToLocalStorage();
@@ -1965,7 +1981,11 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
+    // SIMPAN LAPORAN DENGAN PROTEKSI DOUBLE-CLICK & UNIQUE ID
     function generateCustomReport() {
+      const btn = document.getElementById('btn-save-report');
+      if (btn.disabled) return;
+
       const titleInput = document.getElementById('input-custom-report-title').value.trim();
       if (!titleInput) {
         alert('Mohon isi Nama Laporan / Nama Toko Tujuan (Manual)!');
@@ -1979,20 +1999,22 @@
         return;
       }
 
+      btn.disabled = true;
+
       const tbody = document.getElementById('custom-report-tbody');
       let rowsHTML = '';
       let totalPacks = 0;
       let reportDetails = [];
 
       checkboxes.forEach((chk, idx) => {
-        const txId = parseInt(chk.getAttribute('data-txid'), 10);
+        const txId = String(chk.getAttribute('data-txid'));
         const itemIdx = parseInt(chk.getAttribute('data-itemidx'), 10);
         const toko = chk.getAttribute('data-toko');
         const sku = chk.getAttribute('data-sku');
         const inputId = chk.getAttribute('data-inputid');
         const qtyInputVal = parseInt(document.getElementById(inputId).value, 10);
 
-        let tx = window.transactions.find(t => Number(t.id) === txId) || window.transactions.find(t => t.toko === toko);
+        let tx = window.transactions.find(t => String(t.id) === txId) || window.transactions.find(t => t.toko === toko);
 
         if (tx) {
           let item = tx.items[itemIdx] || tx.items.find(i => i.product === sku);
@@ -2031,6 +2053,7 @@
 
       if (reportDetails.length === 0) {
         alert('Gagal memproses barang! Periksa kembali stok pending toko.');
+        btn.disabled = false;
         return;
       }
 
@@ -2052,7 +2075,7 @@
       const isoDate = getIsoDateStr(now);
 
       const newReport = {
-        id: Date.now(),
+        id: window.generateUniqueId(),
         title: titleInput,
         items: reportDetails,
         totalPacks: totalPacks,
@@ -2073,6 +2096,8 @@
       renderProductStoreBreakdown();
       renderPbucTable();
       renderCharts();
+
+      btn.disabled = false;
     }
 
     function closeCustomPreview() {
@@ -2188,7 +2213,7 @@
                       <span class="bg-indigo-100 text-indigo-800 text-[10px] font-bold px-2.5 py-1 rounded-full">
                         ${rep.totalPacks} Bungkus
                       </span>
-                      <button onclick="deleteReport(${rep.id})" title="Hapus Laporan & Kembalikan ke Toko" class="text-slate-400 hover:text-red-600 transition p-1">
+                      <button onclick="deleteReport('${rep.id}')" title="Hapus Laporan & Kembalikan ke Toko" class="text-slate-400 hover:text-red-600 transition p-1">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                       </button>
                     </div>
@@ -2215,11 +2240,11 @@
 
     function deleteReport(id) {
       if (confirm('Hapus laporan ini? Seluruh barang yang dilaporkan akan dikembalikan ke sisa stok toko masing-masing.')) {
-        const reportToDelete = window.generatedReports.find(r => Number(r.id) === Number(id));
+        const reportToDelete = window.generatedReports.find(r => String(r.id) === String(id));
 
         if (reportToDelete && reportToDelete.items) {
           reportToDelete.items.forEach(repItem => {
-            let tx = window.transactions.find(t => Number(t.id) === Number(repItem.txId)) || window.transactions.find(t => t.toko === repItem.tokoAsal);
+            let tx = window.transactions.find(t => String(t.id) === String(repItem.txId)) || window.transactions.find(t => t.toko === repItem.tokoAsal);
             if (tx) {
               let item = tx.items.find(i => i.product === repItem.sku);
               if (item) {
@@ -2231,7 +2256,7 @@
           });
         }
 
-        window.generatedReports = window.generatedReports.filter(r => Number(r.id) !== Number(id));
+        window.generatedReports = window.generatedReports.filter(r => String(r.id) !== String(id));
         window.deleteReportFromCloud(id);
 
         renderTransactions();
