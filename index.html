@@ -46,7 +46,7 @@
 
   <!-- SIDEBAR NAVIGASI DESKTOP -->
   <aside class="hidden md:flex flex-col w-20 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 items-center py-4 no-print">
-    <!-- LOGO DESKTOP DENGAN COLOR TO ALPHA -->
+    <!-- LOGO DESKTOP -->
     <div class="mb-4 text-center">
       <div class="p-1 bg-white rounded-xl inline-block border border-slate-700/50 shadow-sm overflow-hidden">
         <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-10 h-10 object-contain rounded-lg mix-blend-multiply">
@@ -74,10 +74,21 @@
       <button onclick="switchTab('ringkasan')" id="nav-desk-ringkasan" title="4. Ringkasan Harian Per Produk" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
       </button>
+
+      <button onclick="switchTab('pbuc')" id="nav-desk-pbuc" title="5. Review Stok VS PBUC" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+      </button>
     </nav>
 
+    <!-- TOMBOL RESET DATABASE (DESKTOP) -->
+    <div class="mb-3 px-2 w-full">
+      <button onclick="openResetModal()" title="Reset Database Total" class="w-full p-2.5 rounded-xl text-rose-400 hover:text-white hover:bg-rose-900/60 border border-rose-800/40 flex justify-center items-center transition">
+        <i data-lucide="database-zap" class="w-5 h-5"></i>
+      </button>
+    </div>
+
     <div class="text-[9px] text-slate-500 font-bold">
-      v6.9
+      v8.0
     </div>
   </aside>
 
@@ -91,9 +102,14 @@
         <h1 class="font-bold text-xs">Asisten Sales</h1>
       </div>
     </div>
-    <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-full text-[10px]">
-      <span id="mob-sync-indicator" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-      <span id="mob-sync-status-text" class="text-amber-400 font-medium">Syncing</span>
+    <div class="flex items-center gap-2">
+      <button onclick="openResetModal()" class="px-2 py-1 bg-rose-900/70 border border-rose-700/50 text-rose-200 rounded-lg text-[10px] font-bold flex items-center gap-1">
+        <i data-lucide="database-zap" class="w-3.5 h-3.5"></i> Reset DB
+      </button>
+      <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-full text-[10px]">
+        <span id="mob-sync-indicator" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+        <span id="mob-sync-status-text" class="text-amber-400 font-medium">Syncing</span>
+      </div>
     </div>
   </header>
 
@@ -110,9 +126,14 @@
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, atur target penjualan, koreksi stok, pantau sisa stok dan grafik performa real-time.</p>
         </div>
-        <button onclick="resetAllStock()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
-          <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Semua Stok
-        </button>
+        <div class="flex items-center gap-2">
+          <button onclick="openResetModal()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200 flex items-center gap-1.5 transition">
+            <i data-lucide="database-zap" class="w-4 h-4"></i> Reset Database Total
+          </button>
+          <button onclick="resetAllStock()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-3 py-2 rounded-xl flex items-center gap-1.5 transition">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Reset Stok Awal
+          </button>
+        </div>
       </div>
 
       <!-- WIDGET TARGET BULANAN DAN PENCAPAIAN -->
@@ -478,7 +499,121 @@
       </div>
     </section>
 
+    <!-- DASHBOARD 5: REVIEW STOK VS PBUC (FITUR BARU) -->
+    <section id="tab-pbuc" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <i data-lucide="clipboard-check" class="w-6 h-6 text-purple-600"></i>
+            Dashboard 5: Review Stok vs Laporan PBUC
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Membandingkan sisa stok riil aplikasi dengan laporan fisik/PBUC secara manual untuk mengetahui selisih data.</p>
+        </div>
+        <div class="flex items-center gap-2 no-print">
+          <button onclick="savePbucData()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="save" class="w-4 h-4"></i> Simpan Data PBUC
+          </button>
+        </div>
+      </div>
+
+      <!-- KARTU RINGKASAN TOTAL SELISIH -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase">Total Sisa Stok Aplikasi</p>
+          <h3 id="pbuc-stat-app" class="text-2xl font-bold text-slate-800 mt-1">0 Bungkus</h3>
+          <p id="pbuc-stat-app-detail" class="text-[11px] text-slate-500 font-medium mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[10px] font-bold text-purple-600 uppercase">Total Input PBUC Manual</p>
+          <h3 id="pbuc-stat-pbuc" class="text-2xl font-bold text-purple-700 mt-1">0 Bungkus</h3>
+          <p id="pbuc-stat-pbuc-detail" class="text-[11px] text-purple-600/80 font-medium mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
+        </div>
+        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-500 uppercase">Total Selisih (Aplikasi - PBUC)</p>
+          <h3 id="pbuc-stat-diff" class="text-2xl font-bold text-slate-800 mt-1">0 Bungkus</h3>
+          <p id="pbuc-stat-diff-detail" class="text-[11px] text-slate-500 font-medium mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
+        </div>
+      </div>
+
+      <!-- TABEL KOMPARASI STOK & PBUC -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex justify-between items-center border-b pb-3">
+          <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+            <i data-lucide="scale" class="w-4 h-4 text-purple-600"></i>
+            Tabel Komparasi Sisa Stok Aplikasi &amp; Input PBUC
+          </h3>
+          <span class="text-xs bg-purple-50 text-purple-700 font-semibold px-2.5 py-1 rounded-full border border-purple-200">
+            Diisi Manual &bull; Tekan Simpan
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse border border-slate-200">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
+              <tr>
+                <th class="p-3 border border-slate-200 text-center">No</th>
+                <th class="p-3 border border-slate-200">Nama Produk SKU</th>
+                <th class="p-3 border border-slate-200 text-right text-slate-800">Sisa Stok Aplikasi</th>
+                <th class="p-3 border border-slate-200 text-center text-purple-700 bg-purple-50/50 w-48">Input PBUC (Bungkus)</th>
+                <th class="p-3 border border-slate-200 text-right">Selisih (Aplikasi - PBUC)</th>
+                <th class="p-3 border border-slate-200 text-center">Status Matching</th>
+              </tr>
+            </thead>
+            <tbody id="pbuc-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-between items-center pt-2">
+          <p class="text-[11px] text-slate-400">
+            * Isikan angka pada kolom PBUC sesuai laporan fisik, lalu tekan tombol <b>Simpan Data PBUC</b> di pojok kanan atas.
+          </p>
+          <button onclick="savePbucData()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 no-print">
+            <i data-lucide="save" class="w-4 h-4"></i> Simpan Data PBUC
+          </button>
+        </div>
+      </div>
+    </section>
+
   </main>
+
+  <!-- MODAL RESET DATABASE TOTAL (KONFIRMASI BES) -->
+  <div id="modal-reset-db" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-rose-100">
+      <div class="flex justify-between items-center border-b border-rose-100 pb-3">
+        <h3 class="font-bold text-rose-700 flex items-center gap-2 text-base">
+          <i data-lucide="alert-triangle" class="w-6 h-6 text-rose-600"></i>
+          Reset Total Seluruh Database
+        </h3>
+        <button onclick="closeModal('modal-reset-db')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-600">
+        <p class="font-bold text-slate-800">Tindakan ini akan menghapus permanen:</p>
+        <ul class="list-disc pl-5 space-y-1 text-slate-700">
+          <li>Seluruh data <b>Transaksi Barang Keluar Toko</b> (Dashboard 2)</li>
+          <li>Seluruh data <b>Laporan Harian</b> (Dashboard 3)</li>
+          <li>Seluruh <b>Stok Awal, Koreksi & Target Bulanan</b> (Dashboard 1)</li>
+          <li>Data <b>Input Review PBUC</b> (Dashboard 5)</li>
+          <li>Menghapus semua dokumen di <b>Firebase Cloud</b> & <b>LocalStorage Browser</b></li>
+        </ul>
+        <p class="bg-rose-50 border border-rose-200 text-rose-800 p-2.5 rounded-xl font-medium">
+          Gunakan opsi ini untuk memulihkan kerancuan data dan memulai dari awal (*Fresh Start*).
+        </p>
+      </div>
+
+      <div class="flex gap-2 pt-3 border-t">
+        <button onclick="closeModal('modal-reset-db')" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">
+          Batal
+        </button>
+        <button onclick="confirmResetAllDatabase()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-rose-200">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          Ya, Hapus Semua Data
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- MODAL EDIT ITEMS TRANSAKSI TOKO (DASHBOARD 2) -->
   <div id="modal-edit-tx" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
@@ -651,13 +786,16 @@
     <button onclick="switchTab('ringkasan')" id="nav-mob-ringkasan" title="Ringkasan" class="text-slate-400 p-1">
       <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
     </button>
+    <button onclick="switchTab('pbuc')" id="nav-mob-pbuc" title="Review PBUC" class="text-slate-400 p-1">
+      <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+    </button>
   </div>
 
   <!-- FIREBASE SDK & AUTOMATIC SYNC SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot 
+      getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -676,6 +814,7 @@
     const stocksDocRef = doc(db, "app_stocks", "main_stock");
     const txCollectionRef = collection(db, "app_transactions");
     const reportsCollectionRef = collection(db, "app_reports");
+    const pbucDocRef = doc(db, "app_pbuc", "main_pbuc");
 
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
@@ -686,6 +825,7 @@
     window.stockData = {};
     window.transactions = [];
     window.generatedReports = [];
+    window.pbucData = {}; // DATA INPUT PBUC PER SKU
     window.monthlyTarget = 0;
     window.lastActiveDate = new Date().toISOString().split('T')[0];
 
@@ -696,6 +836,7 @@
       localStorage.setItem('sales_stock_data_3dash', JSON.stringify(window.stockData));
       localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
       localStorage.setItem('sales_reports_3dash', JSON.stringify(window.generatedReports));
+      localStorage.setItem('sales_pbuc_data_3dash', JSON.stringify(window.pbucData));
       localStorage.setItem('sales_monthly_target_3dash', window.monthlyTarget);
       localStorage.setItem('sales_last_active_date_3dash', window.lastActiveDate);
     };
@@ -705,6 +846,7 @@
         window.stockData = JSON.parse(localStorage.getItem('sales_stock_data_3dash')) || {};
         window.transactions = JSON.parse(localStorage.getItem('sales_transactions_3dash')) || [];
         window.generatedReports = JSON.parse(localStorage.getItem('sales_reports_3dash')) || [];
+        window.pbucData = JSON.parse(localStorage.getItem('sales_pbuc_data_3dash')) || {};
         window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target_3dash'), 10) || 0;
         window.lastActiveDate = localStorage.getItem('sales_last_active_date_3dash') || new Date().toISOString().split('T')[0];
       } catch (e) {
@@ -734,6 +876,21 @@
       }
     };
 
+    window.syncPbucToCloud = async function() {
+      updateSyncStatus("saving");
+      window.saveToLocalStorage();
+      try {
+        await setDoc(pbucDocRef, {
+          pbucData: window.pbucData || {},
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+        updateSyncStatus("connected");
+      } catch (err) {
+        console.error("Gagal simpan data PBUC ke Cloud:", err);
+        updateSyncStatus("error");
+      }
+    };
+
     window.syncTxToCloud = async function(txObj) {
       updateSyncStatus("saving");
       window.saveToLocalStorage();
@@ -749,7 +906,6 @@
     window.deleteTxFromCloud = async function(txId) {
       updateSyncStatus("saving");
       try {
-        // Hapus langsung dari Firestore menggunakan String ID
         await deleteDoc(doc(txCollectionRef, String(txId)));
         updateSyncStatus("connected");
       } catch (err) {
@@ -777,6 +933,44 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal hapus laporan di Cloud:", err);
+        updateSyncStatus("error");
+      }
+    };
+
+    // FUNGSI UTAMA RESET SELURUH DATABASE
+    window.resetAllDatabaseCloud = async function() {
+      updateSyncStatus("saving");
+      try {
+        // 1. Hapus dokumen stok & PBUC
+        await deleteDoc(stocksDocRef);
+        await deleteDoc(pbucDocRef);
+
+        // 2. Hapus seluruh koleksi transaksi
+        const txSnaps = await getDocs(txCollectionRef);
+        const txDeletes = txSnaps.docs.map(d => deleteDoc(d.ref));
+        await Promise.all(txDeletes);
+
+        // 3. Hapus seluruh koleksi laporan
+        const repSnaps = await getDocs(reportsCollectionRef);
+        const repDeletes = repSnaps.docs.map(d => deleteDoc(d.ref));
+        await Promise.all(repDeletes);
+
+        // 4. Bersihkan memori dan LocalStorage
+        window.stockData = {};
+        window.transactions = [];
+        window.generatedReports = [];
+        window.pbucData = {};
+        window.monthlyTarget = 0;
+        window.cart = [];
+        localStorage.clear();
+
+        initStockData();
+        renderAllViews();
+        updateSyncStatus("connected");
+        alert("Seluruh database berhasil dibersihkan!");
+      } catch (err) {
+        console.error("Gagal mereset database Cloud:", err);
+        alert("Gagal mereset database. Periksa koneksi internet Anda.");
         updateSyncStatus("error");
       }
     };
@@ -812,9 +1006,24 @@
         if (data.monthlyTarget !== undefined) window.monthlyTarget = data.monthlyTarget;
         if (data.lastActiveDate) window.lastActiveDate = data.lastActiveDate;
         window.saveToLocalStorage();
+      } else {
+        window.stockData = {};
+        window.monthlyTarget = 0;
       }
       initStockData();
       renderAllViews();
+      updateSyncStatus("connected");
+    });
+
+    onSnapshot(pbucDocRef, (docSnap) => {
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        if (data.pbucData) window.pbucData = data.pbucData;
+        window.saveToLocalStorage();
+      } else {
+        window.pbucData = {};
+      }
+      renderPbucTable();
       updateSyncStatus("connected");
     });
 
@@ -850,6 +1059,7 @@
       if (typeof renderReportsHistory === 'function') renderReportsHistory();
       if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
       if (typeof renderProductStoreBreakdown === 'function') renderProductStoreBreakdown();
+      if (typeof renderPbucTable === 'function') renderPbucTable();
       if (typeof renderCharts === 'function') renderCharts();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
@@ -868,11 +1078,23 @@
     let chart1Instance = null;
     let chart2Instance = null;
 
+    function openResetModal() {
+      document.getElementById('modal-reset-db').classList.remove('hidden');
+    }
+
+    function confirmResetAllDatabase() {
+      closeModal('modal-reset-db');
+      if (typeof window.resetAllDatabaseCloud === 'function') {
+        window.resetAllDatabaseCloud();
+      }
+    }
+
     function formatPackToKemasan(totalBungkus) {
-      if (!totalBungkus || totalBungkus <= 0) return '0 Dus 0 Bal 0 Slop 0 Bks';
+      if (!totalBungkus || totalBungkus === 0) return '0 Dus 0 Bal 0 Slop 0 Bks';
+      const absVal = Math.abs(totalBungkus);
       
-      const dus = Math.floor(totalBungkus / 800);
-      let sisa = totalBungkus % 800;
+      const dus = Math.floor(absVal / 800);
+      let sisa = absVal % 800;
       
       const bal = Math.floor(sisa / 200);
       sisa = sisa % 200;
@@ -886,7 +1108,8 @@
       if (slop > 0) result.push(`${slop} Slop`);
       if (bks > 0 || result.length === 0) result.push(`${bks} Bks`);
       
-      return result.join(' ');
+      const prefix = totalBungkus < 0 ? '-' : '';
+      return prefix + result.join(' ');
     }
 
     function getIsoDateStr(dateObj) {
@@ -930,6 +1153,7 @@
       document.getElementById('tab-omzet').classList.add('hidden');
       document.getElementById('tab-laporan').classList.add('hidden');
       document.getElementById('tab-ringkasan').classList.add('hidden');
+      document.getElementById('tab-pbuc').classList.add('hidden');
 
       document.getElementById(`tab-${tabName}`).classList.remove('hidden');
 
@@ -943,22 +1167,149 @@
       } else if (tabName === 'ringkasan') {
         renderDailySummaryTable();
         renderProductStoreBreakdown();
+      } else if (tabName === 'pbuc') {
+        renderPbucTable();
       }
 
-      ['stok', 'omzet', 'laporan', 'ringkasan'].forEach(t => {
+      ['stok', 'omzet', 'laporan', 'ringkasan', 'pbuc'].forEach(t => {
         const deskBtn = document.getElementById(`nav-desk-${t}`);
         const mobBtn = document.getElementById(`nav-mob-${t}`);
         
-        if (t === tabName) {
-          deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40";
-          mobBtn.className = "text-red-500 p-1";
-        } else {
-          deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white";
-          mobBtn.className = "text-slate-400 p-1";
+        if (deskBtn && mobBtn) {
+          if (t === tabName) {
+            deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40";
+            mobBtn.className = "text-red-500 p-1";
+          } else {
+            deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white";
+            mobBtn.className = "text-slate-400 p-1";
+          }
         }
       });
 
       lucide.createIcons();
+    }
+
+    /* LOGIKA DAN RENDER UNTUK DASHBOARD 5: REVIEW STOK VS PBUC */
+    function renderPbucTable() {
+      const tbody = document.getElementById('pbuc-table-body');
+      if (!tbody || !window.PRODUCT_LIST) return;
+
+      let grandAppStock = 0;
+      let grandPbucStock = 0;
+      let grandDiffStock = 0;
+
+      const rowsHTML = window.PRODUCT_LIST.map((sku, idx) => {
+        const initial = window.stockData[sku] ? (window.stockData[sku].initial || 0) : 0;
+        const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
+
+        let out = 0;
+        (window.transactions || []).forEach(t => {
+          (t.items || []).forEach(i => {
+            if (i.product === sku) {
+              out += (i.qty || 0);
+            }
+          });
+        });
+
+        const appRemaining = (initial + added) - out;
+        const pbucVal = window.pbucData[sku] !== undefined ? window.pbucData[sku] : '';
+        const pbucNum = parseInt(pbucVal, 10) || 0;
+        const diff = appRemaining - pbucNum;
+
+        grandAppStock += appRemaining;
+        grandPbucStock += pbucNum;
+        grandDiffStock += diff;
+
+        let diffClass = 'text-slate-800 font-bold';
+        let statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">Cocok</span>`;
+
+        if (pbucVal !== '' && diff !== 0) {
+          if (diff > 0) {
+            diffClass = 'text-amber-600 font-bold';
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">App Lebih +${diff}</span>`;
+          } else {
+            diffClass = 'text-rose-600 font-bold';
+            statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800">PBUC Lebih ${diff}</span>`;
+          }
+        } else if (pbucVal === '') {
+          statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-medium bg-slate-100 text-slate-500">Belum diisi</span>`;
+        }
+
+        return `
+          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+            <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
+            <td class="p-3 border border-slate-200 font-bold text-slate-800">${sku}</td>
+            <td class="p-3 border border-slate-200 text-right font-bold text-slate-800">
+              ${appRemaining} Bks
+              <span class="text-[10px] text-slate-400 block font-normal">${formatPackToKemasan(appRemaining)}</span>
+            </td>
+            <td class="p-2 border border-slate-200 text-center bg-purple-50/30">
+              <input type="number" min="0" id="input-pbuc-${sku}" value="${pbucVal}" placeholder="0" class="w-full px-2.5 py-1 text-xs text-right font-bold border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-purple-500 bg-white">
+            </td>
+            <td class="p-3 border border-slate-200 text-right ${diffClass}">
+              ${diff > 0 ? '+' + diff : diff} Bks
+              <span class="text-[10px] block font-normal opacity-80">${formatPackToKemasan(diff)}</span>
+            </td>
+            <td class="p-3 border border-slate-200 text-center">
+              ${statusBadge}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      const totalRowHTML = `
+        <tr class="bg-purple-50 font-bold text-purple-950 border-t-2 border-purple-200">
+          <td colspan="2" class="p-3 border border-slate-200 text-center uppercase tracking-wider">Total Review Stok</td>
+          <td class="p-3 border border-slate-200 text-right text-slate-900 text-sm">
+            ${grandAppStock} Bungkus
+            <span class="text-[10px] text-slate-500 block font-normal">${formatPackToKemasan(grandAppStock)}</span>
+          </td>
+          <td class="p-3 border border-slate-200 text-right text-purple-800 text-sm">
+            ${grandPbucStock} Bungkus
+            <span class="text-[10px] text-purple-600 block font-normal">${formatPackToKemasan(grandPbucStock)}</span>
+          </td>
+          <td class="p-3 border border-slate-200 text-right ${grandDiffStock === 0 ? 'text-emerald-700' : 'text-rose-700'} text-sm">
+            ${grandDiffStock > 0 ? '+' + grandDiffStock : grandDiffStock} Bungkus
+            <span class="text-[10px] block font-normal opacity-80">${formatPackToKemasan(grandDiffStock)}</span>
+          </td>
+          <td class="p-3 border border-slate-200 text-center text-xs">
+            ${grandDiffStock === 0 ? 'Lengkap & Cocok' : 'Ada Selisih'}
+          </td>
+        </tr>
+      `;
+
+      tbody.innerHTML = rowsHTML + totalRowHTML;
+
+      document.getElementById('pbuc-stat-app').textContent = `${grandAppStock} Bungkus`;
+      document.getElementById('pbuc-stat-app-detail').textContent = formatPackToKemasan(grandAppStock);
+
+      document.getElementById('pbuc-stat-pbuc').textContent = `${grandPbucStock} Bungkus`;
+      document.getElementById('pbuc-stat-pbuc-detail').textContent = formatPackToKemasan(grandPbucStock);
+
+      document.getElementById('pbuc-stat-diff').textContent = `${grandDiffStock > 0 ? '+' + grandDiffStock : grandDiffStock} Bungkus`;
+      document.getElementById('pbuc-stat-diff-detail').textContent = formatPackToKemasan(grandDiffStock);
+
+      lucide.createIcons();
+    }
+
+    function savePbucData() {
+      let updatedPbuc = {};
+      window.PRODUCT_LIST.forEach(sku => {
+        const inputEl = document.getElementById(`input-pbuc-${sku}`);
+        if (inputEl) {
+          const val = inputEl.value.trim();
+          if (val !== '') {
+            updatedPbuc[sku] = parseInt(val, 10) || 0;
+          }
+        }
+      });
+
+      window.pbucData = updatedPbuc;
+      if (typeof window.syncPbucToCloud === 'function') {
+        window.syncPbucToCloud();
+      }
+      renderPbucTable();
+      alert('Data Input PBUC berhasil disimpan!');
     }
 
     function renderCharts() {
@@ -1056,8 +1407,8 @@
         const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
 
         let out = 0;
-        window.transactions.forEach(t => {
-          t.items.forEach(i => {
+        (window.transactions || []).forEach(t => {
+          (t.items || []).forEach(i => {
             if (i.product === sku) {
               out += (i.qty || 0);
             }
@@ -1159,6 +1510,7 @@
       closeModal('modal-edit-stock');
       window.syncStockToCloud();
       renderStockTable();
+      renderPbucTable();
     }
 
     function openAddStockModal(sku) {
@@ -1186,6 +1538,7 @@
       closeModal('modal-add-stock');
       window.syncStockToCloud();
       renderStockTable();
+      renderPbucTable();
     }
 
     function resetAllStock() {
@@ -1195,6 +1548,7 @@
         });
         window.syncStockToCloud();
         renderStockTable();
+        renderPbucTable();
       }
     }
 
@@ -1307,6 +1661,7 @@
       renderStockTable();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderPbucTable();
       renderCharts();
     }
 
@@ -1314,7 +1669,7 @@
       const container = document.getElementById('tx-list-container');
       if (!container) return;
 
-      const activeTransactions = window.transactions.filter(t => {
+      const activeTransactions = (window.transactions || []).filter(t => {
         const totalPendingInTx = t.items.reduce((sum, i) => sum + i.pendingQty, 0);
         return totalPendingInTx > 0;
       });
@@ -1425,6 +1780,7 @@
       renderStockTable();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderPbucTable();
       renderCharts();
     }
 
@@ -1446,6 +1802,7 @@
         renderStockTable();
         renderDailySummaryTable();
         renderProductStoreBreakdown();
+        renderPbucTable();
         renderCharts();
       }
     }
@@ -1482,30 +1839,27 @@
       renderStockTable();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderPbucTable();
       renderCharts();
     }
 
-    // FUNGSI UTAMA HAPUS TRANSAKSI PERMANEN
     function deleteTx(id) {
       if (confirm('Hapus seluruh transaksi toko ini? Seluruh sisa barang yang pending akan dikembalikan ke Stok Utama.')) {
         const targetId = Number(id);
         
-        // 1. Hapus dari memori array lokal
         window.transactions = window.transactions.filter(t => Number(t.id) !== targetId);
         
-        // 2. Simpan perubahan ke LocalStorage
         if (typeof window.saveToLocalStorage === 'function') {
           window.saveToLocalStorage();
         }
         
-        // 3. Hapus dokumen di Firestore Cloud
         window.deleteTxFromCloud(targetId);
 
-        // 4. Render ulang seluruh tampilan
         renderTransactions();
         renderStockTable();
         renderDailySummaryTable();
         renderProductStoreBreakdown();
+        renderPbucTable();
         renderCharts();
       }
     }
@@ -1514,14 +1868,14 @@
       const listContainer = document.getElementById('custom-items-selection-list');
       if (!listContainer) return;
 
-      if (window.transactions.length === 0) {
+      if ((window.transactions || []).length === 0) {
         listContainer.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada transaksi toko di Dashboard 2</p>`;
         document.getElementById('modal-custom-report').classList.remove('hidden');
         return;
       }
 
       let checkHTML = '';
-      window.transactions.forEach((tx) => {
+      (window.transactions || []).forEach((tx) => {
         const pendingItems = tx.items.filter(item => (item.pendingQty || 0) > 0);
 
         if (pendingItems.length > 0) {
@@ -1717,6 +2071,7 @@
       renderReportsHistory();
       renderDailySummaryTable();
       renderProductStoreBreakdown();
+      renderPbucTable();
       renderCharts();
     }
 
@@ -1884,6 +2239,7 @@
         renderReportsHistory();
         renderDailySummaryTable();
         renderProductStoreBreakdown();
+        renderPbucTable();
         renderCharts();
       }
     }
