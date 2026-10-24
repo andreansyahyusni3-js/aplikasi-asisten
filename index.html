@@ -46,7 +46,7 @@
 
   <!-- SIDEBAR NAVIGASI DESKTOP -->
   <aside class="hidden md:flex flex-col w-20 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 items-center py-4 no-print">
-    <!-- LOGO DESKTOP BARU DENGAN COLOR TO ALPHA -->
+    <!-- LOGO DESKTOP DENGAN COLOR TO ALPHA -->
     <div class="mb-4 text-center">
       <div class="p-1 bg-white rounded-xl inline-block border border-slate-700/50 shadow-sm overflow-hidden">
         <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-10 h-10 object-contain rounded-lg mix-blend-multiply">
@@ -77,13 +77,12 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v6.8
+      v6.9
     </div>
   </aside>
 
   <!-- HEADER MOBILE -->
   <header class="md:hidden bg-slate-900 text-white p-3 sticky top-0 z-40 shadow-md flex justify-between items-center no-print">
-    <!-- LOGO MOBILE BARU DENGAN COLOR TO ALPHA -->
     <div class="flex items-center space-x-2">
       <div class="p-0.5 bg-white rounded-lg overflow-hidden">
         <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-7 h-7 object-contain rounded-lg mix-blend-multiply">
@@ -188,7 +187,6 @@
 
       <!-- GRAFIK TREN -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- GRAFIK 1: PENJUALAN HARIAN PER PRODUK -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
           <div class="flex justify-between items-center border-b pb-2">
             <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5 uppercase tracking-wider">
@@ -202,7 +200,6 @@
           </div>
         </div>
 
-        <!-- GRAFIK 2: TREN PENJUALAN BULANAN -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
           <div class="flex justify-between items-center border-b pb-2">
             <h3 class="font-bold text-slate-900 text-xs flex items-center gap-1.5 uppercase tracking-wider">
@@ -656,11 +653,11 @@
     </button>
   </div>
 
-  <!-- FIREBASE SDK & AUTOMATIC MIGRATION SCRIPT -->
+  <!-- FIREBASE SDK & AUTOMATIC SYNC SCRIPT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot 
+      getFirestore, doc, setDoc, deleteDoc, collection, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -675,8 +672,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-
-    const oldDocRef = doc(db, "app_data", "sales_pro_3dash_state");
 
     const stocksDocRef = doc(db, "app_stocks", "main_stock");
     const txCollectionRef = collection(db, "app_transactions");
@@ -697,49 +692,34 @@
     window.selectedStockSku = null;
     window.editingTxId = null;
 
-    loadFromLocalStorage();
+    window.saveToLocalStorage = function() {
+      localStorage.setItem('sales_stock_data_3dash', JSON.stringify(window.stockData));
+      localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
+      localStorage.setItem('sales_reports_3dash', JSON.stringify(window.generatedReports));
+      localStorage.setItem('sales_monthly_target_3dash', window.monthlyTarget);
+      localStorage.setItem('sales_last_active_date_3dash', window.lastActiveDate);
+    };
 
-    async function checkAndMigrateOldData() {
+    function loadFromLocalStorage() {
       try {
-        const oldSnap = await getDoc(oldDocRef);
-        if (oldSnap.exists()) {
-          console.log("Memulai proses migrasi data lama...");
-          const oldData = oldSnap.data();
-
-          if (oldData.stockData || oldData.monthlyTarget) {
-            await setDoc(stocksDocRef, {
-              stockData: oldData.stockData || {},
-              monthlyTarget: oldData.monthlyTarget || 0,
-              lastActiveDate: oldData.lastActiveDate || new Date().toISOString().split('T')[0],
-              updatedAt: new Date().toISOString()
-            }, { merge: true });
-          }
-
-          if (oldData.transactions && Array.isArray(oldData.transactions)) {
-            for (const tx of oldData.transactions) {
-              await setDoc(doc(txCollectionRef, String(tx.id)), tx);
-            }
-          }
-
-          if (oldData.generatedReports && Array.isArray(oldData.generatedReports)) {
-            for (const rep of oldData.generatedReports) {
-              await setDoc(doc(reportsCollectionRef, String(rep.id)), rep);
-            }
-          }
-
-          console.log("Migrasi Sukses! Seluruh data transaksi kembali.");
-          alert("Berhasil menarik kembali seluruh data transaksi lama Kamu!");
-        }
-      } catch (err) {
-        console.error("Gagal melakukan migrasi data:", err);
+        window.stockData = JSON.parse(localStorage.getItem('sales_stock_data_3dash')) || {};
+        window.transactions = JSON.parse(localStorage.getItem('sales_transactions_3dash')) || [];
+        window.generatedReports = JSON.parse(localStorage.getItem('sales_reports_3dash')) || [];
+        window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target_3dash'), 10) || 0;
+        window.lastActiveDate = localStorage.getItem('sales_last_active_date_3dash') || new Date().toISOString().split('T')[0];
+      } catch (e) {
+        console.warn("Gagal membaca LocalStorage:", e);
       }
+
+      initStockData();
+      renderAllViews();
     }
 
-    checkAndMigrateOldData();
+    loadFromLocalStorage();
 
     window.syncStockToCloud = async function() {
       updateSyncStatus("saving");
-      saveToLocalStorage();
+      window.saveToLocalStorage();
       try {
         await setDoc(stocksDocRef, {
           stockData: window.stockData || {},
@@ -756,7 +736,7 @@
 
     window.syncTxToCloud = async function(txObj) {
       updateSyncStatus("saving");
-      saveToLocalStorage();
+      window.saveToLocalStorage();
       try {
         await setDoc(doc(txCollectionRef, String(txObj.id)), txObj);
         updateSyncStatus("connected");
@@ -768,8 +748,8 @@
 
     window.deleteTxFromCloud = async function(txId) {
       updateSyncStatus("saving");
-      saveToLocalStorage();
       try {
+        // Hapus langsung dari Firestore menggunakan String ID
         await deleteDoc(doc(txCollectionRef, String(txId)));
         updateSyncStatus("connected");
       } catch (err) {
@@ -780,7 +760,7 @@
 
     window.syncReportToCloud = async function(repObj) {
       updateSyncStatus("saving");
-      saveToLocalStorage();
+      window.saveToLocalStorage();
       try {
         await setDoc(doc(reportsCollectionRef, String(repObj.id)), repObj);
         updateSyncStatus("connected");
@@ -792,7 +772,6 @@
 
     window.deleteReportFromCloud = async function(repId) {
       updateSyncStatus("saving");
-      saveToLocalStorage();
       try {
         await deleteDoc(doc(reportsCollectionRef, String(repId)));
         updateSyncStatus("connected");
@@ -801,29 +780,6 @@
         updateSyncStatus("error");
       }
     };
-
-    function saveToLocalStorage() {
-      localStorage.setItem('sales_stock_data_3dash', JSON.stringify(window.stockData));
-      localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
-      localStorage.setItem('sales_reports_3dash', JSON.stringify(window.generatedReports));
-      localStorage.setItem('sales_monthly_target_3dash', window.monthlyTarget);
-      localStorage.setItem('sales_last_active_date_3dash', window.lastActiveDate);
-    }
-
-    function loadFromLocalStorage() {
-      try {
-        window.stockData = JSON.parse(localStorage.getItem('sales_stock_data_3dash')) || {};
-        window.transactions = JSON.parse(localStorage.getItem('sales_transactions_3dash')) || [];
-        window.generatedReports = JSON.parse(localStorage.getItem('sales_reports_3dash')) || [];
-        window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target_3dash'), 10) || 0;
-        window.lastActiveDate = localStorage.getItem('sales_last_active_date_3dash') || new Date().toISOString().split('T')[0];
-      } catch (e) {
-        console.warn("Gagal membaca LocalStorage:", e);
-      }
-
-      initStockData();
-      renderAllViews();
-    }
 
     function updateSyncStatus(status) {
       const deskInd = document.getElementById("sync-indicator");
@@ -855,7 +811,7 @@
         if (data.stockData) window.stockData = data.stockData;
         if (data.monthlyTarget !== undefined) window.monthlyTarget = data.monthlyTarget;
         if (data.lastActiveDate) window.lastActiveDate = data.lastActiveDate;
-        saveToLocalStorage();
+        window.saveToLocalStorage();
       }
       initStockData();
       renderAllViews();
@@ -869,7 +825,7 @@
       });
       loadedTx.sort((a, b) => b.id - a.id);
       window.transactions = loadedTx;
-      saveToLocalStorage();
+      window.saveToLocalStorage();
       renderAllViews();
       updateSyncStatus("connected");
     });
@@ -881,7 +837,7 @@
       });
       loadedReps.sort((a, b) => b.id - a.id);
       window.generatedReports = loadedReps;
-      saveToLocalStorage();
+      window.saveToLocalStorage();
       renderAllViews();
       updateSyncStatus("connected");
     });
@@ -891,7 +847,6 @@
       if (typeof renderCartUI === 'function') renderCartUI();
       if (typeof renderTransactions === 'function') renderTransactions();
       if (typeof renderStockTable === 'function') renderStockTable();
-      if (typeof setDefaultFilterToday === 'function') setDefaultFilterToday();
       if (typeof renderReportsHistory === 'function') renderReportsHistory();
       if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
       if (typeof renderProductStoreBreakdown === 'function') renderProductStoreBreakdown();
@@ -908,12 +863,11 @@
     }
   </script>
 
-  <!-- JAVASCRIPT LOGIKA UTAMA, KONVERSI KEMASAN & GRAFIK -->
+  <!-- JAVASCRIPT LOGIKA UTAMA & FORMATTING -->
   <script>
     let chart1Instance = null;
     let chart2Instance = null;
 
-    // FUNGSI UTAMA KONVERSI DUS, BAL, SLOP, BKS
     function formatPackToKemasan(totalBungkus) {
       if (!totalBungkus || totalBungkus <= 0) return '0 Dus 0 Bal 0 Slop 0 Bks';
       
@@ -942,8 +896,6 @@
       const day = String(dateObj.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     }
-
-    function setDefaultFilterToday() {}
 
     function openTargetModal() {
       document.getElementById('input-monthly-target').value = window.monthlyTarget || '';
@@ -1009,11 +961,9 @@
       lucide.createIcons();
     }
 
-    // RENDER GRAFIK TREN
     function renderCharts() {
       const todayIso = getIsoDateStr(new Date());
 
-      // 1. DATA GRAFIK 1: PRODUK TERJUAL HARI INI
       let todaySalesPerSku = {};
       window.PRODUCT_LIST.forEach(sku => todaySalesPerSku[sku] = 0);
 
@@ -1048,17 +998,12 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } }
-            }
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
           }
         });
       }
 
-      // 2. DATA GRAFIK 2: TREN PENJUALAN BULANAN (JAN - DES)
       const months = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agt', 'Sep', 'Okt', 'Nov', 'Des'];
       let monthlyPacks = new Array(12).fill(0);
 
@@ -1092,18 +1037,13 @@
           options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: {
-              legend: { display: false }
-            },
-            scales: {
-              y: { beginAtZero: true, ticks: { precision: 0 } }
-            }
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
           }
         });
       }
     }
 
-    // DASHBOARD 1 LOGIKA STOK & TARGET BULANAN
     function renderStockTable() {
       const tbody = document.getElementById('stock-table-body');
       if (!tbody || !window.PRODUCT_LIST) return;
@@ -1264,7 +1204,6 @@
       window.editingTxId = null;
     }
 
-    // DASHBOARD 2 LOGIKA BARANG KELUAR PER TOKO
     function addToCart() {
       const product = document.getElementById('select-produk').value;
       const qtyInput = document.getElementById('input-jumlah');
@@ -1546,19 +1485,23 @@
       renderCharts();
     }
 
+    // FUNGSI UTAMA HAPUS TRANSAKSI PERMANEN
     function deleteTx(id) {
       if (confirm('Hapus seluruh transaksi toko ini? Seluruh sisa barang yang pending akan dikembalikan ke Stok Utama.')) {
         const targetId = Number(id);
         
-        // Hapus secara presisi dari array lokal
+        // 1. Hapus dari memori array lokal
         window.transactions = window.transactions.filter(t => Number(t.id) !== targetId);
         
-        // Simpan ke LocalStorage
-        localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
+        // 2. Simpan perubahan ke LocalStorage
+        if (typeof window.saveToLocalStorage === 'function') {
+          window.saveToLocalStorage();
+        }
         
-        // Hapus dari Firestore Cloud
+        // 3. Hapus dokumen di Firestore Cloud
         window.deleteTxFromCloud(targetId);
 
+        // 4. Render ulang seluruh tampilan
         renderTransactions();
         renderStockTable();
         renderDailySummaryTable();
@@ -1567,7 +1510,6 @@
       }
     }
 
-    // DASHBOARD 3 LOGIKA PELAPORAN & RENTANG TANGGAL
     function openCustomReportModal() {
       const listContainer = document.getElementById('custom-items-selection-list');
       if (!listContainer) return;
@@ -1946,7 +1888,6 @@
       }
     }
 
-    // DASHBOARD 4 LOGIKA PERHITUNGAN REKAP & RENTANG TANGGAL
     function resetSummaryDateFilter() {
       document.getElementById('filter-summary-start-date').value = '';
       document.getElementById('filter-summary-end-date').value = '';
@@ -2073,7 +2014,6 @@
       lucide.createIcons();
     }
 
-    // DASHBOARD 4 LOGIKA RINCIAN SEBARAN TOKO PER PRODUK
     function renderProductStoreBreakdown() {
       const tbody = document.getElementById('store-breakdown-tbody');
       const selectBreakdown = document.getElementById('select-product-breakdown');
@@ -2163,7 +2103,6 @@
       lucide.createIcons();
     }
 
-    // EXPORT EXCEL DENGAN TAMBAHAN DUS & BAL & SLOP
     function exportReportsToExcel() {
       if (!window.generatedReports || window.generatedReports.length === 0) {
         alert("Belum ada data laporan yang dapat diexport!");
