@@ -88,7 +88,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v8.1
+      v8.2
     </div>
   </aside>
 
@@ -791,11 +791,11 @@
     </button>
   </div>
 
-  <!-- FIREBASE SDK & AUTOMATIC SYNC SCRIPT -->
+  <!-- FIREBASE SDK WITH OFFLINE PERSISTENCE SUPPORT -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot 
+      getFirestore, enableIndexedDbPersistence, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -810,6 +810,19 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // EKSKUSI NO 2: OFFLINE PERSISTENCE FIRESTORE
+    enableIndexedDbPersistence(db)
+      .then(() => {
+        console.log("Firestore Offline Persistence berhasil diaktifkan!");
+      })
+      .catch((err) => {
+        if (err.code === 'failed-precondition') {
+          console.warn("Offline Persistence gagal: Terbuka di banyak tab sekaligus.");
+        } else if (err.code === 'unimplemented') {
+          console.warn("Offline Persistence gagal: Browser tidak mendukung IndexedDB.");
+        }
+      });
 
     const stocksDocRef = doc(db, "app_stocks", "main_stock");
     const txCollectionRef = collection(db, "app_transactions");
@@ -832,7 +845,6 @@
     window.selectedStockSku = null;
     window.editingTxId = null;
 
-    // GENERATOR ID UNIK AMAN KLASTER (MENCEGAH DUPLIKASI ID)
     window.generateUniqueId = function() {
       return Date.now().toString() + '_' + Math.random().toString(36).substr(2, 7);
     };
@@ -877,7 +889,7 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal simpan stok ke Cloud:", err);
-        updateSyncStatus("error");
+        updateSyncStatus("offline");
       }
     };
 
@@ -892,7 +904,7 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal simpan data PBUC ke Cloud:", err);
-        updateSyncStatus("error");
+        updateSyncStatus("offline");
       }
     };
 
@@ -904,7 +916,7 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal simpan transaksi ke Cloud:", err);
-        updateSyncStatus("error");
+        updateSyncStatus("offline");
       }
     };
 
@@ -915,7 +927,7 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal hapus transaksi di Cloud:", err);
-        updateSyncStatus("error");
+        updateSyncStatus("offline");
       }
     };
 
@@ -927,7 +939,7 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal simpan laporan ke Cloud:", err);
-        updateSyncStatus("error");
+        updateSyncStatus("offline");
       }
     };
 
@@ -938,11 +950,10 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal hapus laporan di Cloud:", err);
-        updateSyncStatus("error");
+        updateSyncStatus("offline");
       }
     };
 
-    // RESET TOTAL DATABASE CLOUD & LOCAL
     window.resetAllDatabaseCloud = async function() {
       updateSyncStatus("saving");
       try {
@@ -972,7 +983,7 @@
       } catch (err) {
         console.error("Gagal mereset database Cloud:", err);
         alert("Gagal mereset database. Periksa koneksi internet Anda.");
-        updateSyncStatus("error");
+        updateSyncStatus("offline");
       }
     };
 
@@ -993,14 +1004,14 @@
         if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
         if (mobTxt) { mobTxt.textContent = "Syncing"; mobTxt.className = "text-amber-400 font-medium"; }
       } else {
-        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-red-500";
-        if (deskTxt) { deskTxt.textContent = "Offline"; deskTxt.className = "text-red-400 font-medium"; }
-        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-red-500";
-        if (mobTxt) { mobTxt.textContent = "Offline"; mobTxt.className = "text-red-400 font-medium"; }
+        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-sky-500";
+        if (deskTxt) { deskTxt.textContent = "Offline"; deskTxt.className = "text-sky-400 font-medium"; }
+        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-sky-500";
+        if (mobTxt) { mobTxt.textContent = "Offline"; mobTxt.className = "text-sky-400 font-medium"; }
       }
     }
 
-    onSnapshot(stocksDocRef, (docSnap) => {
+    onSnapshot(stocksDocRef, { includeMetadataChanges: true }, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.stockData) window.stockData = data.stockData;
@@ -1013,10 +1024,10 @@
       }
       initStockData();
       renderAllViews();
-      updateSyncStatus("connected");
+      updateSyncStatus(docSnap.metadata.fromCache ? "offline" : "connected");
     });
 
-    onSnapshot(pbucDocRef, (docSnap) => {
+    onSnapshot(pbucDocRef, { includeMetadataChanges: true }, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.pbucData) window.pbucData = data.pbucData;
@@ -1025,11 +1036,10 @@
         window.pbucData = {};
       }
       renderPbucTable();
-      updateSyncStatus("connected");
+      updateSyncStatus(docSnap.metadata.fromCache ? "offline" : "connected");
     });
 
-    // LISTENER TRANSAKSI DENGAN MAP DEDUPING (BEBAS DATA GANDA)
-    onSnapshot(txCollectionRef, (snapshot) => {
+    onSnapshot(txCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
       const txMap = new Map();
       snapshot.forEach(doc => {
         txMap.set(String(doc.id), doc.data());
@@ -1039,11 +1049,10 @@
       window.transactions = loadedTx;
       window.saveToLocalStorage();
       renderAllViews();
-      updateSyncStatus("connected");
+      updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
-    // LISTENER LAPORAN DENGAN MAP DEDUPING (BEBAS DATA GANDA)
-    onSnapshot(reportsCollectionRef, (snapshot) => {
+    onSnapshot(reportsCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
       const repMap = new Map();
       snapshot.forEach(doc => {
         repMap.set(String(doc.id), doc.data());
@@ -1053,7 +1062,7 @@
       window.generatedReports = loadedReps;
       window.saveToLocalStorage();
       renderAllViews();
-      updateSyncStatus("connected");
+      updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
     function renderAllViews() {
@@ -1629,7 +1638,6 @@
       lucide.createIcons();
     }
 
-    // SIMPAN TRANSAKSI DENGAN PROTEKSI DOUBLE-CLICK & UNIQUE ID
     function saveTransaction() {
       const btn = document.getElementById('btn-save-tx');
       if (btn.disabled) return;
@@ -1981,7 +1989,6 @@
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
-    // SIMPAN LAPORAN DENGAN PROTEKSI DOUBLE-CLICK & UNIQUE ID
     function generateCustomReport() {
       const btn = document.getElementById('btn-save-report');
       if (btn.disabled) return;
