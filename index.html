@@ -46,10 +46,10 @@
 
   <!-- SIDEBAR NAVIGASI DESKTOP -->
   <aside class="hidden md:flex flex-col w-20 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 items-center py-4 no-print">
-    <!-- LOGO DESKTOP DENGAN COLOR TO ALPHA -->
+    <!-- LOGO DESKTOP BARU DENGAN COLOR TO ALPHA -->
     <div class="mb-4 text-center">
       <div class="p-1 bg-white rounded-xl inline-block border border-slate-700/50 shadow-sm overflow-hidden">
-        <img src="https://lh3.googleusercontent.com/d/1OKWjaTTKKWzI4YmQVPs8XH0yaTLtSf8b" alt="Logo Asisten" class="w-10 h-10 object-contain rounded-lg mix-blend-multiply">
+        <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-10 h-10 object-contain rounded-lg mix-blend-multiply">
       </div>
     </div>
 
@@ -77,16 +77,16 @@
     </nav>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v6.7
+      v6.8
     </div>
   </aside>
 
   <!-- HEADER MOBILE -->
   <header class="md:hidden bg-slate-900 text-white p-3 sticky top-0 z-40 shadow-md flex justify-between items-center no-print">
-    <!-- LOGO MOBILE DENGAN COLOR TO ALPHA -->
+    <!-- LOGO MOBILE BARU DENGAN COLOR TO ALPHA -->
     <div class="flex items-center space-x-2">
       <div class="p-0.5 bg-white rounded-lg overflow-hidden">
-        <img src="https://lh3.googleusercontent.com/d/1OKWjaTTKKWzI4YmQVPs8XH0yaTLtSf8b" alt="Logo Asisten" class="w-7 h-7 object-contain rounded-lg mix-blend-multiply">
+        <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-7 h-7 object-contain rounded-lg mix-blend-multiply">
       </div>
       <div>
         <h1 class="font-bold text-xs">Asisten Sales</h1>
@@ -1432,8 +1432,8 @@
     }
 
     function openEditTxModal(txId) {
-      window.editingTxId = txId;
-      const tx = window.transactions.find(t => t.id === txId);
+      window.editingTxId = Number(txId);
+      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
       if (!tx) return;
 
       document.getElementById('modal-edit-tx-toko').textContent = tx.toko;
@@ -1443,7 +1443,7 @@
 
     function renderModalEditItems() {
       const listContainer = document.getElementById('modal-edit-tx-items-list');
-      const tx = window.transactions.find(t => t.id === window.editingTxId);
+      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
       if (!tx || !listContainer) return;
 
       listContainer.innerHTML = tx.items.map((item, idx) => `
@@ -1466,7 +1466,7 @@
     }
 
     function updateItemQtyInTx(itemIdx, newQtyVal) {
-      const tx = window.transactions.find(t => t.id === window.editingTxId);
+      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
       if (!tx || !tx.items[itemIdx]) return;
 
       const newQty = parseInt(newQtyVal, 10);
@@ -1490,7 +1490,7 @@
     }
 
     function removeItemFromTx(itemIdx) {
-      const tx = window.transactions.find(t => t.id === window.editingTxId);
+      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
       if (!tx || !tx.items[itemIdx]) return;
 
       const item = tx.items[itemIdx];
@@ -1512,7 +1512,7 @@
     }
 
     function addItemToExistingTx() {
-      const tx = window.transactions.find(t => t.id === window.editingTxId);
+      const tx = window.transactions.find(t => Number(t.id) === window.editingTxId);
       if (!tx) return;
 
       const prodSelect = document.getElementById('modal-add-prod-select').value;
@@ -1548,8 +1548,17 @@
 
     function deleteTx(id) {
       if (confirm('Hapus seluruh transaksi toko ini? Seluruh sisa barang yang pending akan dikembalikan ke Stok Utama.')) {
-        window.transactions = window.transactions.filter(t => t.id !== id);
-        window.deleteTxFromCloud(id);
+        const targetId = Number(id);
+        
+        // Hapus secara presisi dari array lokal
+        window.transactions = window.transactions.filter(t => Number(t.id) !== targetId);
+        
+        // Simpan ke LocalStorage
+        localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
+        
+        // Hapus dari Firestore Cloud
+        window.deleteTxFromCloud(targetId);
+
         renderTransactions();
         renderStockTable();
         renderDailySummaryTable();
@@ -1687,7 +1696,7 @@
         const inputId = chk.getAttribute('data-inputid');
         const qtyInputVal = parseInt(document.getElementById(inputId).value, 10);
 
-        let tx = window.transactions.find(t => t.id === txId) || window.transactions.find(t => t.toko === toko);
+        let tx = window.transactions.find(t => Number(t.id) === txId) || window.transactions.find(t => t.toko === toko);
 
         if (tx) {
           let item = tx.items[itemIdx] || tx.items.find(i => i.product === sku);
@@ -1909,11 +1918,11 @@
 
     function deleteReport(id) {
       if (confirm('Hapus laporan ini? Seluruh barang yang dilaporkan akan dikembalikan ke sisa stok toko masing-masing.')) {
-        const reportToDelete = window.generatedReports.find(r => r.id === id);
+        const reportToDelete = window.generatedReports.find(r => Number(r.id) === Number(id));
 
         if (reportToDelete && reportToDelete.items) {
           reportToDelete.items.forEach(repItem => {
-            let tx = window.transactions.find(t => t.id === repItem.txId) || window.transactions.find(t => t.toko === repItem.tokoAsal);
+            let tx = window.transactions.find(t => Number(t.id) === Number(repItem.txId)) || window.transactions.find(t => t.toko === repItem.tokoAsal);
             if (tx) {
               let item = tx.items.find(i => i.product === repItem.sku);
               if (item) {
@@ -1925,7 +1934,7 @@
           });
         }
 
-        window.generatedReports = window.generatedReports.filter(r => r.id !== id);
+        window.generatedReports = window.generatedReports.filter(r => Number(r.id) !== Number(id));
         window.deleteReportFromCloud(id);
 
         renderTransactions();
