@@ -92,7 +92,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v9.0
+      v10.0
     </div>
   </aside>
 
@@ -578,15 +578,15 @@
       </div>
     </section>
 
-    <!-- DASHBOARD 6: OPERASIONAL & KENDARAAN (FITUR BARU GABUNGAN KM & SURAT) -->
+    <!-- DASHBOARD 6: OPERASIONAL & KENDARAAN (FITUR KM, SURAT & BBM FULL-TO-FULL) -->
     <section id="tab-kendaraan" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
             <i data-lucide="truck" class="w-6 h-6 text-blue-600"></i>
-            Dashboard 6: Operasional &amp; Kendaraan (KM &amp; Surat)
+            Dashboard 6: Operasional &amp; Kendaraan (KM, Surat &amp; Konsumsi BBM)
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Pencatatan KM harian, sisa KM menuju servis berkala, dan pengingat tanggal jatuh tempo surat-surat mobil.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Pencatatan KM harian, efisiensi BBM (KM/Liter), sisa KM servis, dan pengingat tanggal surat mobil.</p>
         </div>
         <div class="flex items-center gap-2 no-print">
           <button onclick="openTargetKmModal()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold px-3 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
@@ -595,7 +595,7 @@
         </div>
       </div>
 
-      <!-- STATUS & RINGKASAN KM SERVIS & SURAT -->
+      <!-- STATUS & RINGKASAN KM SERVIS & FORM LOG KM -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- RINGKASAN SERVIS KM -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -650,6 +650,68 @@
           <button type="button" id="btn-save-km" onclick="saveKmLog()" class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-slate-400 text-white font-bold py-2.5 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs">
             <i data-lucide="save" class="w-4 h-4"></i> Simpan Log KM Hari Ini
           </button>
+        </div>
+      </div>
+
+      <!-- FORM PENCATATAN & RIWAYAT KONSUMSI BBM (FITUR BARU FULL-TO-FULL) -->
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
+        <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b pb-3">
+          <div>
+            <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
+              <i data-lucide="fuel" class="w-5 h-5 text-amber-600"></i>
+              Pencatatan &amp; Efisiensi Konsumsi BBM (Full-to-Full)
+            </h3>
+            <p class="text-[11px] text-slate-400 mt-0.5">Sistem menghitung rasio KM/Liter otomatis dari selisih KM dibagi liter pengisian sebelumnya.</p>
+          </div>
+          <span class="text-xs bg-amber-50 text-amber-800 font-bold px-3 py-1 rounded-full border border-amber-200">
+            Rata-rata Efisiensi: <b id="stat-avg-kml" class="text-amber-700">0 KM/L</b>
+          </span>
+        </div>
+
+        <!-- FORM INPUT BBM -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+          <p class="text-xs font-bold text-slate-700 uppercase">Input Pengisian BBM Baru:</p>
+          <div class="grid grid-cols-1 sm:grid-cols-4 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">KM Sekarang (Odometer)</label>
+              <input type="number" min="0" id="input-bbm-km" placeholder="Contoh: 12200" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Jumlah Liter Disi</label>
+              <input type="number" step="0.01" min="0" id="input-bbm-liter" placeholder="Contoh: 15.5" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Total Biaya (Rp)</label>
+              <input type="number" min="0" id="input-bbm-cost" placeholder="Contoh: 150000" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-600 uppercase mb-1">Jenis BBM &amp; Lokasi SPBU</label>
+              <input type="text" id="input-bbm-type" placeholder="Pertalite / SPBU Pelaihari" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg outline-none focus:ring-2 focus:ring-amber-500 bg-white">
+            </div>
+          </div>
+          <button type="button" id="btn-save-bbm" onclick="saveBbmLog()" class="bg-amber-600 hover:bg-amber-700 disabled:bg-slate-400 text-white font-bold py-2 px-4 rounded-xl text-xs shadow-md transition flex items-center gap-1.5">
+            <i data-lucide="plus" class="w-4 h-4"></i> Catat Pengisian BBM
+          </button>
+        </div>
+
+        <!-- TABEL RIWAYAT BBM -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse border border-slate-200">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
+              <tr>
+                <th class="p-3 border border-slate-200 text-center">No</th>
+                <th class="p-3 border border-slate-200">Tanggal Pengisian</th>
+                <th class="p-3 border border-slate-200 text-right">KM Odometer</th>
+                <th class="p-3 border border-slate-200 text-right">Jarak (KM)</th>
+                <th class="p-3 border border-slate-200 text-right">Liter Disi</th>
+                <th class="p-3 border border-slate-200 text-right">Biaya (Rp)</th>
+                <th class="p-3 border border-slate-200 text-center text-amber-700">Rasio Efisiensi</th>
+                <th class="p-3 border border-slate-200">Ket / SPBU</th>
+                <th class="p-3 border border-slate-200 text-center no-print">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="bbm-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
         </div>
       </div>
 
@@ -733,7 +795,7 @@
           <li>Seluruh data <b>Laporan Harian</b> (Dashboard 3)</li>
           <li>Seluruh <b>Stok Awal, Koreksi & Target Bulanan</b> (Dashboard 1)</li>
           <li>Data <b>Input Review PBUC</b> (Dashboard 5)</li>
-          <li>Data <b>Log KM & Surat Kendaraan</b> (Dashboard 6)</li>
+          <li>Data <b>Log KM, Konsumsi BBM & Surat Kendaraan</b> (Dashboard 6)</li>
           <li>Menghapus semua dokumen di <b>Firebase Cloud</b> & <b>LocalStorage Browser</b></li>
         </ul>
         <p class="bg-rose-50 border border-rose-200 text-rose-800 p-2.5 rounded-xl font-medium">
@@ -1028,8 +1090,9 @@
     const reportsCollectionRef = collection(db, "app_reports");
     const pbucDocRef = doc(db, "app_pbuc", "main_pbuc");
     
-    // DASHBOARD 6 FIRESTORE REFS
+    // DASHBOARD 6 FIRESTORE REFS (KM, SURAT & BBM)
     const kmCollectionRef = collection(db, "app_km_logs");
+    const bbmCollectionRef = collection(db, "app_bbm_logs");
     const suratCollectionRef = collection(db, "app_surat_docs");
     const kmSettingsDocRef = doc(db, "app_km_settings", "main_km_settings");
 
@@ -1046,8 +1109,9 @@
     window.monthlyTarget = 0;
     window.lastActiveDate = new Date().toISOString().split('T')[0];
 
-    // MEMORI BARU V9.0 (DASHBOARD 6)
+    // MEMORI V10.0 (DASHBOARD 6)
     window.kmLogs = [];
+    window.bbmLogs = [];
     window.suratDocs = [];
     window.targetKmService = 0;
 
@@ -1066,8 +1130,9 @@
       localStorage.setItem('sales_monthly_target_3dash', window.monthlyTarget);
       localStorage.setItem('sales_last_active_date_3dash', window.lastActiveDate);
 
-      // LOCALSTORAGE V9.0
+      // LOCALSTORAGE V10.0
       localStorage.setItem('sales_km_logs_dash6', JSON.stringify(window.kmLogs));
+      localStorage.setItem('sales_bbm_logs_dash6', JSON.stringify(window.bbmLogs));
       localStorage.setItem('sales_surat_docs_dash6', JSON.stringify(window.suratDocs));
       localStorage.setItem('sales_target_km_dash6', window.targetKmService);
     };
@@ -1081,8 +1146,9 @@
         window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target_3dash'), 10) || 0;
         window.lastActiveDate = localStorage.getItem('sales_last_active_date_3dash') || new Date().toISOString().split('T')[0];
 
-        // LOAD MEMORI V9.0
+        // LOAD MEMORI V10.0
         window.kmLogs = JSON.parse(localStorage.getItem('sales_km_logs_dash6')) || [];
+        window.bbmLogs = JSON.parse(localStorage.getItem('sales_bbm_logs_dash6')) || [];
         window.suratDocs = JSON.parse(localStorage.getItem('sales_surat_docs_dash6')) || [];
         window.targetKmService = parseInt(localStorage.getItem('sales_target_km_dash6'), 10) || 0;
       } catch (e) {
@@ -1173,7 +1239,7 @@
       }
     };
 
-    // FUNGSI SYNC CLOUD UNTUK DASHBOARD 6
+    // FUNGSI SYNC CLOUD UNTUK DASHBOARD 6 (KM, BBM, SURAT)
     window.syncKmLogToCloud = async function(kmObj) {
       updateSyncStatus("saving");
       window.saveToLocalStorage();
@@ -1193,6 +1259,29 @@
         updateSyncStatus("connected");
       } catch (err) {
         console.error("Gagal hapus log KM di Cloud:", err);
+        updateSyncStatus("offline");
+      }
+    };
+
+    window.syncBbmLogToCloud = async function(bbmObj) {
+      updateSyncStatus("saving");
+      window.saveToLocalStorage();
+      try {
+        await setDoc(doc(bbmCollectionRef, String(bbmObj.id)), bbmObj);
+        updateSyncStatus("connected");
+      } catch (err) {
+        console.error("Gagal simpan log BBM ke Cloud:", err);
+        updateSyncStatus("offline");
+      }
+    };
+
+    window.deleteBbmLogFromCloud = async function(bbmId) {
+      updateSyncStatus("saving");
+      try {
+        await deleteDoc(doc(bbmCollectionRef, String(bbmId)));
+        updateSyncStatus("connected");
+      } catch (err) {
+        console.error("Gagal hapus log BBM di Cloud:", err);
         updateSyncStatus("offline");
       }
     };
@@ -1251,6 +1340,9 @@
         const kmSnaps = await getDocs(kmCollectionRef);
         await Promise.all(kmSnaps.docs.map(d => deleteDoc(d.ref)));
 
+        const bbmSnaps = await getDocs(bbmCollectionRef);
+        await Promise.all(bbmSnaps.docs.map(d => deleteDoc(d.ref)));
+
         const suratSnaps = await getDocs(suratCollectionRef);
         await Promise.all(suratSnaps.docs.map(d => deleteDoc(d.ref)));
 
@@ -1260,6 +1352,7 @@
         window.pbucData = {};
         window.monthlyTarget = 0;
         window.kmLogs = [];
+        window.bbmLogs = [];
         window.suratDocs = [];
         window.targetKmService = 0;
         window.cart = [];
@@ -1354,7 +1447,7 @@
       updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
-    // LISTENERS CLOUD DEDUPING DASHBOARD 6
+    // LISTENERS CLOUD DASHBOARD 6
     onSnapshot(kmSettingsDocRef, { includeMetadataChanges: true }, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -1373,6 +1466,19 @@
       const loadedKm = Array.from(kmMap.values());
       loadedKm.sort((a, b) => String(b.id).localeCompare(String(a.id)));
       window.kmLogs = loadedKm;
+      window.saveToLocalStorage();
+      renderKendaraanDashboard();
+      updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
+    });
+
+    onSnapshot(bbmCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
+      const bbmMap = new Map();
+      snapshot.forEach(doc => {
+        bbmMap.set(String(doc.id), doc.data());
+      });
+      const loadedBbm = Array.from(bbmMap.values());
+      loadedBbm.sort((a, b) => a.km - b.km); // Urut ascending berdasarkan KM untuk rumus Full-to-Full
+      window.bbmLogs = loadedBbm;
       window.saveToLocalStorage();
       renderKendaraanDashboard();
       updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
@@ -1533,13 +1639,17 @@
       lucide.createIcons();
     }
 
-    /* LOGIKA DAN RENDER UNTUK DASHBOARD 6: OPERASIONAL & KENDARAAN */
+    /* LOGIKA & RENDER DASHBOARD 6: OPERASIONAL, KENDARAAN & EFISIENSI BBM */
     function renderKendaraanDashboard() {
-      // 1. Dapatkan KM Terakhir (KM Akhir terbaru)
+      // 1. KM Terakhir & Status Servis
       let lastKm = 0;
       if (window.kmLogs && window.kmLogs.length > 0) {
         const sortedKm = [...window.kmLogs].sort((a, b) => b.kmAkhir - a.kmAkhir);
         lastKm = sortedKm[0].kmAkhir || 0;
+      }
+      if (window.bbmLogs && window.bbmLogs.length > 0) {
+        const lastBbmKm = Math.max(...window.bbmLogs.map(b => b.km));
+        if (lastBbmKm > lastKm) lastKm = lastBbmKm;
       }
 
       const targetKm = window.targetKmService || 0;
@@ -1555,21 +1665,87 @@
           badgeKm.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600";
           badgeKm.textContent = "Target Belum Set";
         } else if (remainingKm >= 1500) {
-          // 🟢 Hijau: sisa 2000 - 1500 KM (atau lebih)
           badgeKm.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200";
           badgeKm.textContent = "🟢 Kondisi Aman";
         } else if (remainingKm >= 1000 && remainingKm <= 1499) {
-          // 🟡 Kuning: sisa 1499 - 1000 KM
           badgeKm.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200";
           badgeKm.textContent = "🟡 Persiapan Servis";
         } else {
-          // 🔴 Merah: sisa 999 - 0 KM (atau lewat)
           badgeKm.className = "px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200 animate-pulse";
           badgeKm.textContent = "🔴 Waktunya Servis!";
         }
       }
 
-      // Render Tabel Log KM
+      // 2. Render Tabel & Hitung Efisiensi BBM (Full-to-Full)
+      const bbmTbody = document.getElementById('bbm-table-body');
+      if (bbmTbody) {
+        if (!window.bbmLogs || window.bbmLogs.length === 0) {
+          bbmTbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 text-xs">Belum ada riwayat pengisian BBM. Isikan form di atas untuk memulai.</td></tr>`;
+          document.getElementById('stat-avg-kml').textContent = '0 KM/L';
+        } else {
+          // Sort Ascending berdasarkan KM untuk menghitung selisih
+          const sortedBbm = [...window.bbmLogs].sort((a, b) => a.km - b.km);
+          let totalKmlSum = 0;
+          let validKmlCount = 0;
+
+          // Process array data dengan rasio KM/L
+          const processedBbm = sortedBbm.map((curr, i) => {
+            if (i === 0) {
+              return { ...curr, distance: 0, kml: null };
+            }
+            const prev = sortedBbm[i - 1];
+            const distance = curr.km - prev.km;
+            const kml = prev.liter > 0 ? (distance / prev.liter) : 0;
+
+            if (kml > 0) {
+              totalKmlSum += kml;
+              validKmlCount++;
+            }
+
+            return { ...curr, distance, kml };
+          });
+
+          // Tampilkan urutan terbaru di atas (Descending)
+          const displayBbm = [...processedBbm].reverse();
+
+          bbmTbody.innerHTML = displayBbm.map((b, idx) => {
+            let kmlBadge = '<span class="text-slate-400 font-medium">Basis Awal</span>';
+            if (b.kml !== null) {
+              const kmlVal = b.kml.toFixed(1);
+              if (b.kml >= 12) {
+                kmlBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">🟢 ${kmlVal} KM/L (Irit)</span>`;
+              } else if (b.kml >= 9) {
+                kmlBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-200">🟡 ${kmlVal} KM/L (Normal)</span>`;
+              } else {
+                kmlBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 border border-rose-200">🔴 ${kmlVal} KM/L (Boros)</span>`;
+              }
+            }
+
+            return `
+              <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+                <td class="p-3 border text-center font-medium">${idx + 1}</td>
+                <td class="p-3 border font-bold text-slate-800">${b.dateStr}</td>
+                <td class="p-3 border text-right font-bold text-slate-900">${(b.km || 0).toLocaleString('id-ID')} KM</td>
+                <td class="p-3 border text-right font-medium text-blue-600">${b.distance > 0 ? '+' + b.distance + ' KM' : '-'}</td>
+                <td class="p-3 border text-right font-bold text-amber-600">${b.liter} L</td>
+                <td class="p-3 border text-right font-medium text-slate-700">Rp ${(b.cost || 0).toLocaleString('id-ID')}</td>
+                <td class="p-3 border text-center">${kmlBadge}</td>
+                <td class="p-3 border text-slate-600">${b.typeNote || '-'}</td>
+                <td class="p-3 border text-center no-print">
+                  <button onclick="deleteBbmLog('${b.id}')" class="text-slate-400 hover:text-red-600 transition p-1">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          const avgKml = validKmlCount > 0 ? (totalKmlSum / validKmlCount).toFixed(1) : 0;
+          document.getElementById('stat-avg-kml').textContent = `${avgKml} KM/L`;
+        }
+      }
+
+      // 3. Render Tabel Log KM
       const kmTbody = document.getElementById('km-table-body');
       if (kmTbody) {
         if (!window.kmLogs || window.kmLogs.length === 0) {
@@ -1593,7 +1769,7 @@
         }
       }
 
-      // Render Tabel Surat Dokumen (Pengingat Surat)
+      // 4. Render Tabel Pengingat Surat
       const suratTbody = document.getElementById('surat-table-body');
       if (suratTbody) {
         if (!window.suratDocs || window.suratDocs.length === 0) {
@@ -1613,15 +1789,12 @@
             let diffClass = '';
 
             if (diffDays > 30) {
-              // 🟢 Hijau: Sisa hari > 30
               diffClass = 'text-emerald-700 font-bold';
               statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">🟢 Masa Berlaku Panjang</span>`;
             } else if (diffDays >= 8 && diffDays <= 30) {
-              // 🟡 Kuning: Sisa hari 8 - 30
               diffClass = 'text-amber-700 font-bold';
               statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800">🟡 Perpanjang Segera</span>`;
             } else {
-              // 🔴 Merah: Sisa hari <= 7 atau sudah lewat
               diffClass = 'text-rose-700 font-bold';
               statusBadge = `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-rose-100 text-rose-800 animate-pulse">${diffDays < 0 ? '🔴 Lewat Jatuh Tempo' : '🔴 Mendesak (H-' + diffDays + ')'}</span>`;
             }
@@ -1652,6 +1825,59 @@
       }
 
       lucide.createIcons();
+    }
+
+    function saveBbmLog() {
+      const btn = document.getElementById('btn-save-bbm');
+      if (btn.disabled) return;
+
+      const kmVal = parseInt(document.getElementById('input-bbm-km').value, 10);
+      const literVal = parseFloat(document.getElementById('input-bbm-liter').value);
+      const costVal = parseInt(document.getElementById('input-bbm-cost').value, 10) || 0;
+      const typeNote = document.getElementById('input-bbm-type').value.trim();
+
+      if (isNaN(kmVal) || isNaN(literVal) || literVal <= 0) {
+        alert('Mohon isi KM Odometer dan Jumlah Liter BBM dengan angka valid!');
+        return;
+      }
+
+      btn.disabled = true;
+
+      const now = new Date();
+      const newBbm = {
+        id: window.generateUniqueId(),
+        km: kmVal,
+        liter: literVal,
+        cost: costVal,
+        typeNote: typeNote,
+        dateStr: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }),
+        rawDate: getIsoDateStr(now)
+      };
+
+      window.bbmLogs.push(newBbm);
+
+      document.getElementById('input-bbm-km').value = '';
+      document.getElementById('input-bbm-liter').value = '';
+      document.getElementById('input-bbm-cost').value = '';
+      document.getElementById('input-bbm-type').value = '';
+
+      if (typeof window.syncBbmLogToCloud === 'function') {
+        window.syncBbmLogToCloud(newBbm);
+      }
+
+      renderKendaraanDashboard();
+      btn.disabled = false;
+    }
+
+    function deleteBbmLog(id) {
+      if (confirm('Hapus riwayat pengisian BBM ini?')) {
+        const targetId = String(id);
+        window.bbmLogs = window.bbmLogs.filter(b => String(b.id) !== targetId);
+        if (typeof window.deleteBbmLogFromCloud === 'function') {
+          window.deleteBbmLogFromCloud(targetId);
+        }
+        renderKendaraanDashboard();
+      }
     }
 
     function openTargetKmModal() {
