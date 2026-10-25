@@ -4,6 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Aplikasi Asisten By Andreansyah - Multi Dashboard System</title>
+  
+  <!-- META PWA & MOBILE CONFIG -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h">
+
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- LIBRARY EXPORT EXCEL (SHEETJS) -->
@@ -14,6 +22,13 @@
     body {
       overflow-x: hidden;
       background-color: #f8fafc;
+    }
+    /* EFEK TRANSISI SMOOTH UNTUK BOTTOM NAV MOBILE AUTO-HIDE */
+    .mobile-nav-transform {
+      transition: transform 0.3s ease-in-out;
+    }
+    .mobile-nav-hidden {
+      transform: translateY(100%);
     }
     @media print {
       body {
@@ -92,7 +107,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v10.0
+      v11.0 (PWA)
     </div>
   </aside>
 
@@ -103,7 +118,7 @@
         <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-7 h-7 object-contain rounded-lg mix-blend-multiply">
       </div>
       <div>
-        <h1 class="font-bold text-xs">Asisten Sales</h1>
+        <h1 class="font-bold text-xs">Asisten Sales PWA</h1>
       </div>
     </div>
     <div class="flex items-center gap-2">
@@ -578,7 +593,7 @@
       </div>
     </section>
 
-    <!-- DASHBOARD 6: OPERASIONAL & KENDARAAN (FITUR KM, SURAT & BBM FULL-TO-FULL) -->
+    <!-- DASHBOARD 6: OPERASIONAL & KENDARAAN (KM, SURAT & BBM FULL-TO-FULL) -->
     <section id="tab-kendaraan" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -653,7 +668,7 @@
         </div>
       </div>
 
-      <!-- FORM PENCATATAN & RIWAYAT KONSUMSI BBM (FITUR BARU FULL-TO-FULL) -->
+      <!-- FORM PENCATATAN & RIWAYAT KONSUMSI BBM (FULL-TO-FULL) -->
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
         <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-2 border-b pb-3">
           <div>
@@ -1031,8 +1046,8 @@
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION MOBILE -->
-  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center no-print">
+  <!-- BOTTOM NAVIGATION MOBILE WITH AUTO-HIDE -->
+  <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center no-print mobile-nav-transform">
     <button onclick="switchTab('stok')" id="nav-mob-stok" title="Stok" class="text-red-500 p-1">
       <i data-lucide="boxes" class="w-5 h-5"></i>
     </button>
@@ -1090,7 +1105,7 @@
     const reportsCollectionRef = collection(db, "app_reports");
     const pbucDocRef = doc(db, "app_pbuc", "main_pbuc");
     
-    // DASHBOARD 6 FIRESTORE REFS (KM, SURAT & BBM)
+    // DASHBOARD 6 FIRESTORE REFS
     const kmCollectionRef = collection(db, "app_km_logs");
     const bbmCollectionRef = collection(db, "app_bbm_logs");
     const suratCollectionRef = collection(db, "app_surat_docs");
@@ -1109,7 +1124,6 @@
     window.monthlyTarget = 0;
     window.lastActiveDate = new Date().toISOString().split('T')[0];
 
-    // MEMORI V10.0 (DASHBOARD 6)
     window.kmLogs = [];
     window.bbmLogs = [];
     window.suratDocs = [];
@@ -1130,7 +1144,6 @@
       localStorage.setItem('sales_monthly_target_3dash', window.monthlyTarget);
       localStorage.setItem('sales_last_active_date_3dash', window.lastActiveDate);
 
-      // LOCALSTORAGE V10.0
       localStorage.setItem('sales_km_logs_dash6', JSON.stringify(window.kmLogs));
       localStorage.setItem('sales_bbm_logs_dash6', JSON.stringify(window.bbmLogs));
       localStorage.setItem('sales_surat_docs_dash6', JSON.stringify(window.suratDocs));
@@ -1146,7 +1159,6 @@
         window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target_3dash'), 10) || 0;
         window.lastActiveDate = localStorage.getItem('sales_last_active_date_3dash') || new Date().toISOString().split('T')[0];
 
-        // LOAD MEMORI V10.0
         window.kmLogs = JSON.parse(localStorage.getItem('sales_km_logs_dash6')) || [];
         window.bbmLogs = JSON.parse(localStorage.getItem('sales_bbm_logs_dash6')) || [];
         window.suratDocs = JSON.parse(localStorage.getItem('sales_surat_docs_dash6')) || [];
@@ -1239,7 +1251,6 @@
       }
     };
 
-    // FUNGSI SYNC CLOUD UNTUK DASHBOARD 6 (KM, BBM, SURAT)
     window.syncKmLogToCloud = async function(kmObj) {
       updateSyncStatus("saving");
       window.saveToLocalStorage();
@@ -1447,7 +1458,6 @@
       updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
-    // LISTENERS CLOUD DASHBOARD 6
     onSnapshot(kmSettingsDocRef, { includeMetadataChanges: true }, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -1477,7 +1487,7 @@
         bbmMap.set(String(doc.id), doc.data());
       });
       const loadedBbm = Array.from(bbmMap.values());
-      loadedBbm.sort((a, b) => a.km - b.km); // Urut ascending berdasarkan KM untuk rumus Full-to-Full
+      loadedBbm.sort((a, b) => a.km - b.km);
       window.bbmLogs = loadedBbm;
       window.saveToLocalStorage();
       renderKendaraanDashboard();
@@ -1520,10 +1530,25 @@
     }
   </script>
 
-  <!-- JAVASCRIPT LOGIKA UTAMA & FORMATTING -->
+  <!-- JAVASCRIPT LOGIKA UTAMA & SCROLL AUTO-HIDE NAV -->
   <script>
     let chart1Instance = null;
     let chart2Instance = null;
+
+    // LOGIKA SCROLL AUTO-HIDE UNTUK BOTTOM NAVIGATION MOBILE
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('mobile-bottom-nav');
+      if (!nav) return;
+      if (window.scrollY > lastScrollY && window.scrollY > 50) {
+        // Scroll ke bawah -> Sembunyikan bottom nav
+        nav.classList.add('mobile-nav-hidden');
+      } else {
+        // Scroll ke atas -> Tampilkan bottom nav
+        nav.classList.remove('mobile-nav-hidden');
+      }
+      lastScrollY = window.scrollY;
+    });
 
     function openResetModal() {
       document.getElementById('modal-reset-db').classList.remove('hidden');
@@ -1639,9 +1664,8 @@
       lucide.createIcons();
     }
 
-    /* LOGIKA & RENDER DASHBOARD 6: OPERASIONAL, KENDARAAN & EFISIENSI BBM */
+    /* RENDER DASHBOARD 6: KM, SURAT & EFISIENSI BBM */
     function renderKendaraanDashboard() {
-      // 1. KM Terakhir & Status Servis
       let lastKm = 0;
       if (window.kmLogs && window.kmLogs.length > 0) {
         const sortedKm = [...window.kmLogs].sort((a, b) => b.kmAkhir - a.kmAkhir);
@@ -1676,19 +1700,17 @@
         }
       }
 
-      // 2. Render Tabel & Hitung Efisiensi BBM (Full-to-Full)
+      // Render Tabel & Hitung Efisiensi BBM
       const bbmTbody = document.getElementById('bbm-table-body');
       if (bbmTbody) {
         if (!window.bbmLogs || window.bbmLogs.length === 0) {
           bbmTbody.innerHTML = `<tr><td colspan="9" class="p-6 text-center text-slate-400 text-xs">Belum ada riwayat pengisian BBM. Isikan form di atas untuk memulai.</td></tr>`;
           document.getElementById('stat-avg-kml').textContent = '0 KM/L';
         } else {
-          // Sort Ascending berdasarkan KM untuk menghitung selisih
           const sortedBbm = [...window.bbmLogs].sort((a, b) => a.km - b.km);
           let totalKmlSum = 0;
           let validKmlCount = 0;
 
-          // Process array data dengan rasio KM/L
           const processedBbm = sortedBbm.map((curr, i) => {
             if (i === 0) {
               return { ...curr, distance: 0, kml: null };
@@ -1705,7 +1727,6 @@
             return { ...curr, distance, kml };
           });
 
-          // Tampilkan urutan terbaru di atas (Descending)
           const displayBbm = [...processedBbm].reverse();
 
           bbmTbody.innerHTML = displayBbm.map((b, idx) => {
@@ -1745,7 +1766,7 @@
         }
       }
 
-      // 3. Render Tabel Log KM
+      // Render Tabel Log KM
       const kmTbody = document.getElementById('km-table-body');
       if (kmTbody) {
         if (!window.kmLogs || window.kmLogs.length === 0) {
@@ -1769,7 +1790,7 @@
         }
       }
 
-      // 4. Render Tabel Pengingat Surat
+      // Render Tabel Pengingat Surat
       const suratTbody = document.getElementById('surat-table-body');
       if (suratTbody) {
         if (!window.suratDocs || window.suratDocs.length === 0) {
@@ -3408,6 +3429,17 @@
 
       const todayStr = getIsoDateStr(new Date());
       XLSX.writeFile(workbook, `Rekap_Ringkasan_Penjualan_${todayStr}.xlsx`);
+    }
+  </script>
+
+  <!-- REGISTRASI SERVICE WORKER UNTUK PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('PWA Service Worker Aktif:', reg.scope))
+          .catch((err) => console.error('Gagal Registrasi PWA:', err));
+      });
     }
   </script>
 </body>
