@@ -1,0 +1,23 @@
+{
+  "short_name": "AsistenSales",
+  "name": "Aplikasi Asisten Sales & Operasional",
+  "icons": [
+    {
+      "src": "https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "display": "standalone",
+  "orientation": "portrait"
+}
