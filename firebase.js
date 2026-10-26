@@ -35,7 +35,7 @@ window.syncKmToCloud = async function(kmObj) {
 window.savePbucData = async function() {
   try {
     await setDoc(pbucDocRef, { pbucData: window.pbucData });
-    alert("Data PBUC Disimpan!");
+    alert("Data PBUC Berhasil Disimpan!");
   } catch (e) { alert("Gagal Simpan PBUC"); }
 };
 
