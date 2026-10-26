@@ -107,7 +107,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v11.0 (PWA)
+      v11.1 (PWA)
     </div>
   </aside>
 
@@ -1111,9 +1111,10 @@
     const suratCollectionRef = collection(db, "app_surat_docs");
     const kmSettingsDocRef = doc(db, "app_km_settings", "main_km_settings");
 
+    // DAFTAR PRODUK LENGKAP TERBARU (SUDAH DITAMBAH PBW SKT)
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
-      "MCG SKT", "PBB SKT", "PBM SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
+      "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
     ];
 
     window.cart = [];
@@ -1541,10 +1542,8 @@
       const nav = document.getElementById('mobile-bottom-nav');
       if (!nav) return;
       if (window.scrollY > lastScrollY && window.scrollY > 50) {
-        // Scroll ke bawah -> Sembunyikan bottom nav
         nav.classList.add('mobile-nav-hidden');
       } else {
-        // Scroll ke atas -> Tampilkan bottom nav
         nav.classList.remove('mobile-nav-hidden');
       }
       lastScrollY = window.scrollY;
@@ -1664,7 +1663,6 @@
       lucide.createIcons();
     }
 
-    /* RENDER DASHBOARD 6: KM, SURAT & EFISIENSI BBM */
     function renderKendaraanDashboard() {
       let lastKm = 0;
       if (window.kmLogs && window.kmLogs.length > 0) {
@@ -1700,7 +1698,6 @@
         }
       }
 
-      // Render Tabel & Hitung Efisiensi BBM
       const bbmTbody = document.getElementById('bbm-table-body');
       if (bbmTbody) {
         if (!window.bbmLogs || window.bbmLogs.length === 0) {
@@ -1766,7 +1763,6 @@
         }
       }
 
-      // Render Tabel Log KM
       const kmTbody = document.getElementById('km-table-body');
       if (kmTbody) {
         if (!window.kmLogs || window.kmLogs.length === 0) {
@@ -1790,7 +1786,6 @@
         }
       }
 
-      // Render Tabel Pengingat Surat
       const suratTbody = document.getElementById('surat-table-body');
       if (suratTbody) {
         if (!window.suratDocs || window.suratDocs.length === 0) {
