@@ -1,5 +1,5 @@
-// Naikkan versi versi ini (misal v1.0 -> v1.1) tiap kali kamu update index.html di GitHub
-const CACHE_NAME = 'asisten-sales-v1.0';
+// Naikkan versi versi ini (misal v1.1 -> v1.2) tiap kali kamu update index.html di GitHub
+const CACHE_NAME = 'asisten-sales-v1.1';
 
 const ASSETS_TO_CACHE = [
   './',
