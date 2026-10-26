@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Asisten By Andreansyah - Multi Dashboard System</title>
+  <title>Aplikasi Asisten Sales - Multi Dashboard System</title>
   
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#0f172a">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body class="text-slate-800 antialiased min-h-screen bg-slate-50 flex flex-col md:flex-row pb-16 md:pb-0">
 
@@ -43,12 +45,13 @@
 
   <!-- MAIN CONTENT -->
   <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
-    <!-- DASHBOARD 1 -->
+    <!-- DASHBOARD 1: STOK -->
     <section id="tab-stok" class="block space-y-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center">
         <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="boxes" class="w-6 h-6 text-red-600"></i> Dashboard 1: Penyimpanan & Kelola Stok
+          <i data-lucide="boxes" class="w-6 h-6 text-red-600"></i> Dashboard 1: Kelola Stok
         </h2>
+        <button onclick="openResetModal()" class="text-xs bg-rose-50 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200">Reset Total DB</button>
       </div>
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <table class="w-full text-left text-xs border-collapse">
@@ -58,6 +61,7 @@
               <th class="p-3 border">Nama Produk SKU</th>
               <th class="p-3 border text-right">Stok Awal</th>
               <th class="p-3 border text-right">Barang Keluar</th>
+              <th class="p-3 border text-right">Sisa Stok</th>
             </tr>
           </thead>
           <tbody id="stock-table-body"></tbody>
@@ -65,95 +69,79 @@
       </div>
     </section>
 
-    <!-- DASHBOARD 2 -->
+    <!-- DASHBOARD 2: TRANSAKSI TOKO -->
     <section id="tab-omzet" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border shadow-sm">
         <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
           <i data-lucide="shopping-cart" class="w-6 h-6 text-red-600"></i> Dashboard 2: Barang Keluar per Toko
         </h2>
       </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="bg-white p-4 rounded-xl border space-y-3">
+          <input type="text" id="input-toko" placeholder="Nama Toko" class="w-full p-2.5 text-sm border rounded-xl">
+          <div class="flex gap-2">
+            <select id="select-produk" class="w-full p-2 text-sm border rounded-lg bg-white"></select>
+            <input type="number" id="input-jumlah" placeholder="Qty" class="w-24 p-2 text-sm border rounded-lg">
+            <button onclick="addToCart()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-bold">Tambah</button>
+          </div>
+          <div id="cart-items-container" class="space-y-1 bg-slate-50 p-3 rounded-xl"></div>
+          <button onclick="saveTransaction()" class="w-full bg-red-600 text-white font-bold py-2.5 rounded-xl">Simpan Transaksi</button>
+        </div>
+        <div id="tx-list-container" class="space-y-3"></div>
+      </div>
     </section>
 
-    <!-- DASHBOARD 3 -->
+    <!-- DASHBOARD 3: PELAPORAN -->
     <section id="tab-laporan" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i> Dashboard 3: Pelaporan Harian
-        </h2>
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2"><i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i> Dashboard 3: Pelaporan Harian</h2>
       </div>
+      <div id="reports-history-container" class="space-y-2"></div>
     </section>
 
-    <!-- DASHBOARD 4 -->
+    <!-- DASHBOARD 4: RINGKASAN -->
     <section id="tab-ringkasan" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i> Dashboard 4: Ringkasan Per Produk
-        </h2>
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2"><i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i> Dashboard 4: Ringkasan Per Produk</h2>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-100 font-bold uppercase">
+            <tr><th class="p-3 border">No</th><th class="p-3 border">Nama Barang</th><th class="p-3 border text-right">Total Barang Keluar</th></tr>
+          </thead>
+          <tbody id="summary-daily-tbody"></tbody>
+        </table>
       </div>
     </section>
 
-    <!-- DASHBOARD 5 -->
+    <!-- DASHBOARD 5: PBUC -->
     <section id="tab-pbuc" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="clipboard-check" class="w-6 h-6 text-purple-600"></i> Dashboard 5: Review Stok VS PBUC
-        </h2>
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2"><i data-lucide="clipboard-check" class="w-6 h-6 text-purple-600"></i> Dashboard 5: Review Stok VS PBUC</h2>
       </div>
     </section>
 
-    <!-- DASHBOARD 6 -->
+    <!-- DASHBOARD 6: KENDARAAN -->
     <section id="tab-kendaraan" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="truck" class="w-6 h-6 text-blue-600"></i> Dashboard 6: Operasional & Kendaraan
-        </h2>
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2"><i data-lucide="truck" class="w-6 h-6 text-blue-600"></i> Dashboard 6: Operasional & Kendaraan</h2>
       </div>
     </section>
   </main>
 
-  <!-- BOTTOM NAV MOBILE -->
-  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center">
-    <button onclick="switchTab('stok')" class="text-red-500 p-1"><i data-lucide="boxes" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('omzet')" class="text-slate-400 p-1"><i data-lucide="shopping-cart" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('laporan')" class="text-slate-400 p-1"><i data-lucide="file-text" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('ringkasan')" class="text-slate-400 p-1"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('pbuc')" class="text-slate-400 p-1"><i data-lucide="clipboard-check" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('kendaraan')" class="text-slate-400 p-1"><i data-lucide="truck" class="w-5 h-5"></i></button>
+  <!-- MODAL RESET -->
+  <div id="modal-reset-db" class="fixed inset-0 bg-slate-900/70 hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4">
+      <h3 class="font-bold text-rose-700 text-base">Reset Seluruh Database?</h3>
+      <div class="flex gap-2">
+        <button onclick="closeModal('modal-reset-db')" class="flex-1 bg-slate-100 py-2 rounded-xl text-xs font-bold">Batal</button>
+        <button onclick="confirmResetAllDatabase()" class="flex-1 bg-rose-600 text-white py-2 rounded-xl text-xs font-bold">Ya, Hapus Semua</button>
+      </div>
+    </div>
   </div>
 
-  <script>
-    window.PRODUCT_LIST = [
-      "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
-      "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
-    ];
-
-    function switchTab(tabName) {
-      ['stok', 'omzet', 'laporan', 'ringkasan', 'pbuc', 'kendaraan'].forEach(t => {
-        const el = document.getElementById(`tab-${t}`);
-        if (el) el.classList.add('hidden');
-      });
-      const target = document.getElementById(`tab-${tabName}`);
-      if (target) target.classList.remove('hidden');
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    function renderStockTable() {
-      const tbody = document.getElementById('stock-table-body');
-      if (!tbody) return;
-      tbody.innerHTML = window.PRODUCT_LIST.map((sku, idx) => `
-        <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-          <td class="p-3 border text-center font-medium">${idx + 1}</td>
-          <td class="p-3 border font-bold text-slate-800">${sku}</td>
-          <td class="p-3 border text-right font-medium text-slate-700">0 Bks</td>
-          <td class="p-3 border text-right font-medium text-amber-600">0 Bks</td>
-        </tr>
-      `).join('');
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      renderStockTable();
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    });
-  </script>
+  <!-- SCRIPT TERPISAH -->
+  <script src="app.js"></script>
+  <script type="module" src="firebase.js"></script>
 </body>
 </html>
