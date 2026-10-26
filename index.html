@@ -1,100 +1,159 @@
-const CACHE_NAME = 'asisten-sales-v12.8';
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplikasi Asisten By Andreansyah - Multi Dashboard System</title>
+  
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="text-slate-800 antialiased min-h-screen bg-slate-50 flex flex-col md:flex-row pb-16 md:pb-0">
 
-// Daftar aset penting yang di-precache saat instalasi
-const PRECACHE_ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  'https://cdn.tailwindcss.com',
-  'https://unpkg.com/lucide@latest',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
-  'https://cdn.jsdelivr.net/npm/chart.js',
-  'https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h'
-];
+  <!-- SIDEBAR NAVIGASI DESKTOP -->
+  <aside class="hidden md:flex flex-col w-20 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 items-center py-4">
+    <div class="mb-4 text-center">
+      <div class="p-1 bg-white rounded-xl inline-block overflow-hidden">
+        <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo" class="w-10 h-10 object-contain">
+      </div>
+    </div>
+    <nav class="flex-1 space-y-3 w-full px-2">
+      <button onclick="switchTab('stok')" id="nav-desk-stok" title="1. Menyimpan Stok" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center bg-red-600 text-white">
+        <i data-lucide="boxes" class="w-5 h-5"></i>
+      </button>
+      <button onclick="switchTab('omzet')" id="nav-desk-omzet" title="2. Barang Keluar per Toko" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+      </button>
+      <button onclick="switchTab('laporan')" id="nav-desk-laporan" title="3. Dashboard Pelaporan" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="file-text" class="w-5 h-5"></i>
+      </button>
+      <button onclick="switchTab('ringkasan')" id="nav-desk-ringkasan" title="4. Ringkasan Harian" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+      </button>
+      <button onclick="switchTab('pbuc')" id="nav-desk-pbuc" title="5. Review PBUC" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
+      </button>
+      <button onclick="switchTab('kendaraan')" id="nav-desk-kendaraan" title="6. Operasional" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="truck" class="w-5 h-5"></i>
+      </button>
+    </nav>
+  </aside>
 
-// 1. INSTALL EVENT - Precache file utama
-self.addEventListener('install', (event) => {
-  self.skipWaiting(); // Paksa SW baru langsung aktif tanpa menunggu tab ditutup
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Pre-caching Core Assets (v12.8)');
-      return cache.addAll(PRECACHE_ASSETS);
-    })
-  );
-});
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+    <!-- DASHBOARD 1 -->
+    <section id="tab-stok" class="block space-y-6">
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+          <i data-lucide="boxes" class="w-6 h-6 text-red-600"></i> Dashboard 1: Penyimpanan & Kelola Stok
+        </h2>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+        <table class="w-full text-left text-xs border-collapse">
+          <thead class="bg-slate-100 font-bold uppercase">
+            <tr>
+              <th class="p-3 border">No</th>
+              <th class="p-3 border">Nama Produk SKU</th>
+              <th class="p-3 border text-right">Stok Awal</th>
+              <th class="p-3 border text-right">Barang Keluar</th>
+            </tr>
+          </thead>
+          <tbody id="stock-table-body"></tbody>
+        </table>
+      </div>
+    </section>
 
-// 2. ACTIVATE EVENT - Hapus seluruh cache versi lama
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[Service Worker] Deleting Old Cache:', cache);
-            return caches.delete(cache);
-          }
-        })
-      );
-    }).then(() => self.clients.claim()) // Ambil alih kontrol semua tab yang terbuka
-  );
-});
+    <!-- DASHBOARD 2 -->
+    <section id="tab-omzet" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+          <i data-lucide="shopping-cart" class="w-6 h-6 text-red-600"></i> Dashboard 2: Barang Keluar per Toko
+        </h2>
+      </div>
+    </section>
 
-// 3. FETCH EVENT - Strategi Caching Pintar
-self.addEventListener('fetch', (event) => {
-  const requestUrl = new URL(event.request.url);
+    <!-- DASHBOARD 3 -->
+    <section id="tab-laporan" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+          <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i> Dashboard 3: Pelaporan Harian
+        </h2>
+      </div>
+    </section>
 
-  // Abaikan request ke Firebase Firestore / API External (biarkan Firebase SDK menangani offline-nya sendiri)
-  if (
-    requestUrl.hostname.includes('firestore.googleapis.com') ||
-    requestUrl.hostname.includes('firebaseio.com') ||
-    requestUrl.hostname.includes('generativelanguage.googleapis.com')
-  ) {
-    return;
-  }
+    <!-- DASHBOARD 4 -->
+    <section id="tab-ringkasan" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+          <i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i> Dashboard 4: Ringkasan Per Produk
+        </h2>
+      </div>
+    </section>
 
-  // STRATEGI NETWORK-FIRST UNTUK HTML & APP ROOT
-  // Memastikan index.html SELALU diambil versi terbarunya dari server jika ada internet.
-  if (event.request.mode === 'navigate' || requestUrl.pathname.endsWith('.html') || requestUrl.pathname === '/') {
-    event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          // Simpan salinan terbaru ke cache untuk cadangan offline
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => {
-          // Jika offline atau jaringan gagal, gunakan cadangan dari cache
-          return caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) return cachedResponse;
-            return caches.match('./index.html');
-          });
-        })
-    );
-    return;
-  }
+    <!-- DASHBOARD 5 -->
+    <section id="tab-pbuc" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+          <i data-lucide="clipboard-check" class="w-6 h-6 text-purple-600"></i> Dashboard 5: Review Stok VS PBUC
+        </h2>
+      </div>
+    </section>
 
-  // STRATEGI STALE-WHILE-REVALIDATE UNTUK CDN, LIBRARY & ASSET STATIS
-  event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
-      const fetchPromise = fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => cachedResponse);
+    <!-- DASHBOARD 6 -->
+    <section id="tab-kendaraan" class="hidden space-y-6">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
+        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+          <i data-lucide="truck" class="w-6 h-6 text-blue-600"></i> Dashboard 6: Operasional & Kendaraan
+        </h2>
+      </div>
+    </section>
+  </main>
 
-      // Kembalikan dari cache jika ada, sambil memperbarui cache dari network di background
-      return cachedResponse || fetchPromise;
-    })
-  );
-});
+  <!-- BOTTOM NAV MOBILE -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center">
+    <button onclick="switchTab('stok')" class="text-red-500 p-1"><i data-lucide="boxes" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('omzet')" class="text-slate-400 p-1"><i data-lucide="shopping-cart" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('laporan')" class="text-slate-400 p-1"><i data-lucide="file-text" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('ringkasan')" class="text-slate-400 p-1"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('pbuc')" class="text-slate-400 p-1"><i data-lucide="clipboard-check" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('kendaraan')" class="text-slate-400 p-1"><i data-lucide="truck" class="w-5 h-5"></i></button>
+  </div>
+
+  <script>
+    window.PRODUCT_LIST = [
+      "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
+      "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
+    ];
+
+    function switchTab(tabName) {
+      ['stok', 'omzet', 'laporan', 'ringkasan', 'pbuc', 'kendaraan'].forEach(t => {
+        const el = document.getElementById(`tab-${t}`);
+        if (el) el.classList.add('hidden');
+      });
+      const target = document.getElementById(`tab-${tabName}`);
+      if (target) target.classList.remove('hidden');
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    }
+
+    function renderStockTable() {
+      const tbody = document.getElementById('stock-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = window.PRODUCT_LIST.map((sku, idx) => `
+        <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+          <td class="p-3 border text-center font-medium">${idx + 1}</td>
+          <td class="p-3 border font-bold text-slate-800">${sku}</td>
+          <td class="p-3 border text-right font-medium text-slate-700">0 Bks</td>
+          <td class="p-3 border text-right font-medium text-amber-600">0 Bks</td>
+        </tr>
+      `).join('');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderStockTable();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
