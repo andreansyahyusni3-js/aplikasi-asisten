@@ -74,7 +74,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v12.9 (Full Restored)
+      v12.0 (Stable Classic)
     </div>
   </aside>
 
@@ -173,19 +173,11 @@
           <i data-lucide="shopping-cart" class="w-6 h-6 text-red-600"></i>
           Dashboard 2: Pencatatan Barang Keluar per Toko
         </h2>
-        <p class="text-xs text-slate-500 mt-0.5">Scan nota otomatis via AI atau input manual.</p>
+        <p class="text-xs text-slate-500 mt-0.5">Input manual penjualan toko per barang.</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-          <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-200 space-y-2">
-            <label class="block text-xs font-bold text-indigo-900 uppercase flex items-center gap-1.5">
-              <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i> Scan Nota / Struk Fisik (AI Gemini)
-            </label>
-            <input type="file" id="input-foto-nota" accept="image/*" capture="environment" onchange="scanNotaWithAI(event)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
-            <p id="ai-scan-status" class="text-[11px] font-semibold text-indigo-700 hidden">⏳ AI sedang membaca nota fisik...</p>
-          </div>
-
           <div>
             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Toko / Outlet</label>
             <input type="text" id="input-toko" placeholder="Contoh: Toko Ali" class="w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none focus:ring-2 focus:ring-red-500">
@@ -383,14 +375,12 @@
     <button onclick="switchTab('kendaraan')" id="nav-mob-kendaraan" class="text-slate-400 p-1"><i data-lucide="truck" class="w-5 h-5"></i></button>
   </div>
 
-  <!-- SCRIPT UTAMA PERTAMA (MENGHUBUNGKAN FUNGSI KE WINDOW OBJECT) -->
+  <!-- LOGIKA APLIKASI UTAMA (GLOBAL SCOPE) -->
   <script>
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
       "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
     ];
-
-    window.GEMINI_API_KEY = "AQ.Ab8RN6JC1ZN9BiBuVTNlUiFiK675gBDtuww4onWjmUfUK4T-nA";
 
     window.cart = [];
     window.stockData = {};
@@ -493,7 +483,7 @@
         window.syncStockToCloud(window.stockData);
       }
       window.renderStockTable();
-      alert("Stok Awal Berhasil Disimpan ke Database!");
+      alert("Stok Awal Berhasil Disimpan!");
     };
 
     window.addToCart = function() {
@@ -674,69 +664,6 @@
           <td class="p-2.5 border text-right font-bold text-blue-600">${k.jarak} KM</td>
         </tr>
       `).join('');
-    };
-
-    window.scanNotaWithAI = async function(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const apiKey = window.GEMINI_API_KEY;
-      const statusEl = document.getElementById('ai-scan-status');
-      statusEl.classList.remove('hidden');
-
-      try {
-        const base64Image = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = error => reject(error);
-          reader.readAsDataURL(file);
-        });
-
-        const promptText = `
-          Kamu adalah sistem OCR AI. Baca foto nota penjualan ini.
-          Daftar SKU produk yang valid hanyalah: ${JSON.stringify(window.PRODUCT_LIST)}.
-          Kembalikan HANYA JSON: { "toko": "Nama Toko", "items": [ {"product": "NAMA_SKU_EXACT", "qty": 10} ] }
-        `;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: promptText },
-                { inlineData: { mimeType: file.type, data: base64Image } }
-              ]
-            }]
-          })
-        });
-
-        const data = await response.json();
-        const responseText = data.candidates[0].content.parts[0].text;
-        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const result = JSON.parse(cleanJson);
-
-        if (result.toko) document.getElementById('input-toko').value = result.toko;
-        if (result.items && Array.isArray(result.items)) {
-          result.items.forEach(parsedItem => {
-            const validSku = window.PRODUCT_LIST.find(s => s.toLowerCase() === parsedItem.product.toLowerCase());
-            if (validSku && parsedItem.qty > 0) {
-              const existingIdx = window.cart.findIndex(i => i.product === validSku);
-              if (existingIdx > -1) {
-                window.cart[existingIdx].qty += parsedItem.qty;
-              } else {
-                window.cart.push({ product: validSku, qty: parsedItem.qty });
-              }
-            }
-          });
-        }
-        window.renderCartUI();
-        statusEl.textContent = "✅ Berhasil! Form terisi otomatis.";
-      } catch (err) {
-        statusEl.textContent = "❌ Gagal membaca nota. Silakan input manual.";
-      } finally {
-        event.target.value = '';
-      }
     };
 
     window.renderAllViews = function() {
