@@ -67,8 +67,8 @@
     </div>
 
     <div class="mb-6 flex flex-col items-center gap-1 text-[9px] text-slate-400">
-      <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
-      <span id="sync-status-text" class="text-amber-400 font-medium">Sync</span>
+      <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+      <span id="sync-status-text" class="text-emerald-400 font-medium">Online</span>
     </div>
 
     <nav class="flex-1 space-y-3 w-full px-2">
@@ -104,7 +104,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v12.0 (PWA & AI)
+      v12.1 (PWA & AI)
     </div>
   </aside>
 
@@ -123,8 +123,8 @@
         <i data-lucide="database-zap" class="w-3.5 h-3.5"></i> Reset DB
       </button>
       <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-full text-[10px]">
-        <span id="mob-sync-indicator" class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        <span id="mob-sync-status-text" class="text-amber-400 font-medium">Syncing</span>
+        <span id="mob-sync-indicator" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span id="mob-sync-status-text" class="text-emerald-400 font-medium">Online</span>
       </div>
     </div>
   </header>
@@ -1079,14 +1079,14 @@
     const suratCollectionRef = collection(db, "app_surat_docs");
     const kmSettingsDocRef = doc(db, "app_km_settings", "main_km_settings");
 
-    // DAFTAR PRODUK LENGKAP (SUDAH DITAMBAHKAN PBW SKT)
+    // DAFTAR PRODUK LENGKAP (TERMASUK PBW SKT)
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
       "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
     ];
 
-    // VAR GEMINI API KEY UNTUK SCAN AI
-    window.GEMINI_API_KEY = "AIzaSy..."; // Ganti dengan Google Gemini API Key milikmu yang asli
+    // GEMINI API KEY UNTUK SCAN AI
+    window.GEMINI_API_KEY = "AIzaSy..."; // Ganti dengan Gemini API Key kamu yang diawali AIzaSy...
 
     window.cart = [];
     window.stockData = {};
@@ -1135,7 +1135,33 @@
 
     loadFromLocalStorage();
 
+    // FUNGSI KONTROL INDIKATOR KONEKSI SINKRONISASI
+    window.updateSyncStatus = function(status) {
+      const deskInd = document.getElementById("sync-indicator");
+      const deskTxt = document.getElementById("sync-status-text");
+      const mobInd = document.getElementById("mob-sync-indicator");
+      const mobTxt = document.getElementById("mob-sync-status-text");
+
+      if (status === "connected") {
+        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
+        if (deskTxt) { deskTxt.textContent = "Online"; deskTxt.className = "text-emerald-400 font-medium"; }
+        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-emerald-500";
+        if (mobTxt) { mobTxt.textContent = "Online"; mobTxt.className = "text-emerald-400 font-medium"; }
+      } else if (status === "saving") {
+        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
+        if (deskTxt) { deskTxt.textContent = "Sync"; deskTxt.className = "text-amber-400 font-medium"; }
+        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+        if (mobTxt) { mobTxt.textContent = "Syncing"; mobTxt.className = "text-amber-400 font-medium"; }
+      } else {
+        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-sky-500";
+        if (deskTxt) { deskTxt.textContent = "Offline"; deskTxt.className = "text-sky-400 font-medium"; }
+        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-sky-500";
+        if (mobTxt) { mobTxt.textContent = "Offline"; mobTxt.className = "text-sky-400 font-medium"; }
+      }
+    };
+
     window.syncStockToCloud = async function() {
+      window.updateSyncStatus("saving");
       window.saveToLocalStorage();
       try {
         await setDoc(stocksDocRef, {
@@ -1143,28 +1169,46 @@
           monthlyTarget: window.monthlyTarget || 0,
           updatedAt: new Date().toISOString()
         }, { merge: true });
-      } catch (err) {}
+        window.updateSyncStatus("connected");
+      } catch (err) { window.updateSyncStatus("offline"); }
     };
 
     window.syncTxToCloud = async function(txObj) {
+      window.updateSyncStatus("saving");
       window.saveToLocalStorage();
-      try { await setDoc(doc(txCollectionRef, String(txObj.id)), txObj); } catch (err) {}
+      try {
+        await setDoc(doc(txCollectionRef, String(txObj.id)), txObj);
+        window.updateSyncStatus("connected");
+      } catch (err) { window.updateSyncStatus("offline"); }
     };
 
     window.deleteTxFromCloud = async function(txId) {
-      try { await deleteDoc(doc(txCollectionRef, String(txId))); } catch (err) {}
+      window.updateSyncStatus("saving");
+      try {
+        await deleteDoc(doc(txCollectionRef, String(txId)));
+        window.updateSyncStatus("connected");
+      } catch (err) { window.updateSyncStatus("offline"); }
     };
 
     window.syncReportToCloud = async function(repObj) {
+      window.updateSyncStatus("saving");
       window.saveToLocalStorage();
-      try { await setDoc(doc(reportsCollectionRef, String(repObj.id)), repObj); } catch (err) {}
+      try {
+        await setDoc(doc(reportsCollectionRef, String(repObj.id)), repObj);
+        window.updateSyncStatus("connected");
+      } catch (err) { window.updateSyncStatus("offline"); }
     };
 
     window.deleteReportFromCloud = async function(repId) {
-      try { await deleteDoc(doc(reportsCollectionRef, String(repId))); } catch (err) {}
+      window.updateSyncStatus("saving");
+      try {
+        await deleteDoc(doc(reportsCollectionRef, String(repId)));
+        window.updateSyncStatus("connected");
+      } catch (err) { window.updateSyncStatus("offline"); }
     };
 
     window.resetAllDatabaseCloud = async function() {
+      window.updateSyncStatus("saving");
       try {
         await deleteDoc(stocksDocRef);
         await deleteDoc(pbucDocRef);
@@ -1183,13 +1227,15 @@
 
         initStockData();
         renderAllViews();
+        window.updateSyncStatus("connected");
         alert("Seluruh database berhasil dibersihkan!");
       } catch (err) {
         alert("Gagal mereset database. Periksa koneksi internet Anda.");
+        window.updateSyncStatus("offline");
       }
     };
 
-    onSnapshot(stocksDocRef, (docSnap) => {
+    onSnapshot(stocksDocRef, { includeMetadataChanges: true }, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
         if (data.stockData) window.stockData = data.stockData;
@@ -1198,9 +1244,10 @@
       }
       initStockData();
       renderAllViews();
+      window.updateSyncStatus(docSnap.metadata.fromCache ? "offline" : "connected");
     });
 
-    onSnapshot(txCollectionRef, (snapshot) => {
+    onSnapshot(txCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
       const txMap = new Map();
       snapshot.forEach(doc => txMap.set(String(doc.id), doc.data()));
       const loadedTx = Array.from(txMap.values());
@@ -1208,9 +1255,10 @@
       window.transactions = loadedTx;
       window.saveToLocalStorage();
       renderAllViews();
+      window.updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
-    onSnapshot(reportsCollectionRef, (snapshot) => {
+    onSnapshot(reportsCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
       const repMap = new Map();
       snapshot.forEach(doc => repMap.set(String(doc.id), doc.data()));
       const loadedReps = Array.from(repMap.values());
@@ -1218,6 +1266,7 @@
       window.generatedReports = loadedReps;
       window.saveToLocalStorage();
       renderAllViews();
+      window.updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
     function renderAllViews() {
@@ -1266,7 +1315,7 @@
       if (!file) return;
 
       const apiKey = window.GEMINI_API_KEY;
-      if (!apiKey || apiKey === "AQ.Ab8RN6K3Do805ixAcBSSL-0IrCcuSRj2SbQevqF2egqXbK51SA") {
+      if (!apiKey || apiKey === "AIzaSy...") {
         alert("Mohon masukkan Gemini API Key yang valid pada variabel window.GEMINI_API_KEY!");
         return;
       }
