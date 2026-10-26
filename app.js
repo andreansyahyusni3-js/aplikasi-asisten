@@ -31,10 +31,10 @@ function switchTab(tabName) {
     const mobBtn = document.getElementById(`nav-mob-${t}`);
     if (deskBtn && mobBtn) {
       if (t === tabName) {
-        deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center bg-red-600 text-white shadow-lg";
+        deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40";
         mobBtn.className = "text-red-500 p-1";
       } else {
-        deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center text-slate-400 hover:bg-slate-800 hover:text-white";
+        deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white";
         mobBtn.className = "text-slate-400 p-1";
       }
     }
@@ -172,7 +172,7 @@ function renderTransactions() {
   if (!container) return;
 
   if (window.transactions.length === 0) {
-    container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Belum ada transaksiRecorded</div>`;
+    container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Belum ada transaksi recorded</div>`;
     return;
   }
 
