@@ -1,870 +1,100 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Aplikasi Asisten By Andreansyah - Multi Dashboard System</title>
-  
-  <!-- META PWA & MOBILE CONFIG -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0f172a">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="apple-touch-icon" href="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h">
+const CACHE_NAME = 'asisten-sales-v12.8';
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body { overflow-x: hidden; background-color: #f8fafc; }
-    .mobile-nav-transform { transition: transform 0.3s ease-in-out; }
-    .mobile-nav-hidden { transform: translateY(100%); }
-    @media print {
-      body { background-color: white !important; padding-bottom: 0 !important; }
-      header, nav, aside, .md\:hidden, button, .no-print { display: none !important; }
-      .print-only { display: block !important; }
-      .page-break { page-break-before: always; }
-      .shadow-sm, .shadow-lg, .shadow-2xl { box-shadow: none !important; }
-      .border { border-color: #cbd5e1 !important; }
-      main { padding: 0 !important; margin: 0 !important; }
-    }
-  </style>
-</head>
-<body class="text-slate-800 antialiased min-h-screen bg-slate-50 flex flex-col md:flex-row pb-16 md:pb-0">
+// Daftar aset penting yang di-precache saat instalasi
+const PRECACHE_ASSETS = [
+  './',
+  './index.html',
+  './manifest.json',
+  'https://cdn.tailwindcss.com',
+  'https://unpkg.com/lucide@latest',
+  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+  'https://cdn.jsdelivr.net/npm/chart.js',
+  'https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h'
+];
 
-  <!-- SIDEBAR NAVIGASI DESKTOP -->
-  <aside class="hidden md:flex flex-col w-20 bg-slate-900 text-white min-h-screen sticky top-0 h-screen shadow-xl z-40 border-r border-slate-800 shrink-0 items-center py-4 no-print">
-    <div class="mb-4 text-center">
-      <div class="p-1 bg-white rounded-xl inline-block border border-slate-700/50 shadow-sm overflow-hidden">
-        <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-10 h-10 object-contain rounded-lg mix-blend-multiply">
-      </div>
-    </div>
+// 1. INSTALL EVENT - Precache file utama
+self.addEventListener('install', (event) => {
+  self.skipWaiting(); // Paksa SW baru langsung aktif tanpa menunggu tab ditutup
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[Service Worker] Pre-caching Core Assets (v12.8)');
+      return cache.addAll(PRECACHE_ASSETS);
+    })
+  );
+});
 
-    <div class="mb-6 flex flex-col items-center gap-1 text-[9px] text-slate-400">
-      <span id="sync-indicator" class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-      <span id="sync-status-text" class="text-emerald-400 font-medium">Online</span>
-    </div>
-
-    <nav class="flex-1 space-y-3 w-full px-2">
-      <button onclick="switchTab('stok')" id="nav-desk-stok" title="1. Menyimpan Stok" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40">
-        <i data-lucide="boxes" class="w-5 h-5"></i>
-      </button>
-      <button onclick="switchTab('omzet')" id="nav-desk-omzet" title="2. Barang Keluar per Toko" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
-        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-      </button>
-      <button onclick="switchTab('laporan')" id="nav-desk-laporan" title="3. Dashboard Pelaporan" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
-        <i data-lucide="file-text" class="w-5 h-5"></i>
-      </button>
-      <button onclick="switchTab('ringkasan')" id="nav-desk-ringkasan" title="4. Ringkasan Harian Per Produk" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
-        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-      </button>
-      <button onclick="switchTab('pbuc')" id="nav-desk-pbuc" title="5. Review Stok VS PBUC" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
-        <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-      </button>
-      <button onclick="switchTab('kendaraan')" id="nav-desk-kendaraan" title="6. Operasional & Kendaraan" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
-        <i data-lucide="truck" class="w-5 h-5"></i>
-      </button>
-    </nav>
-
-    <div class="mb-3 px-2 w-full">
-      <button onclick="openResetModal()" title="Reset Database Total" class="w-full p-2.5 rounded-xl text-rose-400 hover:text-white hover:bg-rose-900/60 border border-rose-800/40 flex justify-center items-center transition">
-        <i data-lucide="database-zap" class="w-5 h-5"></i>
-      </button>
-    </div>
-
-    <div class="text-[9px] text-slate-500 font-bold">
-      v12.7 (Fixed)
-    </div>
-  </aside>
-
-  <!-- HEADER MOBILE -->
-  <header class="md:hidden bg-slate-900 text-white p-3 sticky top-0 z-40 shadow-md flex justify-between items-center no-print">
-    <div class="flex items-center space-x-2">
-      <div class="p-0.5 bg-white rounded-lg overflow-hidden">
-        <img src="https://lh3.googleusercontent.com/d/1z5ecMUPltVrCR3X7EvMIPi3DGmPcxi6h" alt="Logo Asisten" class="w-7 h-7 object-contain rounded-lg mix-blend-multiply">
-      </div>
-      <div>
-        <h1 class="font-bold text-xs">Asisten Sales PWA</h1>
-      </div>
-    </div>
-    <div class="flex items-center gap-2">
-      <button onclick="openResetModal()" class="px-2 py-1 bg-rose-900/70 border border-rose-700/50 text-rose-200 rounded-lg text-[10px] font-bold flex items-center gap-1">
-        <i data-lucide="database-zap" class="w-3.5 h-3.5"></i> Reset DB
-      </button>
-      <div class="flex items-center gap-1.5 bg-slate-800 px-2.5 py-1 rounded-full text-[10px]">
-        <span id="mob-sync-indicator" class="w-2 h-2 rounded-full bg-emerald-500"></span>
-        <span id="mob-sync-status-text" class="text-emerald-400 font-medium">Online</span>
-      </div>
-    </div>
-  </header>
-
-  <!-- MAIN CONTENT AREA -->
-  <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
-
-    <!-- DASHBOARD 1: STOK -->
-    <section id="tab-stok" class="block space-y-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-            <i data-lucide="boxes" class="w-6 h-6 text-red-600"></i>
-            Dashboard 1: Penyimpanan & Kelola Stok
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, koreksi stok, dan pantau sisa stok real-time.</p>
-        </div>
-        <button onclick="openResetModal()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200 flex items-center gap-1.5 transition">
-          <i data-lucide="database-zap" class="w-4 h-4"></i> Reset Database Total
-        </button>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Barang Keluar (Toko)</p>
-            <h3 id="stat-stock-out" class="text-2xl font-bold text-amber-600 mt-1">0 Bungkus</h3>
-          </div>
-          <div class="bg-amber-100 p-3 rounded-xl text-amber-600">
-            <i data-lucide="shopping-bag" class="w-6 h-6"></i>
-          </div>
-        </div>
-
-        <div class="bg-gradient-to-br from-slate-900 to-red-950 text-white p-4 rounded-xl border border-red-900/50 shadow-sm flex items-center justify-between">
-          <div>
-            <p class="text-xs font-semibold text-red-200 uppercase tracking-wider">Sisa Stok Siap Keluar</p>
-            <h3 id="stat-stock-remaining" class="text-2xl font-black text-white mt-1">0 Bungkus</h3>
-          </div>
-          <div class="bg-red-800/50 p-3 rounded-xl text-red-100 border border-red-700/50">
-            <i data-lucide="package-check" class="w-6 h-6"></i>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b pb-3">
-          <i data-lucide="list-checks" class="w-4 h-4 text-red-600"></i> Rincian Stok Per Jenis Rokok (SKU)
-        </h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse border border-slate-200">
-            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
-              <tr>
-                <th class="p-3 border">No</th>
-                <th class="p-3 border">Nama Produk SKU</th>
-                <th class="p-3 border text-right">Stok Awal</th>
-                <th class="p-3 border text-right">Koreksi</th>
-                <th class="p-3 border text-right">Barang Keluar</th>
-                <th class="p-3 border text-right">Sisa Stok</th>
-              </tr>
-            </thead>
-            <tbody id="stock-table-body" class="divide-y divide-slate-200"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD 2: TRANSAKSI TOKO -->
-    <section id="tab-omzet" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="shopping-cart" class="w-6 h-6 text-red-600"></i>
-          Dashboard 2: Pencatatan Barang Keluar per Toko
-        </h2>
-        <p class="text-xs text-slate-500 mt-0.5">Scan nota otomatis via AI atau input manual.</p>
-      </div>
-
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-          <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-200 space-y-2">
-            <label class="block text-xs font-bold text-indigo-900 uppercase flex items-center gap-1.5">
-              <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i> Scan Nota / Struk Fisik (AI)
-            </label>
-            <input type="file" id="input-foto-nota" accept="image/*" capture="environment" onchange="window.scanNotaWithAI(event)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
-            <p id="ai-scan-status" class="text-[11px] font-semibold text-indigo-700 hidden">⏳ AI sedang membaca nota fisik...</p>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Toko / Outlet</label>
-            <input type="text" id="input-toko" placeholder="Contoh: Toko Ali" class="w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none focus:ring-2 focus:ring-red-500">
-          </div>
-
-          <div class="bg-slate-50 p-4 rounded-xl border space-y-3">
-            <label class="block text-xs font-bold text-slate-700 uppercase">Pilih Produk & Qty</label>
-            <div class="space-y-3">
-              <select id="select-produk" class="w-full px-3 py-2 text-sm border rounded-lg bg-white"></select>
-              <div class="flex items-center gap-2">
-                <input type="number" id="input-jumlah" min="1" placeholder="Jumlah" class="w-full px-3 py-2 text-sm border rounded-lg">
-                <button type="button" onclick="window.addToCart()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium">Tambah</button>
-              </div>
-            </div>
-          </div>
-
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-slate-700 uppercase">Keranjang</span>
-              <span id="cart-count" class="text-xs bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full">0 Item</span>
-            </div>
-            <div id="cart-items-container" class="space-y-2 max-h-48 overflow-y-auto border border-dashed rounded-xl p-3 bg-slate-50"></div>
-          </div>
-
-          <button type="button" onclick="window.saveTransaction()" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg">Simpan Transaksi Toko</button>
-        </div>
-
-        <div class="lg:col-span-7 bg-white p-5 rounded-2xl border shadow-sm space-y-4">
-          <h2 class="font-bold text-slate-900 border-b pb-3 flex items-center gap-2">
-            <i data-lucide="list" class="w-5 h-5 text-red-600"></i> Daftar Transaksi Toko Aktif
-          </h2>
-          <div id="tx-list-container" class="space-y-3 max-h-[600px] overflow-y-auto pr-1"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD 3: PELAPORAN HARIAN -->
-    <section id="tab-laporan" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border shadow-sm flex justify-between items-center">
-        <div>
-          <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-            <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i> Dashboard 3: Pelaporan Harian
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Riwayat rekapitulasi laporan toko per tanggal.</p>
-        </div>
-      </div>
-      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
-        <div id="reports-history-container" class="space-y-4"></div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD 4: RINGKASAN PER PRODUK -->
-    <section id="tab-ringkasan" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i> Dashboard 4: Ringkasan Per Produk
-        </h2>
-      </div>
-      <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse border border-slate-200">
-            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
-              <tr>
-                <th class="p-3 border">No</th>
-                <th class="p-3 border">Nama Barang SKU</th>
-                <th class="p-3 border text-right">Total Barang Keluar</th>
-              </tr>
-            </thead>
-            <tbody id="summary-daily-tbody" class="divide-y divide-slate-200"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD 5: REVIEW PBUC -->
-    <section id="tab-pbuc" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border shadow-sm flex justify-between items-center">
-        <div>
-          <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-            <i data-lucide="clipboard-check" class="w-6 h-6 text-purple-600"></i> Dashboard 5: Review Stok VS PBUC
-          </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Komparasi stok aplikasi dengan input laporan fisik PBUC.</p>
-        </div>
-        <button onclick="window.savePbucData()" class="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md">Simpan Data PBUC</button>
-      </div>
-      <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse border border-slate-200">
-            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
-              <tr>
-                <th class="p-3 border">No</th>
-                <th class="p-3 border">Nama Produk SKU</th>
-                <th class="p-3 border text-right">Stok Aplikasi</th>
-                <th class="p-3 border text-center bg-purple-50">Input PBUC Manual</th>
-                <th class="p-3 border text-right">Selisih</th>
-              </tr>
-            </thead>
-            <tbody id="pbuc-table-body" class="divide-y divide-slate-200"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD 6: OPERASIONAL & KENDARAAN -->
-    <section id="tab-kendaraan" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="truck" class="w-6 h-6 text-blue-600"></i> Dashboard 6: Operasional & Kendaraan
-        </h2>
-      </div>
-
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- FORM KM -->
-        <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
-          <h3 class="font-bold text-sm border-b pb-2 text-slate-900 flex items-center gap-2">
-            <i data-lucide="gauge" class="w-4 h-4 text-blue-600"></i> Input Log KM Harian
-          </h3>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">KM Awal</label>
-              <input type="number" id="input-km-awal" placeholder="12000" class="w-full px-3 py-2 text-xs border rounded-xl">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">KM Akhir</label>
-              <input type="number" id="input-km-akhir" placeholder="12150" class="w-full px-3 py-2 text-xs border rounded-xl">
-            </div>
-          </div>
-          <button onclick="window.saveKmLog()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log KM</button>
-        </div>
-
-        <!-- FORM BBM -->
-        <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
-          <h3 class="font-bold text-sm border-b pb-2 text-slate-900 flex items-center gap-2">
-            <i data-lucide="fuel" class="w-4 h-4 text-amber-600"></i> Input Pengisian BBM
-          </h3>
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">KM Odometer</label>
-              <input type="number" id="input-bbm-km" placeholder="12200" class="w-full px-3 py-2 text-xs border rounded-xl">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Liter Disi</label>
-              <input type="number" step="0.01" id="input-bbm-liter" placeholder="15.5" class="w-full px-3 py-2 text-xs border rounded-xl">
-            </div>
-          </div>
-          <button onclick="window.saveBbmLog()" class="w-full bg-amber-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log BBM</button>
-        </div>
-      </div>
-
-      <!-- TABEL LOG KM -->
-      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
-        <h3 class="font-bold text-sm border-b pb-2">Riwayat Log KM Kendaraan</h3>
-        <div class="overflow-x-auto">
-          <table class="w-full text-left text-xs border-collapse border">
-            <thead class="bg-slate-100 font-bold uppercase">
-              <tr>
-                <th class="p-2.5 border">Tanggal</th>
-                <th class="p-2.5 border text-right">KM Awal</th>
-                <th class="p-2.5 border text-right">KM Akhir</th>
-                <th class="p-2.5 border text-right text-blue-600">Jarak (KM)</th>
-              </tr>
-            </thead>
-            <tbody id="km-table-body" class="divide-y"></tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- MODAL RESET DATABASE TOTAL -->
-  <div id="modal-reset-db" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-rose-100">
-      <div class="flex justify-between items-center border-b border-rose-100 pb-3">
-        <h3 class="font-bold text-rose-700 flex items-center gap-2 text-base">
-          <i data-lucide="alert-triangle" class="w-6 h-6 text-rose-600"></i> Reset Total Seluruh Database
-        </h3>
-        <button onclick="closeModal('modal-reset-db')" class="text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div class="flex gap-2 pt-3 border-t">
-        <button onclick="closeModal('modal-reset-db')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="window.confirmResetAllDatabase()" class="flex-1 bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs">Ya, Hapus Semua</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAVIGATION MOBILE -->
-  <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center no-print mobile-nav-transform">
-    <button onclick="switchTab('stok')" id="nav-mob-stok" class="text-red-500 p-1"><i data-lucide="boxes" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('omzet')" id="nav-mob-omzet" class="text-slate-400 p-1"><i data-lucide="shopping-cart" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('laporan')" id="nav-mob-laporan" class="text-slate-400 p-1"><i data-lucide="file-text" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('ringkasan')" id="nav-mob-ringkasan" class="text-slate-400 p-1"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('pbuc')" id="nav-mob-pbuc" class="text-slate-400 p-1"><i data-lucide="clipboard-check" class="w-5 h-5"></i></button>
-    <button onclick="switchTab('kendaraan')" id="nav-mob-kendaraan" class="text-slate-400 p-1"><i data-lucide="truck" class="w-5 h-5"></i></button>
-  </div>
-
-  <!-- JAVASCRIPT GLOBAL UTAMA -->
-  <script>
-    window.PRODUCT_LIST = [
-      "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
-      "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
-    ];
-
-    window.GEMINI_API_KEY = "AQ.Ab8RN6JC1ZN9BiBuVTNlUiFiK675gBDtuww4onWjmUfUK4T-nA";
-
-    window.cart = [];
-    window.stockData = {};
-    window.transactions = [];
-    window.generatedReports = [];
-    window.pbucData = {};
-    window.kmLogs = [];
-
-    window.generateUniqueId = () => Date.now().toString() + '_' + Math.random().toString(36).substr(2, 7);
-
-    function openResetModal() { document.getElementById('modal-reset-db').classList.remove('hidden'); }
-    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-    function switchTab(tabName) {
-      ['stok', 'omzet', 'laporan', 'ringkasan', 'pbuc', 'kendaraan'].forEach(t => {
-        const el = document.getElementById(`tab-${t}`);
-        if (el) el.classList.add('hidden');
-      });
-
-      const currentTab = document.getElementById(`tab-${tabName}`);
-      if (currentTab) currentTab.classList.remove('hidden');
-
-      ['stok', 'omzet', 'laporan', 'ringkasan', 'pbuc', 'kendaraan'].forEach(t => {
-        const deskBtn = document.getElementById(`nav-desk-${t}`);
-        const mobBtn = document.getElementById(`nav-mob-${t}`);
-        if (deskBtn && mobBtn) {
-          if (t === tabName) {
-            deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40";
-            mobBtn.className = "text-red-500 p-1";
-          } else {
-            deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white";
-            mobBtn.className = "text-slate-400 p-1";
+// 2. ACTIVATE EVENT - Hapus seluruh cache versi lama
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            console.log('[Service Worker] Deleting Old Cache:', cache);
+            return caches.delete(cache);
           }
-        }
-      });
+        })
+      );
+    }).then(() => self.clients.claim()) // Ambil alih kontrol semua tab yang terbuka
+  );
+});
 
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
+// 3. FETCH EVENT - Strategi Caching Pintar
+self.addEventListener('fetch', (event) => {
+  const requestUrl = new URL(event.request.url);
 
-    function initProductDropdown() {
-      const select = document.getElementById('select-produk');
-      if (select && window.PRODUCT_LIST) {
-        select.innerHTML = window.PRODUCT_LIST.map(item => `<option value="${item}">${item}</option>`).join('');
-      }
-    }
+  // Abaikan request ke Firebase Firestore / API External (biarkan Firebase SDK menangani offline-nya sendiri)
+  if (
+    requestUrl.hostname.includes('firestore.googleapis.com') ||
+    requestUrl.hostname.includes('firebaseio.com') ||
+    requestUrl.hostname.includes('generativelanguage.googleapis.com')
+  ) {
+    return;
+  }
 
-    function renderStockTable() {
-      const tbody = document.getElementById('stock-table-body');
-      if (!tbody || !window.PRODUCT_LIST) return;
-
-      let grandOut = 0;
-      let grandRemaining = 0;
-
-      const rowsHTML = window.PRODUCT_LIST.map((sku, idx) => {
-        const initial = window.stockData[sku] ? (window.stockData[sku].initial || 0) : 0;
-        const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
-
-        let out = 0;
-        (window.transactions || []).forEach(t => {
-          (t.items || []).forEach(i => {
-            if (i.product === sku) out += (i.qty || 0);
+  // STRATEGI NETWORK-FIRST UNTUK HTML & APP ROOT
+  // Memastikan index.html SELALU diambil versi terbarunya dari server jika ada internet.
+  if (event.request.mode === 'navigate' || requestUrl.pathname.endsWith('.html') || requestUrl.pathname === '/') {
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          // Simpan salinan terbaru ke cache untuk cadangan offline
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Jika offline atau jaringan gagal, gunakan cadangan dari cache
+          return caches.match(event.request).then((cachedResponse) => {
+            if (cachedResponse) return cachedResponse;
+            return caches.match('./index.html');
           });
-        });
+        })
+    );
+    return;
+  }
 
-        const remaining = (initial + added) - out;
-        grandOut += out;
-        grandRemaining += remaining;
+  // STRATEGI STALE-WHILE-REVALIDATE UNTUK CDN, LIBRARY & ASSET STATIS
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => cachedResponse);
 
-        return `
-          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-            <td class="p-3 border text-center font-medium">${idx + 1}</td>
-            <td class="p-3 border font-bold text-slate-800">${sku}</td>
-            <td class="p-3 border text-right font-medium text-slate-700">${initial} Bks</td>
-            <td class="p-3 border text-right font-medium text-blue-600">${added > 0 ? '+' + added : added} Bks</td>
-            <td class="p-3 border text-right font-medium text-amber-600">${out} Bks</td>
-            <td class="p-3 border text-right font-bold ${remaining < 0 ? 'text-red-600' : 'text-slate-900'}">${remaining} Bks</td>
-          </tr>
-        `;
-      }).join('');
-
-      tbody.innerHTML = rowsHTML;
-      const statOut = document.getElementById('stat-stock-out');
-      const statRem = document.getElementById('stat-stock-remaining');
-      if (statOut) statOut.textContent = `${grandOut} Bungkus`;
-      if (statRem) statRem.textContent = `${grandRemaining} Bungkus`;
-    }
-
-    window.addToCart = function() {
-      const product = document.getElementById('select-produk').value;
-      const qtyInput = document.getElementById('input-jumlah');
-      const qty = parseInt(qtyInput.value, 10);
-      if (!qty || qty <= 0) return;
-
-      const existingIdx = window.cart.findIndex(i => i.product === product);
-      if (existingIdx > -1) {
-        window.cart[existingIdx].qty += qty;
-      } else {
-        window.cart.push({ product: product, qty: qty, pendingQty: qty, reportedQty: 0 });
-      }
-
-      qtyInput.value = '';
-      renderCartUI();
-    };
-
-    function renderCartUI() {
-      const container = document.getElementById('cart-items-container');
-      const countLabel = document.getElementById('cart-count');
-      if (!container || !countLabel) return;
-
-      countLabel.textContent = `${window.cart.length} Item`;
-
-      if (window.cart.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada barang dipilih</p>`;
-        return;
-      }
-
-      container.innerHTML = window.cart.map(item => `
-        <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border text-xs">
-          <span class="font-bold text-slate-800">${item.product}</span>
-          <span class="font-semibold text-slate-600">${item.qty} Bungkus</span>
-        </div>
-      `).join('');
-    }
-
-    window.saveTransaction = function() {
-      const tokoName = document.getElementById('input-toko').value.trim();
-      if (!tokoName || window.cart.length === 0) return;
-
-      const now = new Date();
-      const newTx = {
-        id: window.generateUniqueId(),
-        toko: tokoName,
-        items: [...window.cart],
-        rawDate: now.toISOString().split('T')[0],
-        createdAt: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-      };
-
-      window.transactions.unshift(newTx);
-      document.getElementById('input-toko').value = '';
-      window.cart = [];
-
-      renderCartUI();
-      if (typeof window.syncTxToCloud === 'function') window.syncTxToCloud(newTx);
-      renderTransactions();
-      renderStockTable();
-    };
-
-    function renderTransactions() {
-      const container = document.getElementById('tx-list-container');
-      if (!container) return;
-
-      if ((window.transactions || []).length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Belum ada transaksi toko recorded</div>`;
-        return;
-      }
-
-      container.innerHTML = window.transactions.map(t => `
-        <div class="bg-slate-50 p-4 rounded-xl border border-amber-200 space-y-2">
-          <h4 class="font-bold text-slate-900 text-sm">${t.toko}</h4>
-          <div class="bg-white p-2.5 rounded-lg border text-xs">
-            ${(t.items || []).map(i => `<div class="flex justify-between"><span>${i.product}</span><b>${i.qty} Bks</b></div>`).join('')}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function renderReportsHistory() {
-      const container = document.getElementById('reports-history-container');
-      if (!container) return;
-
-      if ((window.generatedReports || []).length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Belum ada laporan tersimpan</div>`;
-        return;
-      }
-
-      container.innerHTML = window.generatedReports.map(r => `
-        <div class="bg-slate-50 p-4 rounded-xl border space-y-2">
-          <h4 class="font-bold text-indigo-900 text-sm">${r.title || 'Laporan Harian'}</h4>
-          <p class="text-[11px] text-slate-500">${r.date || ''}</p>
-        </div>
-      `).join('');
-    }
-
-    function renderDailySummaryTable() {
-      const tbody = document.getElementById('summary-daily-tbody');
-      if (!tbody || !window.PRODUCT_LIST) return;
-
-      tbody.innerHTML = window.PRODUCT_LIST.map((sku, idx) => {
-        let totalOut = 0;
-        (window.transactions || []).forEach(t => {
-          (t.items || []).forEach(i => {
-            if (i.product === sku) totalOut += (i.qty || 0);
-          });
-        });
-
-        return `
-          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-            <td class="p-3 border text-center font-medium">${idx + 1}</td>
-            <td class="p-3 border font-bold text-slate-800">${sku}</td>
-            <td class="p-3 border text-right font-bold text-amber-600">${totalOut} Bks</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    function renderPbucTable() {
-      const tbody = document.getElementById('pbuc-table-body');
-      if (!tbody || !window.PRODUCT_LIST) return;
-
-      tbody.innerHTML = window.PRODUCT_LIST.map((sku, idx) => {
-        const initial = window.stockData[sku] ? (window.stockData[sku].initial || 0) : 0;
-        const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
-
-        let out = 0;
-        (window.transactions || []).forEach(t => {
-          (t.items || []).forEach(i => {
-            if (i.product === sku) out += (i.qty || 0);
-          });
-        });
-
-        const appStock = (initial + added) - out;
-        const pbucVal = window.pbucData[sku] || 0;
-        const diff = appStock - pbucVal;
-
-        return `
-          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-            <td class="p-3 border text-center font-medium">${idx + 1}</td>
-            <td class="p-3 border font-bold text-slate-800">${sku}</td>
-            <td class="p-3 border text-right font-bold">${appStock} Bks</td>
-            <td class="p-2 border text-center bg-purple-50/50">
-              <input type="number" value="${pbucVal}" onchange="window.pbucData['${sku}'] = parseInt(this.value, 10) || 0" class="w-24 text-center px-2 py-1 text-xs border rounded-lg bg-white font-bold">
-            </td>
-            <td class="p-3 border text-right font-bold ${diff !== 0 ? 'text-rose-600' : 'text-emerald-600'}">${diff} Bks</td>
-          </tr>
-        `;
-      }).join('');
-    }
-
-    window.saveKmLog = function() {
-      const kmAwal = parseInt(document.getElementById('input-km-awal').value, 10) || 0;
-      const kmAkhir = parseInt(document.getElementById('input-km-akhir').value, 10) || 0;
-      if (kmAkhir <= kmAwal) return alert("KM Akhir harus lebih besar!");
-
-      const newKm = {
-        id: window.generateUniqueId(),
-        kmAwal: kmAwal,
-        kmAkhir: kmAkhir,
-        jarak: kmAkhir - kmAwal,
-        date: new Date().toLocaleDateString('id-ID')
-      };
-
-      window.kmLogs.unshift(newKm);
-      document.getElementById('input-km-awal').value = '';
-      document.getElementById('input-km-akhir').value = '';
-
-      if (typeof window.syncKmToCloud === 'function') window.syncKmToCloud(newKm);
-      renderKmTable();
-    };
-
-    window.saveBbmLog = function() {
-      const kmVal = parseInt(document.getElementById('input-bbm-km').value, 10) || 0;
-      const literVal = parseFloat(document.getElementById('input-bbm-liter').value) || 0;
-      if (kmVal <= 0 || literVal <= 0) return alert("Isi data pengisian BBM dengan benar!");
-
-      alert("Log Pengisian BBM Berhasil Disimpan!");
-      document.getElementById('input-bbm-km').value = '';
-      document.getElementById('input-bbm-liter').value = '';
-    };
-
-    function renderKmTable() {
-      const tbody = document.getElementById('km-table-body');
-      if (!tbody) return;
-
-      if ((window.kmLogs || []).length === 0) {
-        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada log KM</td></tr>`;
-        return;
-      }
-
-      tbody.innerHTML = window.kmLogs.map(k => `
-        <tr>
-          <td class="p-2.5 border">${k.date}</td>
-          <td class="p-2.5 border text-right">${k.kmAwal} KM</td>
-          <td class="p-2.5 border text-right">${k.kmAkhir} KM</td>
-          <td class="p-2.5 border text-right font-bold text-blue-600">${k.jarak} KM</td>
-        </tr>
-      `).join('');
-    }
-
-    window.renderAllViews = function() {
-      initProductDropdown();
-      renderCartUI();
-      renderTransactions();
-      renderStockTable();
-      renderDailySummaryTable();
-      renderReportsHistory();
-      renderPbucTable();
-      renderKmTable();
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    };
-
-    // AI GEMINI OCR
-    window.scanNotaWithAI = async function(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const apiKey = window.GEMINI_API_KEY;
-      const statusEl = document.getElementById('ai-scan-status');
-      statusEl.classList.remove('hidden');
-
-      try {
-        const base64Image = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = error => reject(error);
-          reader.readAsDataURL(file);
-        });
-
-        const promptText = `
-          Kamu adalah sistem OCR AI. Baca foto nota penjualan ini.
-          Daftar SKU produk yang valid hanyalah: ${JSON.stringify(window.PRODUCT_LIST)}.
-          Kembalikan HANYA JSON: { "toko": "Nama Toko", "items": [ {"product": "NAMA_SKU_EXACT", "qty": 10} ] }
-        `;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: promptText },
-                { inlineData: { mimeType: file.type, data: base64Image } }
-              ]
-            }]
-          })
-        });
-
-        const data = await response.json();
-        const responseText = data.candidates[0].content.parts[0].text;
-        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const result = JSON.parse(cleanJson);
-
-        if (result.toko) document.getElementById('input-toko').value = result.toko;
-        if (result.items && Array.isArray(result.items)) {
-          result.items.forEach(parsedItem => {
-            const validSku = window.PRODUCT_LIST.find(s => s.toLowerCase() === parsedItem.product.toLowerCase());
-            if (validSku && parsedItem.qty > 0) {
-              const existingIdx = window.cart.findIndex(i => i.product === validSku);
-              if (existingIdx > -1) {
-                window.cart[existingIdx].qty += parsedItem.qty;
-              } else {
-                window.cart.push({ product: validSku, qty: parsedItem.qty, pendingQty: parsedItem.qty, reportedQty: 0 });
-              }
-            }
-          });
-        }
-        renderCartUI();
-        statusEl.textContent = "✅ Berhasil! Form terisi otomatis.";
-      } catch (err) {
-        statusEl.textContent = "❌ Gagal membaca nota. Silakan input manual.";
-      } finally {
-        event.target.value = '';
-      }
-    };
-  </script>
-
-  <!-- FIREBASE ENGINE & REALTIME SYNC (DI-WRAP LENGKAP DENGAN TAG PENUTUP) -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, enableIndexedDbPersistence, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAjMsxk0__VsFf37h9vyAIBlNDoNwLghUY",
-      authDomain: "aplikasi-awal-cb8bc.firebaseapp.com",
-      projectId: "aplikasi-awal-cb8bc",
-      storageBucket: "aplikasi-awal-cb8bc.firebasestorage.app",
-      messagingSenderId: "393090474476",
-      appId: "1:393090474476:web:2a2de286c3b9b6bd9160c9",
-      measurementId: "G-H5R0RTHBT8"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    enableIndexedDbPersistence(db).catch(err => console.warn("Offline DB Warning:", err));
-
-    const stocksDocRef = doc(db, "app_stocks", "main_stock");
-    const txCollectionRef = collection(db, "app_transactions");
-    const reportsCollectionRef = collection(db, "app_reports");
-    const pbucDocRef = doc(db, "app_pbuc", "main_pbuc");
-    const kmCollectionRef = collection(db, "app_km_logs");
-
-    function initStockData() {
-      window.PRODUCT_LIST.forEach(sku => {
-        if (!window.stockData[sku]) {
-          window.stockData[sku] = { initial: 0, added: 0 };
-        }
-      });
-    }
-
-    window.syncTxToCloud = async function(txObj) {
-      try { await setDoc(doc(txCollectionRef, String(txObj.id)), txObj); } catch (e) {}
-    };
-
-    window.syncKmToCloud = async function(kmObj) {
-      try { await setDoc(doc(kmCollectionRef, String(kmObj.id)), kmObj); } catch (e) {}
-    };
-
-    window.savePbucData = async function() {
-      try {
-        await setDoc(pbucDocRef, { pbucData: window.pbucData });
-        alert("Data PBUC Berhasil Disimpan!");
-      } catch (e) { alert("Gagal Simpan PBUC"); }
-    };
-
-    window.confirmResetAllDatabase = async function() {
-      closeModal('modal-reset-db');
-      try {
-        await deleteDoc(stocksDocRef);
-        await deleteDoc(pbucDocRef);
-        const snaps = await getDocs(txCollectionRef);
-        await Promise.all(snaps.docs.map(d => deleteDoc(d.ref)));
-        window.stockData = {};
-        window.transactions = [];
-        window.generatedReports = [];
-        window.pbucData = {};
-        window.kmLogs = [];
-        localStorage.clear();
-        initStockData();
-        if (typeof window.renderAllViews === 'function') window.renderAllViews();
-        alert("Seluruh database berhasil dibersihkan!");
-      } catch (e) { alert("Gagal reset database"); }
-    };
-
-    // LISTENERS FIREBASE REALTIME
-    onSnapshot(stocksDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().stockData) {
-        window.stockData = docSnap.data().stockData;
-      }
-      initStockData();
-      if (typeof window.renderAllViews === 'function') window.renderAllViews();
-    });
-
-    onSnapshot(txCollectionRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-      window.transactions = list;
-      if (typeof window.renderAllViews === 'function') window.renderAllViews();
-    });
-
-    onSnapshot(reportsCollectionRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-      window.generatedReports = list;
-      if (typeof window.renderAllViews === 'function') window.renderAllViews();
-    });
-
-    onSnapshot(pbucDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().pbucData) {
-        window.pbucData = docSnap.data().pbucData;
-      }
-      if (typeof window.renderAllViews === 'function') window.renderAllViews();
-    });
-
-    onSnapshot(kmCollectionRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-      window.kmLogs = list;
-      if (typeof window.renderAllViews === 'function') window.renderAllViews();
-    });
-  </script>
-
-  <!-- PWA SERVICE WORKER -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((err) => console.error('Gagal SW:', err));
-      });
-    }
-  </script>
-</body>
-</html>
+      // Kembalikan dari cache jika ada, sambil memperbarui cache dari network di background
+      return cachedResponse || fetchPromise;
+    })
+  );
+});
