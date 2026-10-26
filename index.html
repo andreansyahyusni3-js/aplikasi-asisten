@@ -104,7 +104,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v12.2 (PWA & AI)
+      v12.3 (Full Sync Fix)
     </div>
   </aside>
 
@@ -811,243 +811,6 @@
     </div>
   </div>
 
-  <!-- MODAL EDIT ITEMS TRANSAKSI TOKO -->
-  <div id="modal-edit-tx" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl border border-slate-100">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
-          <i data-lucide="edit-3" class="w-4 h-4 text-red-600"></i>
-          Edit Barang Toko: <span id="modal-edit-tx-toko" class="text-red-600 font-bold"></span>
-        </h3>
-        <button onclick="closeModal('modal-edit-tx')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="space-y-3">
-        <div id="modal-edit-tx-items-list" class="space-y-2 max-h-60 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50"></div>
-
-        <div class="border-t border-slate-200 pt-3 space-y-2">
-          <p class="text-xs font-bold text-slate-700 uppercase">Tambah Produk ke Transaksi Ini:</p>
-          <div class="flex items-center gap-2">
-            <select id="modal-add-prod-select" class="w-full px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg bg-white outline-none"></select>
-            <input type="number" id="modal-add-prod-qty" min="1" placeholder="Qty" class="w-20 px-2.5 py-1.5 text-xs border border-slate-300 rounded-lg outline-none">
-            <button onclick="addItemToExistingTx()" class="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-slate-800 transition">
-              + Tambah
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex gap-2 pt-2 border-t">
-        <button onclick="closeModal('modal-edit-tx')" class="w-full bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Tutup</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL SET TARGET BULANAN -->
-  <div id="modal-target" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
-          <i data-lucide="target" class="w-4 h-4 text-red-600"></i>
-          Set Target Penjualan Bulanan
-        </h3>
-        <button onclick="closeModal('modal-target')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target Penjualan (Bungkus)</label>
-          <input type="number" min="0" id="input-monthly-target" placeholder="Contoh: 5000" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
-        </div>
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeModal('modal-target')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="saveMonthlyTarget()" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Target</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL EDIT STOK AWAL & KOREKSI -->
-  <div id="modal-edit-stock" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
-          <i data-lucide="edit-3" class="w-4 h-4 text-slate-700"></i>
-          Koreksi & Edit Stok Awal
-        </h3>
-        <button onclick="closeModal('modal-edit-stock')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="space-y-3">
-        <p class="text-xs text-slate-600 font-medium">SKU: <b id="modal-edit-sku-title" class="text-slate-900">--</b></p>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Atur Stok Awal Baru</label>
-          <input type="number" min="0" id="modal-input-edit-stock" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-red-500">
-        </div>
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeModal('modal-edit-stock')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="confirmEditStock()" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Stok</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL KOREKSI TAMBAH / KURANG STOK MANUAL -->
-  <div id="modal-add-stock" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
-          <i data-lucide="plus-circle" class="w-4 h-4 text-blue-600"></i>
-          Koreksi Stok Manual (+ / -)
-        </h3>
-        <button onclick="closeModal('modal-add-stock')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="space-y-3">
-        <p class="text-xs text-slate-600 font-medium">SKU: <b id="modal-add-sku-title" class="text-slate-900">--</b></p>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Koreksi</label>
-          <select id="modal-adjust-type" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 bg-white">
-            <option value="plus">Tambah Stok (Pasokan Plus)</option>
-            <option value="minus">Kurangi Stok (Barang Rusak/Hilang)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jumlah Bungkus</label>
-          <input type="number" min="1" id="modal-input-add-stock" placeholder="0" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeModal('modal-add-stock')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="confirmAddStock()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Koreksi</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL DASHBOARD 3: PELAPORAN MANUAL & AMBIL BARANG -->
-  <div id="modal-custom-report" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-lg w-full p-5 space-y-4 shadow-2xl border border-slate-100">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 flex items-center gap-2">
-          <i data-lucide="file-plus" class="w-5 h-5 text-indigo-600"></i>
-          Buat Laporan Baru & Ambil Barang
-        </h3>
-        <button onclick="closeModal('modal-custom-report')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">1. Nama Laporan / Nama Toko Tujuan (Manual) <span class="text-red-500">*</span></label>
-          <input type="text" id="input-custom-report-title" placeholder="Contoh: Laporan Penjualan Toko Ali / Rekap Pelaihari" class="w-full px-3 py-2.5 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
-        </div>
-
-        <p class="text-xs font-bold text-slate-700 uppercase pt-1">2. Pilih Barang Yang Diambil Dari Toko Transaksi:</p>
-
-        <div id="custom-items-selection-list" class="space-y-3 max-h-56 overflow-y-auto border border-slate-200 rounded-xl p-3 bg-slate-50/50"></div>
-
-        <div id="selected-items-summary-box" class="bg-indigo-50 border border-indigo-200 rounded-xl p-3 space-y-1.5 hidden">
-          <p class="text-[11px] font-bold text-indigo-900 uppercase flex items-center gap-1">
-            <i data-lucide="calculator" class="w-3.5 h-3.5 text-indigo-600"></i>
-            Total Akumulasi Barang Yang Akan Dilaporkan:
-          </p>
-          <div id="selected-items-summary-list" class="flex flex-wrap gap-1.5 pt-1"></div>
-        </div>
-      </div>
-
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeModal('modal-custom-report')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-sm">Batal</button>
-        <button type="button" id="btn-save-report" onclick="generateCustomReport()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-400 text-white font-bold py-2.5 rounded-xl text-sm">Simpan & Laporkan</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL DASHBOARD 6: SET TARGET KM SERVIS -->
-  <div id="modal-target-km" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
-          <i data-lucide="settings" class="w-4 h-4 text-blue-600"></i>
-          Atur Target KM Servis Berikutnya
-        </h3>
-        <button onclick="closeModal('modal-target-km')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Target KM Servis (Angka Odometer)</label>
-          <input type="number" min="0" id="input-target-km-val" placeholder="Contoh: 15000" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
-        </div>
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeModal('modal-target-km')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="saveTargetKmService()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Target KM</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL DASHBOARD 6: TAMBAH SURAT KENDARAAN -->
-  <div id="modal-add-surat" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 no-print">
-    <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-        <h3 class="font-bold text-slate-900 flex items-center gap-2 text-sm">
-          <i data-lucide="file-plus" class="w-4 h-4 text-purple-600"></i>
-          Tambah / Edit Pengingat Surat
-        </h3>
-        <button onclick="closeModal('modal-add-surat')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="space-y-3">
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Jenis Dokumen / Surat <span class="text-red-500">*</span></label>
-          <input type="text" id="input-surat-title" placeholder="Contoh: Pajak STNK 1 Tahun / Uji KIR" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-purple-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nomor Dokumen / Plat Mobil</label>
-          <input type="text" id="input-surat-no" placeholder="Contoh: DA 8123 AB / No. SIM" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-purple-500">
-        </div>
-        <div>
-          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tanggal Jatuh Tempo <span class="text-red-500">*</span></label>
-          <input type="date" id="input-surat-date" class="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-purple-500">
-        </div>
-      </div>
-      <div class="flex gap-2 pt-2">
-        <button onclick="closeModal('modal-add-surat')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="saveSuratDokumen()" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-bold py-2.5 rounded-xl text-xs">Simpan Surat</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- BOTTOM NAVIGATION MOBILE WITH AUTO-HIDE -->
-  <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center no-print mobile-nav-transform">
-    <button onclick="switchTab('stok')" id="nav-mob-stok" title="Stok" class="text-red-500 p-1">
-      <i data-lucide="boxes" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('omzet')" id="nav-mob-omzet" title="Toko" class="text-slate-400 p-1">
-      <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('laporan')" id="nav-mob-laporan" title="Laporan" class="text-slate-400 p-1">
-      <i data-lucide="file-text" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('ringkasan')" id="nav-mob-ringkasan" title="Ringkasan" class="text-slate-400 p-1">
-      <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('pbuc')" id="nav-mob-pbuc" title="Review PBUC" class="text-slate-400 p-1">
-      <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('kendaraan')" id="nav-mob-kendaraan" title="Operasional" class="text-slate-400 p-1">
-      <i data-lucide="truck" class="w-5 h-5"></i>
-    </button>
-  </div>
-
   <!-- FIREBASE SDK & GLOBAL DATA -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
@@ -1079,13 +842,11 @@
     const suratCollectionRef = collection(db, "app_surat_docs");
     const kmSettingsDocRef = doc(db, "app_km_settings", "main_km_settings");
 
-    // DAFTAR PRODUK LENGKAP (TERMASUK PBW SKT)
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
       "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
     ];
 
-    // GEMINI API KEY UNTUK SCAN AI (SUDAH DITERAPKAN)
     window.GEMINI_API_KEY = "AQ.Ab8RN6JC1ZN9BiBuVTNlUiFiK675gBDtuww4onWjmUfUK4T-nA";
 
     window.cart = [];
@@ -1094,147 +855,22 @@
     window.generatedReports = [];
     window.pbucData = {};
     window.monthlyTarget = 0;
-    window.lastActiveDate = new Date().toISOString().split('T')[0];
-    window.kmLogs = [];
-    window.bbmLogs = [];
-    window.suratDocs = [];
-    window.targetKmService = 0;
-    window.selectedStockSku = null;
-    window.editingTxId = null;
-
-    window.generateUniqueId = () => Date.now().toString() + '_' + Math.random().toString(36).substr(2, 7);
 
     window.saveToLocalStorage = function() {
       localStorage.setItem('sales_stock_data_3dash', JSON.stringify(window.stockData));
       localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
       localStorage.setItem('sales_reports_3dash', JSON.stringify(window.generatedReports));
-      localStorage.setItem('sales_pbuc_data_3dash', JSON.stringify(window.pbucData));
-      localStorage.setItem('sales_monthly_target_3dash', window.monthlyTarget);
-      localStorage.setItem('sales_km_logs_dash6', JSON.stringify(window.kmLogs));
-      localStorage.setItem('sales_bbm_logs_dash6', JSON.stringify(window.bbmLogs));
-      localStorage.setItem('sales_surat_docs_dash6', JSON.stringify(window.suratDocs));
-      localStorage.setItem('sales_target_km_dash6', window.targetKmService);
     };
 
-    function loadFromLocalStorage() {
-      try {
-        window.stockData = JSON.parse(localStorage.getItem('sales_stock_data_3dash')) || {};
-        window.transactions = JSON.parse(localStorage.getItem('sales_transactions_3dash')) || [];
-        window.generatedReports = JSON.parse(localStorage.getItem('sales_reports_3dash')) || [];
-        window.pbucData = JSON.parse(localStorage.getItem('sales_pbuc_data_3dash')) || {};
-        window.monthlyTarget = parseInt(localStorage.getItem('sales_monthly_target_3dash'), 10) || 0;
-        window.kmLogs = JSON.parse(localStorage.getItem('sales_km_logs_dash6')) || [];
-        window.bbmLogs = JSON.parse(localStorage.getItem('sales_bbm_logs_dash6')) || [];
-        window.suratDocs = JSON.parse(localStorage.getItem('sales_surat_docs_dash6')) || [];
-        window.targetKmService = parseInt(localStorage.getItem('sales_target_km_dash6'), 10) || 0;
-      } catch (e) {}
-
-      initStockData();
-      renderAllViews();
+    function initStockData() {
+      window.PRODUCT_LIST.forEach(sku => {
+        if (!window.stockData[sku]) {
+          window.stockData[sku] = { initial: 0, added: 0 };
+        }
+      });
     }
 
-    loadFromLocalStorage();
-
-    // FUNGSI KONTROL INDIKATOR KONEKSI SINKRONISASI
-    window.updateSyncStatus = function(status) {
-      const deskInd = document.getElementById("sync-indicator");
-      const deskTxt = document.getElementById("sync-status-text");
-      const mobInd = document.getElementById("mob-sync-indicator");
-      const mobTxt = document.getElementById("mob-sync-status-text");
-
-      if (status === "connected") {
-        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-        if (deskTxt) { deskTxt.textContent = "Online"; deskTxt.className = "text-emerald-400 font-medium"; }
-        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-emerald-500";
-        if (mobTxt) { mobTxt.textContent = "Online"; mobTxt.className = "text-emerald-400 font-medium"; }
-      } else if (status === "saving") {
-        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-        if (deskTxt) { deskTxt.textContent = "Sync"; deskTxt.className = "text-amber-400 font-medium"; }
-        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
-        if (mobTxt) { mobTxt.textContent = "Syncing"; mobTxt.className = "text-amber-400 font-medium"; }
-      } else {
-        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-sky-500";
-        if (deskTxt) { deskTxt.textContent = "Offline"; deskTxt.className = "text-sky-400 font-medium"; }
-        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-sky-500";
-        if (mobTxt) { mobTxt.textContent = "Offline"; mobTxt.className = "text-sky-400 font-medium"; }
-      }
-    };
-
-    window.syncStockToCloud = async function() {
-      window.updateSyncStatus("saving");
-      window.saveToLocalStorage();
-      try {
-        await setDoc(stocksDocRef, {
-          stockData: window.stockData || {},
-          monthlyTarget: window.monthlyTarget || 0,
-          updatedAt: new Date().toISOString()
-        }, { merge: true });
-        window.updateSyncStatus("connected");
-      } catch (err) { window.updateSyncStatus("offline"); }
-    };
-
-    window.syncTxToCloud = async function(txObj) {
-      window.updateSyncStatus("saving");
-      window.saveToLocalStorage();
-      try {
-        await setDoc(doc(txCollectionRef, String(txObj.id)), txObj);
-        window.updateSyncStatus("connected");
-      } catch (err) { window.updateSyncStatus("offline"); }
-    };
-
-    window.deleteTxFromCloud = async function(txId) {
-      window.updateSyncStatus("saving");
-      try {
-        await deleteDoc(doc(txCollectionRef, String(txId)));
-        window.updateSyncStatus("connected");
-      } catch (err) { window.updateSyncStatus("offline"); }
-    };
-
-    window.syncReportToCloud = async function(repObj) {
-      window.updateSyncStatus("saving");
-      window.saveToLocalStorage();
-      try {
-        await setDoc(doc(reportsCollectionRef, String(repObj.id)), repObj);
-        window.updateSyncStatus("connected");
-      } catch (err) { window.updateSyncStatus("offline"); }
-    };
-
-    window.deleteReportFromCloud = async function(repId) {
-      window.updateSyncStatus("saving");
-      try {
-        await deleteDoc(doc(reportsCollectionRef, String(repId)));
-        window.updateSyncStatus("connected");
-      } catch (err) { window.updateSyncStatus("offline"); }
-    };
-
-    window.resetAllDatabaseCloud = async function() {
-      window.updateSyncStatus("saving");
-      try {
-        await deleteDoc(stocksDocRef);
-        await deleteDoc(pbucDocRef);
-        await deleteDoc(kmSettingsDocRef);
-
-        const txSnaps = await getDocs(txCollectionRef);
-        await Promise.all(txSnaps.docs.map(d => deleteDoc(d.ref)));
-
-        window.stockData = {};
-        window.transactions = [];
-        window.generatedReports = [];
-        window.pbucData = {};
-        window.monthlyTarget = 0;
-        window.cart = [];
-        localStorage.clear();
-
-        initStockData();
-        renderAllViews();
-        window.updateSyncStatus("connected");
-        alert("Seluruh database berhasil dibersihkan!");
-      } catch (err) {
-        alert("Gagal mereset database. Periksa koneksi internet Anda.");
-        window.updateSyncStatus("offline");
-      }
-    };
-
+    // LISTENER REALTIME FIREBASE LENGKAP TANPA ADA DATA TERPOTONG
     onSnapshot(stocksDocRef, { includeMetadataChanges: true }, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data();
@@ -1244,29 +880,28 @@
       }
       initStockData();
       renderAllViews();
-      window.updateSyncStatus(docSnap.metadata.fromCache ? "offline" : "connected");
     });
 
     onSnapshot(txCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
-      const txMap = new Map();
-      snapshot.forEach(doc => txMap.set(String(doc.id), doc.data()));
-      const loadedTx = Array.from(txMap.values());
-      loadedTx.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-      window.transactions = loadedTx;
+      const list = [];
+      snapshot.forEach(doc => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
+      window.transactions = list;
       window.saveToLocalStorage();
       renderAllViews();
-      window.updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
     onSnapshot(reportsCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
-      const repMap = new Map();
-      snapshot.forEach(doc => repMap.set(String(doc.id), doc.data()));
-      const loadedReps = Array.from(repMap.values());
-      loadedReps.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-      window.generatedReports = loadedReps;
+      const list = [];
+      snapshot.forEach(doc => {
+        list.push({ id: doc.id, ...doc.data() });
+      });
+      list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
+      window.generatedReports = list;
       window.saveToLocalStorage();
       renderAllViews();
-      window.updateSyncStatus(snapshot.metadata.fromCache ? "offline" : "connected");
     });
 
     function renderAllViews() {
@@ -1274,185 +909,14 @@
       if (typeof renderCartUI === 'function') renderCartUI();
       if (typeof renderTransactions === 'function') renderTransactions();
       if (typeof renderStockTable === 'function') renderStockTable();
-      if (typeof renderReportsHistory === 'function') renderReportsHistory();
-      if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
-      if (typeof renderProductStoreBreakdown === 'function') renderProductStoreBreakdown();
-      if (typeof renderPbucTable === 'function') renderPbucTable();
-      if (typeof renderKendaraanDashboard === 'function') renderKendaraanDashboard();
-      if (typeof renderCharts === 'function') renderCharts();
       if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-
-    function initStockData() {
-      window.PRODUCT_LIST.forEach(sku => {
-        if (!window.stockData[sku]) {
-          window.stockData[sku] = { initial: 0, added: 0 };
-        }
-      });
     }
   </script>
 
-  <!-- JAVASCRIPT UTAMA, SCROLL NAV & AI GEMINI SCAN -->
+  <!-- JAVASCRIPT UTAMA -->
   <script>
-    let chart1Instance = null;
-    let chart2Instance = null;
-
-    let lastScrollY = window.scrollY;
-    window.addEventListener('scroll', () => {
-      const nav = document.getElementById('mobile-bottom-nav');
-      if (!nav) return;
-      if (window.scrollY > lastScrollY && window.scrollY > 50) {
-        nav.classList.add('mobile-nav-hidden');
-      } else {
-        nav.classList.remove('mobile-nav-hidden');
-      }
-      lastScrollY = window.scrollY;
-    });
-
-    // FUNGSI SCAN NOTA FISIK VIA GEMINI AI (OCR)
-    async function scanNotaWithAI(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const apiKey = window.GEMINI_API_KEY;
-      if (!apiKey || apiKey === "AIzaSy...") {
-        alert("Mohon masukkan Gemini API Key yang valid pada variabel window.GEMINI_API_KEY!");
-        return;
-      }
-
-      const statusEl = document.getElementById('ai-scan-status');
-      statusEl.classList.remove('hidden');
-      statusEl.textContent = "⏳ AI sedang membaca nota fisik kamu...";
-
-      try {
-        const base64Image = await new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result.split(',')[1]);
-          reader.onerror = error => reject(error);
-          reader.readAsDataURL(file);
-        });
-
-        const promptText = `
-          Kamu adalah sistem OCR AI. Baca foto nota penjualan ini.
-          Daftar SKU produk yang valid hanyalah: ${JSON.stringify(window.PRODUCT_LIST)}.
-          
-          Tolong kembalikan hasil pembacaan HANYA dalam format JSON baku tanpa teks pembuka/penutup seperti ini:
-          {
-            "toko": "Nama Toko yang dibaca",
-            "items": [
-              {"product": "NAMA_SKU_EXACT", "qty": 100}
-            ]
-          }
-          Catatan: Cocokkan nama produk di foto ke daftar SKU valid di atas. Qty harus berupa angka total bungkus.
-        `;
-
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            contents: [{
-              parts: [
-                { text: promptText },
-                { inlineData: { mimeType: file.type, data: base64Image } }
-              ]
-            }]
-          })
-        });
-
-        const data = await response.json();
-        const responseText = data.candidates[0].content.parts[0].text;
-        const cleanJson = responseText.replace(/```json/g, '').replace(/```/g, '').trim();
-        const result = JSON.parse(cleanJson);
-
-        if (result.toko) {
-          document.getElementById('input-toko').value = result.toko;
-        }
-
-        if (result.items && Array.isArray(result.items)) {
-          result.items.forEach(parsedItem => {
-            const validSku = window.PRODUCT_LIST.find(s => s.toLowerCase() === parsedItem.product.toLowerCase());
-            if (validSku && parsedItem.qty > 0) {
-              const existingIdx = window.cart.findIndex(i => i.product === validSku);
-              if (existingIdx > -1) {
-                window.cart[existingIdx].qty += parsedItem.qty;
-                window.cart[existingIdx].pendingQty += parsedItem.qty;
-              } else {
-                window.cart.push({
-                  product: validSku,
-                  qty: parsedItem.qty,
-                  pendingQty: parsedItem.qty,
-                  reportedQty: 0
-                });
-              }
-            }
-          });
-        }
-
-        renderCartUI();
-        statusEl.textContent = "✅ Berhasil! Form toko & keranjang terisi otomatis oleh AI.";
-      } catch (err) {
-        console.error("Gagal Scan AI:", err);
-        statusEl.textContent = "❌ Gagal membaca nota. Pastikan foto jelas atau isi manual.";
-      } finally {
-        event.target.value = '';
-      }
-    }
-
-    function openResetModal() {
-      document.getElementById('modal-reset-db').classList.remove('hidden');
-    }
-
-    function confirmResetAllDatabase() {
-      closeModal('modal-reset-db');
-      if (typeof window.resetAllDatabaseCloud === 'function') {
-        window.resetAllDatabaseCloud();
-      }
-    }
-
-    function formatPackToKemasan(totalBungkus) {
-      if (!totalBungkus || totalBungkus === 0) return '0 Dus 0 Bal 0 Slop 0 Bks';
-      const absVal = Math.abs(totalBungkus);
-      
-      const dus = Math.floor(absVal / 800);
-      let sisa = absVal % 800;
-      
-      const bal = Math.floor(sisa / 200);
-      sisa = sisa % 200;
-      
-      const slop = Math.floor(sisa / 10);
-      const bks = sisa % 10;
-      
-      let result = [];
-      if (dus > 0) result.push(`${dus} Dus`);
-      if (bal > 0) result.push(`${bal} Bal`);
-      if (slop > 0) result.push(`${slop} Slop`);
-      if (bks > 0 || result.length === 0) result.push(`${bks} Bks`);
-      
-      const prefix = totalBungkus < 0 ? '-' : '';
-      return prefix + result.join(' ');
-    }
-
-    function getIsoDateStr(dateObj) {
-      if (!dateObj || isNaN(dateObj.getTime())) return '';
-      const year = dateObj.getFullYear();
-      const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-      const day = String(dateObj.getDate()).padStart(2, '0');
-      return `${year}-${month}-${day}`;
-    }
-
-    function initProductDropdown() {
-      const select = document.getElementById('select-produk');
-      if (select && window.PRODUCT_LIST) {
-        select.innerHTML = window.PRODUCT_LIST.map(item => `<option value="${item}">${item}</option>`).join('');
-      }
-      const selectModal = document.getElementById('modal-add-prod-select');
-      if (selectModal && window.PRODUCT_LIST) {
-        selectModal.innerHTML = window.PRODUCT_LIST.map(item => `<option value="${item}">${item}</option>`).join('');
-      }
-      const selectBreakdown = document.getElementById('select-product-breakdown');
-      if (selectBreakdown && window.PRODUCT_LIST) {
-        selectBreakdown.innerHTML = window.PRODUCT_LIST.map(item => `<option value="${item}">${item}</option>`).join('');
-      }
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
     }
 
     function switchTab(tabName) {
@@ -1460,170 +924,8 @@
         const el = document.getElementById(`tab-${t}`);
         if (el) el.classList.add('hidden');
       });
-
       document.getElementById(`tab-${tabName}`).classList.remove('hidden');
-
-      if (tabName === 'stok') { renderStockTable(); renderCharts(); }
-      else if (tabName === 'omzet') { renderTransactions(); }
-      else if (tabName === 'laporan') { renderReportsHistory(); }
-      else if (tabName === 'ringkasan') { renderDailySummaryTable(); renderProductStoreBreakdown(); }
-      else if (tabName === 'pbuc') { renderPbucTable(); }
-      else if (tabName === 'kendaraan') { renderKendaraanDashboard(); }
-
-      ['stok', 'omzet', 'laporan', 'ringkasan', 'pbuc', 'kendaraan'].forEach(t => {
-        const deskBtn = document.getElementById(`nav-desk-${t}`);
-        const mobBtn = document.getElementById(`nav-mob-${t}`);
-        
-        if (deskBtn && mobBtn) {
-          if (t === tabName) {
-            deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40";
-            mobBtn.className = "text-red-500 p-1";
-          } else {
-            deskBtn.className = "w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white";
-            mobBtn.className = "text-slate-400 p-1";
-          }
-        }
-      });
-
-      lucide.createIcons();
-    }
-
-    function renderStockTable() {
-      const tbody = document.getElementById('stock-table-body');
-      if (!tbody || !window.PRODUCT_LIST) return;
-
-      let grandOut = 0;
-      let grandRemaining = 0;
-
-      const rowsHTML = window.PRODUCT_LIST.map((sku, idx) => {
-        const initial = window.stockData[sku] ? (window.stockData[sku].initial || 0) : 0;
-        const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
-
-        let out = 0;
-        (window.transactions || []).forEach(t => {
-          (t.items || []).forEach(i => {
-            if (i.product === sku) out += (i.qty || 0);
-          });
-        });
-
-        const remaining = (initial + added) - out;
-        grandOut += out;
-        grandRemaining += remaining;
-
-        return `
-          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-            <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
-            <td class="p-3 border border-slate-200 font-bold text-slate-800">${sku}</td>
-            <td class="p-3 border border-slate-200 text-right font-medium text-slate-700">${initial} Bks</td>
-            <td class="p-3 border border-slate-200 text-right font-medium ${added >= 0 ? 'text-blue-600' : 'text-red-600'}">${added > 0 ? '+' + added : added} Bks</td>
-            <td class="p-3 border border-slate-200 text-right font-medium text-amber-600">${out} Bks</td>
-            <td class="p-3 border border-slate-200 text-right font-bold ${remaining < 0 ? 'text-red-600' : 'text-slate-900'}">${remaining} Bks</td>
-            <td class="p-3 border border-slate-200 text-center">
-              <button onclick="openAddStockModal('${sku}')" class="px-2 py-1 bg-blue-50 text-blue-700 rounded text-[11px] font-bold">Koreksi</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
-
-      tbody.innerHTML = rowsHTML;
-      document.getElementById('stat-stock-out').textContent = `${grandOut} Bungkus`;
-      document.getElementById('stat-stock-remaining').textContent = `${grandRemaining} Bungkus`;
-      lucide.createIcons();
-    }
-
-    function addToCart() {
-      const product = document.getElementById('select-produk').value;
-      const qtyInput = document.getElementById('input-jumlah');
-      const qty = parseInt(qtyInput.value, 10);
-
-      if (!qty || qty <= 0) return;
-
-      const existingIdx = window.cart.findIndex(i => i.product === product);
-      if (existingIdx > -1) {
-        window.cart[existingIdx].qty += qty;
-        window.cart[existingIdx].pendingQty += qty;
-      } else {
-        window.cart.push({ product: product, qty: qty, pendingQty: qty, reportedQty: 0 });
-      }
-
-      qtyInput.value = '';
-      renderCartUI();
-    }
-
-    function renderCartUI() {
-      const container = document.getElementById('cart-items-container');
-      const countLabel = document.getElementById('cart-count');
-      countLabel.textContent = `${window.cart.length} Item`;
-
-      if (window.cart.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">Belum ada barang dipilih</p>`;
-        return;
-      }
-
-      container.innerHTML = window.cart.map((item, idx) => `
-        <div class="flex justify-between items-center bg-white p-2.5 rounded-lg border text-xs">
-          <span class="font-bold text-slate-800">${item.product}</span>
-          <span class="font-semibold text-slate-600">${item.qty} Bungkus</span>
-        </div>
-      `).join('');
-    }
-
-    function saveTransaction() {
-      const tokoName = document.getElementById('input-toko').value.trim();
-      if (!tokoName || window.cart.length === 0) return;
-
-      const now = new Date();
-      const newTx = {
-        id: window.generateUniqueId(),
-        toko: tokoName,
-        items: [...window.cart],
-        rawDate: getIsoDateStr(now),
-        createdAt: now.toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })
-      };
-
-      window.transactions.unshift(newTx);
-      document.getElementById('input-toko').value = '';
-      window.cart = [];
-
-      renderCartUI();
-      window.syncTxToCloud(newTx);
-      renderTransactions();
-      renderStockTable();
-    }
-
-    function renderTransactions() {
-      const container = document.getElementById('tx-list-container');
-      if (!container) return;
-
-      const activeTransactions = (window.transactions || []).filter(t => t.items.reduce((sum, i) => sum + i.pendingQty, 0) > 0);
-      if (activeTransactions.length === 0) {
-        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Semua barang keluar toko sudah dilaporkan</div>`;
-        return;
-      }
-
-      container.innerHTML = activeTransactions.map(t => `
-        <div class="bg-slate-50 p-4 rounded-xl border border-amber-200 space-y-2">
-          <h4 class="font-bold text-slate-900 text-sm">${t.toko}</h4>
-          <div class="bg-white p-2.5 rounded-lg border text-xs">
-            ${t.items.map(i => `<div class="flex justify-between"><span>${i.product}</span><b>${i.qty} Bks</b></div>`).join('')}
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function closeModal(id) {
-      document.getElementById(id).classList.add('hidden');
-    }
-  </script>
-
-  <!-- REGISTRASI SERVICE WORKER PWA -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then((reg) => console.log('PWA SW Aktif:', reg.scope))
-          .catch((err) => console.error('Gagal SW:', err));
-      });
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
   </script>
 </body>
