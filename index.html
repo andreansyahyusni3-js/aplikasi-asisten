@@ -74,7 +74,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v12.6 (Fix All)
+      v12.7 (Fixed)
     </div>
   </aside>
 
@@ -177,7 +177,7 @@
             <label class="block text-xs font-bold text-indigo-900 uppercase flex items-center gap-1.5">
               <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i> Scan Nota / Struk Fisik (AI)
             </label>
-            <input type="file" id="input-foto-nota" accept="image/*" capture="environment" onchange="scanNotaWithAI(event)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
+            <input type="file" id="input-foto-nota" accept="image/*" capture="environment" onchange="window.scanNotaWithAI(event)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
             <p id="ai-scan-status" class="text-[11px] font-semibold text-indigo-700 hidden">⏳ AI sedang membaca nota fisik...</p>
           </div>
 
@@ -192,7 +192,7 @@
               <select id="select-produk" class="w-full px-3 py-2 text-sm border rounded-lg bg-white"></select>
               <div class="flex items-center gap-2">
                 <input type="number" id="input-jumlah" min="1" placeholder="Jumlah" class="w-full px-3 py-2 text-sm border rounded-lg">
-                <button type="button" onclick="addToCart()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium">Tambah</button>
+                <button type="button" onclick="window.addToCart()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium">Tambah</button>
               </div>
             </div>
           </div>
@@ -205,7 +205,7 @@
             <div id="cart-items-container" class="space-y-2 max-h-48 overflow-y-auto border border-dashed rounded-xl p-3 bg-slate-50"></div>
           </div>
 
-          <button type="button" onclick="saveTransaction()" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg">Simpan Transaksi Toko</button>
+          <button type="button" onclick="window.saveTransaction()" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg">Simpan Transaksi Toko</button>
         </div>
 
         <div class="lg:col-span-7 bg-white p-5 rounded-2xl border shadow-sm space-y-4">
@@ -264,7 +264,7 @@
           </h2>
           <p class="text-xs text-slate-500 mt-0.5">Komparasi stok aplikasi dengan input laporan fisik PBUC.</p>
         </div>
-        <button onclick="savePbucData()" class="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md">Simpan Data PBUC</button>
+        <button onclick="window.savePbucData()" class="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md">Simpan Data PBUC</button>
       </div>
       <div class="bg-white p-5 rounded-2xl border shadow-sm">
         <div class="overflow-x-auto">
@@ -308,7 +308,7 @@
               <input type="number" id="input-km-akhir" placeholder="12150" class="w-full px-3 py-2 text-xs border rounded-xl">
             </div>
           </div>
-          <button onclick="saveKmLog()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log KM</button>
+          <button onclick="window.saveKmLog()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log KM</button>
         </div>
 
         <!-- FORM BBM -->
@@ -326,7 +326,7 @@
               <input type="number" step="0.01" id="input-bbm-liter" placeholder="15.5" class="w-full px-3 py-2 text-xs border rounded-xl">
             </div>
           </div>
-          <button onclick="saveBbmLog()" class="w-full bg-amber-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log BBM</button>
+          <button onclick="window.saveBbmLog()" class="w-full bg-amber-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log BBM</button>
         </div>
       </div>
 
@@ -362,7 +362,7 @@
       </div>
       <div class="flex gap-2 pt-3 border-t">
         <button onclick="closeModal('modal-reset-db')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="confirmResetAllDatabase()" class="flex-1 bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs">Ya, Hapus Semua</button>
+        <button onclick="window.confirmResetAllDatabase()" class="flex-1 bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs">Ya, Hapus Semua</button>
       </div>
     </div>
   </div>
@@ -377,7 +377,7 @@
     <button onclick="switchTab('kendaraan')" id="nav-mob-kendaraan" class="text-slate-400 p-1"><i data-lucide="truck" class="w-5 h-5"></i></button>
   </div>
 
-  <!-- JAVASCRIPT GLOBAL SYSTEM (DIDEKLARASIKAN PERTAMA) -->
+  <!-- JAVASCRIPT GLOBAL UTAMA -->
   <script>
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
@@ -472,7 +472,7 @@
       if (statRem) statRem.textContent = `${grandRemaining} Bungkus`;
     }
 
-    function addToCart() {
+    window.addToCart = function() {
       const product = document.getElementById('select-produk').value;
       const qtyInput = document.getElementById('input-jumlah');
       const qty = parseInt(qtyInput.value, 10);
@@ -487,7 +487,7 @@
 
       qtyInput.value = '';
       renderCartUI();
-    }
+    };
 
     function renderCartUI() {
       const container = document.getElementById('cart-items-container');
@@ -509,7 +509,7 @@
       `).join('');
     }
 
-    function saveTransaction() {
+    window.saveTransaction = function() {
       const tokoName = document.getElementById('input-toko').value.trim();
       if (!tokoName || window.cart.length === 0) return;
 
@@ -530,7 +530,7 @@
       if (typeof window.syncTxToCloud === 'function') window.syncTxToCloud(newTx);
       renderTransactions();
       renderStockTable();
-    }
+    };
 
     function renderTransactions() {
       const container = document.getElementById('tx-list-container');
@@ -623,7 +623,7 @@
       }).join('');
     }
 
-    function saveKmLog() {
+    window.saveKmLog = function() {
       const kmAwal = parseInt(document.getElementById('input-km-awal').value, 10) || 0;
       const kmAkhir = parseInt(document.getElementById('input-km-akhir').value, 10) || 0;
       if (kmAkhir <= kmAwal) return alert("KM Akhir harus lebih besar!");
@@ -642,17 +642,17 @@
 
       if (typeof window.syncKmToCloud === 'function') window.syncKmToCloud(newKm);
       renderKmTable();
-    }
+    };
 
-    function saveBbmLog() {
+    window.saveBbmLog = function() {
       const kmVal = parseInt(document.getElementById('input-bbm-km').value, 10) || 0;
       const literVal = parseFloat(document.getElementById('input-bbm-liter').value) || 0;
       if (kmVal <= 0 || literVal <= 0) return alert("Isi data pengisian BBM dengan benar!");
 
-      alert("Log Pengisian BBM Berhasil Diberitahukan!");
+      alert("Log Pengisian BBM Berhasil Disimpan!");
       document.getElementById('input-bbm-km').value = '';
       document.getElementById('input-bbm-liter').value = '';
-    }
+    };
 
     function renderKmTable() {
       const tbody = document.getElementById('km-table-body');
@@ -673,7 +673,7 @@
       `).join('');
     }
 
-    function renderAllViews() {
+    window.renderAllViews = function() {
       initProductDropdown();
       renderCartUI();
       renderTransactions();
@@ -683,10 +683,10 @@
       renderPbucTable();
       renderKmTable();
       if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
+    };
 
     // AI GEMINI OCR
-    async function scanNotaWithAI(event) {
+    window.scanNotaWithAI = async function(event) {
       const file = event.target.files[0];
       if (!file) return;
 
@@ -747,10 +747,10 @@
       } finally {
         event.target.value = '';
       }
-    }
+    };
   </script>
 
-  <!-- FIREBASE ENGINE & REALTIME SYNC (DIDEKLARASIKAN SETELAH SYSTEM LOGIC) -->
+  <!-- FIREBASE ENGINE & REALTIME SYNC (DI-WRAP LENGKAP DENGAN TAG PENUTUP) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
@@ -815,7 +815,7 @@
         window.kmLogs = [];
         localStorage.clear();
         initStockData();
-        renderAllViews();
+        if (typeof window.renderAllViews === 'function') window.renderAllViews();
         alert("Seluruh database berhasil dibersihkan!");
       } catch (e) { alert("Gagal reset database"); }
     };
@@ -826,35 +826,35 @@
         window.stockData = docSnap.data().stockData;
       }
       initStockData();
-      renderAllViews();
+      if (typeof window.renderAllViews === 'function') window.renderAllViews();
     });
 
     onSnapshot(txCollectionRef, (snapshot) => {
       const list = [];
       snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
       window.transactions = list;
-      renderAllViews();
+      if (typeof window.renderAllViews === 'function') window.renderAllViews();
     });
 
     onSnapshot(reportsCollectionRef, (snapshot) => {
       const list = [];
       snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
       window.generatedReports = list;
-      renderAllViews();
+      if (typeof window.renderAllViews === 'function') window.renderAllViews();
     });
 
     onSnapshot(pbucDocRef, (docSnap) => {
       if (docSnap.exists() && docSnap.data().pbucData) {
         window.pbucData = docSnap.data().pbucData;
       }
-      renderAllViews();
+      if (typeof window.renderAllViews === 'function') window.renderAllViews();
     });
 
     onSnapshot(kmCollectionRef, (snapshot) => {
       const list = [];
       snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
       window.kmLogs = list;
-      renderAllViews();
+      if (typeof window.renderAllViews === 'function') window.renderAllViews();
     });
   </script>
 
