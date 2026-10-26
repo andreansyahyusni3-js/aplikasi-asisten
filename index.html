@@ -50,23 +50,18 @@
       <button onclick="switchTab('stok')" id="nav-desk-stok" title="1. Menyimpan Stok" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition bg-red-600 text-white shadow-lg shadow-red-900/40">
         <i data-lucide="boxes" class="w-5 h-5"></i>
       </button>
-
       <button onclick="switchTab('omzet')" id="nav-desk-omzet" title="2. Barang Keluar per Toko" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="shopping-cart" class="w-5 h-5"></i>
       </button>
-
       <button onclick="switchTab('laporan')" id="nav-desk-laporan" title="3. Dashboard Pelaporan" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="file-text" class="w-5 h-5"></i>
       </button>
-
       <button onclick="switchTab('ringkasan')" id="nav-desk-ringkasan" title="4. Ringkasan Harian Per Produk" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
       </button>
-
       <button onclick="switchTab('pbuc')" id="nav-desk-pbuc" title="5. Review Stok VS PBUC" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="clipboard-check" class="w-5 h-5"></i>
       </button>
-
       <button onclick="switchTab('kendaraan')" id="nav-desk-kendaraan" title="6. Operasional & Kendaraan" class="w-full p-3 rounded-xl font-medium text-xs flex justify-center items-center transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="truck" class="w-5 h-5"></i>
       </button>
@@ -79,7 +74,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v12.4 (Recovered)
+      v12.5 (Full Active)
     </div>
   </aside>
 
@@ -107,21 +102,19 @@
   <!-- MAIN CONTENT AREA -->
   <main class="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
 
-    <!-- DASHBOARD 1: MENYIMPAN STOK & GRAFIK -->
+    <!-- DASHBOARD 1: STOK -->
     <section id="tab-stok" class="block space-y-6">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
             <i data-lucide="boxes" class="w-6 h-6 text-red-600"></i>
-            Dashboard 1: Penyimpanan, Kelola Stok & Grafik Tren
+            Dashboard 1: Penyimpanan & Kelola Stok
           </h2>
-          <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, atur target penjualan, koreksi stok, pantau sisa stok dan grafik performa real-time.</p>
+          <p class="text-xs text-slate-500 mt-0.5">Kelola stok awal, koreksi stok, dan pantau sisa stok real-time.</p>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="openResetModal()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200 flex items-center gap-1.5 transition">
-            <i data-lucide="database-zap" class="w-4 h-4"></i> Reset Database Total
-          </button>
-        </div>
+        <button onclick="openResetModal()" class="text-xs bg-rose-50 hover:bg-rose-100 text-rose-700 font-bold px-3 py-2 rounded-xl border border-rose-200 flex items-center gap-1.5 transition">
+          <i data-lucide="database-zap" class="w-4 h-4"></i> Reset Database Total
+        </button>
       </div>
 
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -129,7 +122,6 @@
           <div>
             <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Barang Keluar (Toko)</p>
             <h3 id="stat-stock-out" class="text-2xl font-bold text-amber-600 mt-1">0 Bungkus</h3>
-            <p id="stat-stock-out-detail" class="text-[11px] text-amber-600/80 font-semibold mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
           <div class="bg-amber-100 p-3 rounded-xl text-amber-600">
             <i data-lucide="shopping-bag" class="w-6 h-6"></i>
@@ -140,7 +132,6 @@
           <div>
             <p class="text-xs font-semibold text-red-200 uppercase tracking-wider">Sisa Stok Siap Keluar</p>
             <h3 id="stat-stock-remaining" class="text-2xl font-black text-white mt-1">0 Bungkus</h3>
-            <p id="stat-stock-remaining-detail" class="text-[11px] text-red-200 font-semibold mt-0.5">0 Dus 0 Bal 0 Slop 0 Bks</p>
           </div>
           <div class="bg-red-800/50 p-3 rounded-xl text-red-100 border border-red-700/50">
             <i data-lucide="package-check" class="w-6 h-6"></i>
@@ -149,24 +140,19 @@
       </div>
 
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-3">
-          <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2">
-            <i data-lucide="list-checks" class="w-4 h-4 text-red-600"></i>
-            Rincian Stok Per Jenis Rokok (SKU)
-          </h3>
-          <span class="text-xs bg-slate-100 text-slate-600 font-semibold px-2.5 py-1 rounded-full">Format: Bungkus & (Kemasan)</span>
-        </div>
-
+        <h3 class="font-bold text-slate-900 text-sm flex items-center gap-2 border-b pb-3">
+          <i data-lucide="list-checks" class="w-4 h-4 text-red-600"></i> Rincian Stok Per Jenis Rokok (SKU)
+        </h3>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse border border-slate-200">
             <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
               <tr>
-                <th class="p-3 border border-slate-200">No</th>
-                <th class="p-3 border border-slate-200">Nama Produk SKU</th>
-                <th class="p-3 border border-slate-200 text-right">Stok Awal</th>
-                <th class="p-3 border border-slate-200 text-right">Koreksi/Tambah</th>
-                <th class="p-3 border border-slate-200 text-right">Barang Keluar</th>
-                <th class="p-3 border border-slate-200 text-right">Sisa Stok</th>
+                <th class="p-3 border">No</th>
+                <th class="p-3 border">Nama Produk SKU</th>
+                <th class="p-3 border text-right">Stok Awal</th>
+                <th class="p-3 border text-right">Koreksi</th>
+                <th class="p-3 border text-right">Barang Keluar</th>
+                <th class="p-3 border text-right">Sisa Stok</th>
               </tr>
             </thead>
             <tbody id="stock-table-body" class="divide-y divide-slate-200"></tbody>
@@ -175,110 +161,91 @@
       </div>
     </section>
 
-    <!-- DASHBOARD 2: MENCATAT BARANG KELUAR PER TOKO -->
+    <!-- DASHBOARD 2: TRANSAKSI TOKO -->
     <section id="tab-omzet" class="hidden space-y-6">
       <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
         <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
           <i data-lucide="shopping-cart" class="w-6 h-6 text-red-600"></i>
           Dashboard 2: Pencatatan Barang Keluar per Toko
         </h2>
-        <p class="text-xs text-slate-500 mt-0.5">Gunakan kamera HP untuk scan nota fisik otomatis via AI, atau isi form manual di bawah.</p>
+        <p class="text-xs text-slate-500 mt-0.5">Scan nota otomatis via AI atau input manual.</p>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
         <div class="lg:col-span-5 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-          <div class="border-b border-slate-100 pb-3 flex items-center justify-between">
-            <h2 class="font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="plus-circle" class="w-5 h-5 text-red-600"></i>
-              Input Barang Keluar Toko
-            </h2>
-          </div>
-
           <div class="bg-indigo-50 p-3.5 rounded-xl border border-indigo-200 space-y-2">
             <label class="block text-xs font-bold text-indigo-900 uppercase flex items-center gap-1.5">
               <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i> Scan Nota / Struk Fisik (AI)
             </label>
-            <input type="file" id="input-foto-nota" accept="image/*" capture="environment" onchange="scanNotaWithAI(event)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 cursor-pointer">
-            <p id="ai-scan-status" class="text-[11px] font-semibold text-indigo-700 hidden">⏳ AI sedang membaca nota fisik kamu...</p>
+            <input type="file" id="input-foto-nota" accept="image/*" capture="environment" onchange="scanNotaWithAI(event)" class="block w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-indigo-600 file:text-white cursor-pointer">
+            <p id="ai-scan-status" class="text-[11px] font-semibold text-indigo-700 hidden">⏳ AI sedang membaca nota fisik...</p>
           </div>
 
           <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Toko / Outlet <span class="text-red-500">*</span></label>
-            <input type="text" id="input-toko" placeholder="Contoh: Toko Ali / Berkah Jaya" class="w-full px-3.5 py-2.5 text-sm border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 outline-none">
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Nama Toko / Outlet</label>
+            <input type="text" id="input-toko" placeholder="Contoh: Toko Ali" class="w-full px-3.5 py-2.5 text-sm border rounded-xl outline-none focus:ring-2 focus:ring-red-500">
           </div>
 
-          <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-            <label class="block text-xs font-bold text-slate-700 uppercase">Pilih Produk & Jumlah Manual</label>
+          <div class="bg-slate-50 p-4 rounded-xl border space-y-3">
+            <label class="block text-xs font-bold text-slate-700 uppercase">Pilih Produk & Qty</label>
             <div class="space-y-3">
-              <select id="select-produk" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:ring-2 focus:ring-red-500 outline-none"></select>
-
+              <select id="select-produk" class="w-full px-3 py-2 text-sm border rounded-lg bg-white"></select>
               <div class="flex items-center gap-2">
-                <input type="number" id="input-jumlah" min="1" placeholder="Jumlah" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none">
-                <span class="text-xs font-semibold text-slate-600 bg-slate-200 px-3 py-2 rounded-lg">Bungkus</span>
-                <button type="button" onclick="addToCart()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition flex items-center gap-1">
-                  <i data-lucide="plus" class="w-4 h-4"></i> Tambah
-                </button>
+                <input type="number" id="input-jumlah" min="1" placeholder="Jumlah" class="w-full px-3 py-2 text-sm border rounded-lg">
+                <button type="button" onclick="addToCart()" class="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium">Tambah</button>
               </div>
             </div>
           </div>
 
           <div>
             <div class="flex justify-between items-center mb-2">
-              <span class="text-xs font-bold text-slate-700 uppercase">Daftar Barang Keluar</span>
+              <span class="text-xs font-bold text-slate-700 uppercase">Keranjang</span>
               <span id="cart-count" class="text-xs bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-full">0 Item</span>
             </div>
-            
-            <div id="cart-items-container" class="space-y-2 max-h-48 overflow-y-auto border border-dashed border-slate-300 rounded-xl p-3 bg-slate-50/50">
-              <p class="text-xs text-slate-400 text-center py-4">Belum ada barang dipilih</p>
-            </div>
+            <div id="cart-items-container" class="space-y-2 max-h-48 overflow-y-auto border border-dashed rounded-xl p-3 bg-slate-50"></div>
           </div>
 
-          <button type="button" id="btn-save-tx" onclick="saveTransaction()" class="w-full bg-red-600 hover:bg-red-700 disabled:bg-slate-400 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-red-200 transition flex items-center justify-center gap-2">
-            <i data-lucide="save" class="w-5 h-5"></i>
-            Simpan Barang Keluar Toko
-          </button>
+          <button type="button" onclick="saveTransaction()" class="w-full bg-red-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg">Simpan Transaksi Toko</button>
         </div>
 
-        <div class="lg:col-span-7 bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div class="flex justify-between items-center pb-3 border-b border-slate-100">
-            <h2 class="font-bold text-slate-900 flex items-center gap-2">
-              <i data-lucide="list" class="w-5 h-5 text-red-600"></i>
-              Daftar Transaksi Toko Aktif
-            </h2>
-          </div>
-
+        <div class="lg:col-span-7 bg-white p-5 rounded-2xl border shadow-sm space-y-4">
+          <h2 class="font-bold text-slate-900 border-b pb-3 flex items-center gap-2">
+            <i data-lucide="list" class="w-5 h-5 text-red-600"></i> Daftar Transaksi Toko Aktif
+          </h2>
           <div id="tx-list-container" class="space-y-3 max-h-[600px] overflow-y-auto pr-1"></div>
         </div>
       </div>
     </section>
 
-    <!-- DASHBOARD 3: PELAPORAN -->
+    <!-- DASHBOARD 3: PELAPORAN HARIAN -->
     <section id="tab-laporan" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i>
-          Dashboard 3: Pelaporan Harian
-        </h2>
-        <p class="text-xs text-slate-500 mt-0.5">Seluruh rekapan laporan harian dari transaksi toko.</p>
+      <div class="bg-white p-5 rounded-2xl border shadow-sm flex justify-between items-center">
+        <div>
+          <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <i data-lucide="file-text" class="w-6 h-6 text-indigo-600"></i> Dashboard 3: Pelaporan Harian
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Riwayat rekapitulasi laporan toko per tanggal.</p>
+        </div>
       </div>
-      <div id="reports-history-container" class="space-y-4"></div>
+      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-4">
+        <div id="reports-history-container" class="space-y-4"></div>
+      </div>
     </section>
 
-    <!-- DASHBOARD 4: RINGKASAN HARIAN -->
+    <!-- DASHBOARD 4: RINGKASAN PER PRODUK -->
     <section id="tab-ringkasan" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
         <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i>
-          Dashboard 4: Ringkasan Per Produk
+          <i data-lucide="bar-chart-2" class="w-6 h-6 text-emerald-600"></i> Dashboard 4: Ringkasan Per Produk
         </h2>
       </div>
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs border-collapse border border-slate-200">
             <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
               <tr>
                 <th class="p-3 border">No</th>
-                <th class="p-3 border">Nama Barang</th>
+                <th class="p-3 border">Nama Barang SKU</th>
                 <th class="p-3 border text-right">Total Barang Keluar</th>
               </tr>
             </thead>
@@ -290,21 +257,95 @@
 
     <!-- DASHBOARD 5: REVIEW PBUC -->
     <section id="tab-pbuc" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-        <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="clipboard-check" class="w-6 h-6 text-purple-600"></i>
-          Dashboard 5: Review Stok vs PBUC
-        </h2>
+      <div class="bg-white p-5 rounded-2xl border shadow-sm flex justify-between items-center">
+        <div>
+          <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <i data-lucide="clipboard-check" class="w-6 h-6 text-purple-600"></i> Dashboard 5: Review Stok VS PBUC
+          </h2>
+          <p class="text-xs text-slate-500 mt-0.5">Komparasi stok aplikasi dengan input laporan fisik PBUC.</p>
+        </div>
+        <button onclick="savePbucData()" class="bg-purple-600 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-md">Simpan Data PBUC</button>
+      </div>
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse border border-slate-200">
+            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
+              <tr>
+                <th class="p-3 border">No</th>
+                <th class="p-3 border">Nama Produk SKU</th>
+                <th class="p-3 border text-right">Stok Aplikasi</th>
+                <th class="p-3 border text-center bg-purple-50">Input PBUC Manual</th>
+                <th class="p-3 border text-right">Selisih</th>
+              </tr>
+            </thead>
+            <tbody id="pbuc-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
     <!-- DASHBOARD 6: OPERASIONAL & KENDARAAN -->
     <section id="tab-kendaraan" class="hidden space-y-6">
-      <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+      <div class="bg-white p-5 rounded-2xl border shadow-sm">
         <h2 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-          <i data-lucide="truck" class="w-6 h-6 text-blue-600"></i>
-          Dashboard 6: Operasional &amp; Kendaraan
+          <i data-lucide="truck" class="w-6 h-6 text-blue-600"></i> Dashboard 6: Operasional & Kendaraan
         </h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- FORM KM -->
+        <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
+          <h3 class="font-bold text-sm border-b pb-2 text-slate-900 flex items-center gap-2">
+            <i data-lucide="gauge" class="w-4 h-4 text-blue-600"></i> Input Log KM Harian
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">KM Awal</label>
+              <input type="number" id="input-km-awal" placeholder="12000" class="w-full px-3 py-2 text-xs border rounded-xl">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">KM Akhir</label>
+              <input type="number" id="input-km-akhir" placeholder="12150" class="w-full px-3 py-2 text-xs border rounded-xl">
+            </div>
+          </div>
+          <button onclick="saveKmLog()" class="w-full bg-blue-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log KM</button>
+        </div>
+
+        <!-- FORM BBM -->
+        <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
+          <h3 class="font-bold text-sm border-b pb-2 text-slate-900 flex items-center gap-2">
+            <i data-lucide="fuel" class="w-4 h-4 text-amber-600"></i> Input Pengisian BBM
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">KM Odometer</label>
+              <input type="number" id="input-bbm-km" placeholder="12200" class="w-full px-3 py-2 text-xs border rounded-xl">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-slate-700 uppercase mb-1">Liter Disi</label>
+              <input type="number" step="0.01" id="input-bbm-liter" placeholder="15.5" class="w-full px-3 py-2 text-xs border rounded-xl">
+            </div>
+          </div>
+          <button onclick="saveBbmLog()" class="w-full bg-amber-600 text-white font-bold py-2 rounded-xl text-xs">Simpan Log BBM</button>
+        </div>
+      </div>
+
+      <!-- TABEL LOG KM -->
+      <div class="bg-white p-5 rounded-2xl border shadow-sm space-y-3">
+        <h3 class="font-bold text-sm border-b pb-2">Riwayat Log KM Kendaraan</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse border">
+            <thead class="bg-slate-100 font-bold uppercase">
+              <tr>
+                <th class="p-2.5 border">Tanggal</th>
+                <th class="p-2.5 border text-right">KM Awal</th>
+                <th class="p-2.5 border text-right">KM Akhir</th>
+                <th class="p-2.5 border text-right text-blue-600">Jarak (KM)</th>
+              </tr>
+            </thead>
+            <tbody id="km-table-body" class="divide-y"></tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -315,47 +356,32 @@
     <div class="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-rose-100">
       <div class="flex justify-between items-center border-b border-rose-100 pb-3">
         <h3 class="font-bold text-rose-700 flex items-center gap-2 text-base">
-          <i data-lucide="alert-triangle" class="w-6 h-6 text-rose-600"></i>
-          Reset Total Seluruh Database
+          <i data-lucide="alert-triangle" class="w-6 h-6 text-rose-600"></i> Reset Total Seluruh Database
         </h3>
-        <button onclick="closeModal('modal-reset-db')" class="text-slate-400 hover:text-slate-600">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
+        <button onclick="closeModal('modal-reset-db')" class="text-slate-400"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
       <div class="flex gap-2 pt-3 border-t">
         <button onclick="closeModal('modal-reset-db')" class="flex-1 bg-slate-100 text-slate-700 font-semibold py-2.5 rounded-xl text-xs">Batal</button>
-        <button onclick="confirmResetAllDatabase()" class="flex-1 bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs">Ya, Hapus Semua Data</button>
+        <button onclick="confirmResetAllDatabase()" class="flex-1 bg-rose-600 text-white font-bold py-2.5 rounded-xl text-xs">Ya, Hapus Semua</button>
       </div>
     </div>
   </div>
 
-  <!-- BOTTOM NAVIGATION MOBILE WITH AUTO-HIDE -->
+  <!-- BOTTOM NAVIGATION MOBILE -->
   <div id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 text-white border-t border-slate-800 z-40 px-2 py-2.5 flex justify-around items-center no-print mobile-nav-transform">
-    <button onclick="switchTab('stok')" id="nav-mob-stok" title="Stok" class="text-red-500 p-1">
-      <i data-lucide="boxes" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('omzet')" id="nav-mob-omzet" title="Toko" class="text-slate-400 p-1">
-      <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('laporan')" id="nav-mob-laporan" title="Laporan" class="text-slate-400 p-1">
-      <i data-lucide="file-text" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('ringkasan')" id="nav-mob-ringkasan" title="Ringkasan" class="text-slate-400 p-1">
-      <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('pbuc')" id="nav-mob-pbuc" title="Review PBUC" class="text-slate-400 p-1">
-      <i data-lucide="clipboard-check" class="w-5 h-5"></i>
-    </button>
-    <button onclick="switchTab('kendaraan')" id="nav-mob-kendaraan" title="Operasional" class="text-slate-400 p-1">
-      <i data-lucide="truck" class="w-5 h-5"></i>
-    </button>
+    <button onclick="switchTab('stok')" id="nav-mob-stok" class="text-red-500 p-1"><i data-lucide="boxes" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('omzet')" id="nav-mob-omzet" class="text-slate-400 p-1"><i data-lucide="shopping-cart" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('laporan')" id="nav-mob-laporan" class="text-slate-400 p-1"><i data-lucide="file-text" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('ringkasan')" id="nav-mob-ringkasan" class="text-slate-400 p-1"><i data-lucide="bar-chart-2" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('pbuc')" id="nav-mob-pbuc" class="text-slate-400 p-1"><i data-lucide="clipboard-check" class="w-5 h-5"></i></button>
+    <button onclick="switchTab('kendaraan')" id="nav-mob-kendaraan" class="text-slate-400 p-1"><i data-lucide="truck" class="w-5 h-5"></i></button>
   </div>
 
-  <!-- FIREBASE SDK & CORE ENGINE -->
+  <!-- FIREBASE ENGINE & FULL RENDER LOGIC -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
-      getFirestore, enableIndexedDbPersistence, doc, setDoc, deleteDoc, collection, onSnapshot 
+      getFirestore, enableIndexedDbPersistence, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot 
     } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -371,11 +397,13 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    enableIndexedDbPersistence(db).catch(err => console.warn("Persistence offline:", err));
+    enableIndexedDbPersistence(db).catch(err => console.warn("Offline DB Warning:", err));
 
     const stocksDocRef = doc(db, "app_stocks", "main_stock");
     const txCollectionRef = collection(db, "app_transactions");
     const reportsCollectionRef = collection(db, "app_reports");
+    const pbucDocRef = doc(db, "app_pbuc", "main_pbuc");
+    const kmCollectionRef = collection(db, "app_km_logs");
 
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
@@ -388,14 +416,10 @@
     window.stockData = {};
     window.transactions = [];
     window.generatedReports = [];
+    window.pbucData = {};
+    window.kmLogs = [];
 
     window.generateUniqueId = () => Date.now().toString() + '_' + Math.random().toString(36).substr(2, 7);
-
-    window.saveToLocalStorage = function() {
-      localStorage.setItem('sales_stock_data_3dash', JSON.stringify(window.stockData));
-      localStorage.setItem('sales_transactions_3dash', JSON.stringify(window.transactions));
-      localStorage.setItem('sales_reports_3dash', JSON.stringify(window.generatedReports));
-    };
 
     function initStockData() {
       window.PRODUCT_LIST.forEach(sku => {
@@ -405,67 +429,78 @@
       });
     }
 
-    window.updateSyncStatus = function(status) {
-      const deskInd = document.getElementById("sync-indicator");
-      const deskTxt = document.getElementById("sync-status-text");
-      const mobInd = document.getElementById("mob-sync-indicator");
-      const mobTxt = document.getElementById("mob-sync-status-text");
-
-      if (status === "connected") {
-        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-emerald-500";
-        if (deskTxt) { deskTxt.textContent = "Online"; deskTxt.className = "text-emerald-400 font-medium"; }
-        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-emerald-500";
-        if (mobTxt) { mobTxt.textContent = "Online"; mobTxt.className = "text-emerald-400 font-medium"; }
-      } else {
-        if (deskInd) deskInd.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse";
-        if (deskTxt) { deskTxt.textContent = "Syncing"; deskTxt.className = "text-amber-400 font-medium"; }
-        if (mobInd) mobInd.className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
-        if (mobTxt) { mobTxt.textContent = "Syncing"; mobTxt.className = "text-amber-400 font-medium"; }
-      }
-    };
-
     window.syncTxToCloud = async function(txObj) {
-      window.updateSyncStatus("saving");
-      window.saveToLocalStorage();
-      try {
-        await setDoc(doc(txCollectionRef, String(txObj.id)), txObj);
-        window.updateSyncStatus("connected");
-      } catch (err) { window.updateSyncStatus("offline"); }
+      try { await setDoc(doc(txCollectionRef, String(txObj.id)), txObj); } catch (e) {}
     };
 
-    onSnapshot(stocksDocRef, { includeMetadataChanges: true }, (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data.stockData) window.stockData = data.stockData;
-        window.saveToLocalStorage();
+    window.syncKmToCloud = async function(kmObj) {
+      try { await setDoc(doc(kmCollectionRef, String(kmObj.id)), kmObj); } catch (e) {}
+    };
+
+    window.savePbucData = async function() {
+      try {
+        await setDoc(pbucDocRef, { pbucData: window.pbucData });
+        alert("Data PBUC Berhasil Disimpan!");
+      } catch (e) { alert("Gagal Simpan PBUC"); }
+    };
+
+    window.confirmResetAllDatabase = async function() {
+      closeModal('modal-reset-db');
+      try {
+        await deleteDoc(stocksDocRef);
+        await deleteDoc(pbucDocRef);
+        const snaps = await getDocs(txCollectionRef);
+        await Promise.all(snaps.docs.map(d => deleteDoc(d.ref)));
+        window.stockData = {};
+        window.transactions = [];
+        window.generatedReports = [];
+        window.pbucData = {};
+        window.kmLogs = [];
+        localStorage.clear();
+        initStockData();
+        renderAllViews();
+        alert("Seluruh database berhasil dibersihkan!");
+      } catch (e) { alert("Gagal reset database"); }
+    };
+
+    // LISTENERS FIREBASE REALTIME
+    onSnapshot(stocksDocRef, (docSnap) => {
+      if (docSnap.exists() && docSnap.data().stockData) {
+        window.stockData = docSnap.data().stockData;
       }
       initStockData();
       renderAllViews();
-      window.updateSyncStatus("connected");
     });
 
-    onSnapshot(txCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
+    onSnapshot(txCollectionRef, (snapshot) => {
       const list = [];
-      snapshot.forEach(doc => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
+      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
       list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
       window.transactions = list;
-      window.saveToLocalStorage();
       renderAllViews();
-      window.updateSyncStatus("connected");
     });
 
-    onSnapshot(reportsCollectionRef, { includeMetadataChanges: true }, (snapshot) => {
+    onSnapshot(reportsCollectionRef, (snapshot) => {
       const list = [];
-      snapshot.forEach(doc => {
-        list.push({ id: doc.id, ...doc.data() });
-      });
+      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
       list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
       window.generatedReports = list;
-      window.saveToLocalStorage();
       renderAllViews();
-      window.updateSyncStatus("connected");
+    });
+
+    onSnapshot(pbucDocRef, (docSnap) => {
+      if (docSnap.exists() && docSnap.data().pbucData) {
+        window.pbucData = docSnap.data().pbucData;
+      }
+      renderAllViews();
+    });
+
+    onSnapshot(kmCollectionRef, (snapshot) => {
+      const list = [];
+      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+      list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
+      window.kmLogs = list;
+      renderAllViews();
     });
 
     function renderAllViews() {
@@ -474,11 +509,14 @@
       if (typeof renderTransactions === 'function') renderTransactions();
       if (typeof renderStockTable === 'function') renderStockTable();
       if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
+      if (typeof renderReportsHistory === 'function') renderReportsHistory();
+      if (typeof renderPbucTable === 'function') renderPbucTable();
+      if (typeof renderKmTable === 'function') renderKmTable();
       if (typeof lucide !== 'undefined') lucide.createIcons();
     }
   </script>
 
-  <!-- JAVASCRIPT SYSTEM NAVIGATION & HANDLER -->
+  <!-- JAVASCRIPT SYSTEM NAVIGATION & RENDERERS -->
   <script>
     function openResetModal() { document.getElementById('modal-reset-db').classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
@@ -540,12 +578,12 @@
 
         return `
           <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
-            <td class="p-3 border border-slate-200 text-center font-medium">${idx + 1}</td>
-            <td class="p-3 border border-slate-200 font-bold text-slate-800">${sku}</td>
-            <td class="p-3 border border-slate-200 text-right font-medium text-slate-700">${initial} Bks</td>
-            <td class="p-3 border border-slate-200 text-right font-medium ${added >= 0 ? 'text-blue-600' : 'text-red-600'}">${added > 0 ? '+' + added : added} Bks</td>
-            <td class="p-3 border border-slate-200 text-right font-medium text-amber-600">${out} Bks</td>
-            <td class="p-3 border border-slate-200 text-right font-bold ${remaining < 0 ? 'text-red-600' : 'text-slate-900'}">${remaining} Bks</td>
+            <td class="p-3 border text-center font-medium">${idx + 1}</td>
+            <td class="p-3 border font-bold text-slate-800">${sku}</td>
+            <td class="p-3 border text-right font-medium text-slate-700">${initial} Bks</td>
+            <td class="p-3 border text-right font-medium text-blue-600">${added > 0 ? '+' + added : added} Bks</td>
+            <td class="p-3 border text-right font-medium text-amber-600">${out} Bks</td>
+            <td class="p-3 border text-right font-bold ${remaining < 0 ? 'text-red-600' : 'text-slate-900'}">${remaining} Bks</td>
           </tr>
         `;
       }).join('');
@@ -555,7 +593,6 @@
       const statRem = document.getElementById('stat-stock-remaining');
       if (statOut) statOut.textContent = `${grandOut} Bungkus`;
       if (statRem) statRem.textContent = `${grandRemaining} Bungkus`;
-      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     function addToCart() {
@@ -637,6 +674,23 @@
       `).join('');
     }
 
+    function renderReportsHistory() {
+      const container = document.getElementById('reports-history-container');
+      if (!container) return;
+
+      if ((window.generatedReports || []).length === 0) {
+        container.innerHTML = `<div class="p-8 text-center text-slate-400 text-xs">Belum ada laporan tersimpan</div>`;
+        return;
+      }
+
+      container.innerHTML = window.generatedReports.map(r => `
+        <div class="bg-slate-50 p-4 rounded-xl border space-y-2">
+          <h4 class="font-bold text-indigo-900 text-sm">${r.title || 'Laporan Harian'}</h4>
+          <p class="text-[11px] text-slate-500">${r.date || ''}</p>
+        </div>
+      `).join('');
+    }
+
     function renderDailySummaryTable() {
       const tbody = document.getElementById('summary-daily-tbody');
       if (!tbody || !window.PRODUCT_LIST) return;
@@ -659,7 +713,80 @@
       }).join('');
     }
 
-    // GEMINI AI NOTA SCAN OCR
+    function renderPbucTable() {
+      const tbody = document.getElementById('pbuc-table-body');
+      if (!tbody || !window.PRODUCT_LIST) return;
+
+      tbody.innerHTML = window.PRODUCT_LIST.map((sku, idx) => {
+        const initial = window.stockData[sku] ? (window.stockData[sku].initial || 0) : 0;
+        const added = window.stockData[sku] ? (window.stockData[sku].added || 0) : 0;
+
+        let out = 0;
+        (window.transactions || []).forEach(t => {
+          (t.items || []).forEach(i => {
+            if (i.product === sku) out += (i.qty || 0);
+          });
+        });
+
+        const appStock = (initial + added) - out;
+        const pbucVal = window.pbucData[sku] || 0;
+        const diff = appStock - pbucVal;
+
+        return `
+          <tr class="${idx % 2 === 0 ? 'bg-white' : 'bg-slate-50'}">
+            <td class="p-3 border text-center font-medium">${idx + 1}</td>
+            <td class="p-3 border font-bold text-slate-800">${sku}</td>
+            <td class="p-3 border text-right font-bold">${appStock} Bks</td>
+            <td class="p-2 border text-center bg-purple-50/50">
+              <input type="number" value="${pbucVal}" onchange="window.pbucData['${sku}'] = parseInt(this.value, 10) || 0" class="w-24 text-center px-2 py-1 text-xs border rounded-lg bg-white font-bold">
+            </td>
+            <td class="p-3 border text-right font-bold ${diff !== 0 ? 'text-rose-600' : 'text-emerald-600'}">${diff} Bks</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function saveKmLog() {
+      const kmAwal = parseInt(document.getElementById('input-km-awal').value, 10) || 0;
+      const kmAkhir = parseInt(document.getElementById('input-km-akhir').value, 10) || 0;
+      if (kmAkhir <= kmAwal) return alert("KM Akhir harus lebih besar!");
+
+      const newKm = {
+        id: window.generateUniqueId(),
+        kmAwal: kmAwal,
+        kmAkhir: kmAkhir,
+        jarak: kmAkhir - kmAwal,
+        date: new Date().toLocaleDateString('id-ID')
+      };
+
+      window.kmLogs.unshift(newKm);
+      document.getElementById('input-km-awal').value = '';
+      document.getElementById('input-km-akhir').value = '';
+
+      if (typeof window.syncKmToCloud === 'function') window.syncKmToCloud(newKm);
+      renderKmTable();
+    }
+
+    function renderKmTable() {
+      const tbody = document.getElementById('km-table-body');
+      if (!tbody) return;
+
+      if ((window.kmLogs || []).length === 0) {
+        tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Belum ada log KM</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = window.kmLogs.map(k => `
+        <tr>
+          <td class="p-2.5 border">${k.date}</td>
+          <td class="p-2.5 border text-right">${k.kmAwal} KM</td>
+          <td class="p-2.5 border text-right">${k.kmAkhir} KM</td>
+          <td class="p-2.5 border text-right font-bold text-blue-600">${k.jarak} KM</td>
+        </tr>
+      `).join('');
+    }
+
+    // AI GEMINI OCR
     async function scanNotaWithAI(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -667,7 +794,6 @@
       const apiKey = window.GEMINI_API_KEY;
       const statusEl = document.getElementById('ai-scan-status');
       statusEl.classList.remove('hidden');
-      statusEl.textContent = "⏳ AI sedang membaca nota fisik kamu...";
 
       try {
         const base64Image = await new Promise((resolve, reject) => {
@@ -680,8 +806,7 @@
         const promptText = `
           Kamu adalah sistem OCR AI. Baca foto nota penjualan ini.
           Daftar SKU produk yang valid hanyalah: ${JSON.stringify(window.PRODUCT_LIST)}.
-          Kembalikan hasil pembacaan HANYA dalam format JSON baku tanpa teks pembuka/penutup seperti ini:
-          { "toko": "Nama Toko", "items": [ {"product": "NAMA_SKU_EXACT", "qty": 10} ] }
+          Kembalikan HANYA JSON: { "toko": "Nama Toko", "items": [ {"product": "NAMA_SKU_EXACT", "qty": 10} ] }
         `;
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
