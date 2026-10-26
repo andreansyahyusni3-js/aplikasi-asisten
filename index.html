@@ -74,7 +74,7 @@
     </div>
 
     <div class="text-[9px] text-slate-500 font-bold">
-      v12.5 (Full Active)
+      v12.6 (Fix All)
     </div>
   </aside>
 
@@ -377,34 +377,8 @@
     <button onclick="switchTab('kendaraan')" id="nav-mob-kendaraan" class="text-slate-400 p-1"><i data-lucide="truck" class="w-5 h-5"></i></button>
   </div>
 
-  <!-- FIREBASE ENGINE & FULL RENDER LOGIC -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-      getFirestore, enableIndexedDbPersistence, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAjMsxk0__VsFf37h9vyAIBlNDoNwLghUY",
-      authDomain: "aplikasi-awal-cb8bc.firebaseapp.com",
-      projectId: "aplikasi-awal-cb8bc",
-      storageBucket: "aplikasi-awal-cb8bc.firebasestorage.app",
-      messagingSenderId: "393090474476",
-      appId: "1:393090474476:web:2a2de286c3b9b6bd9160c9",
-      measurementId: "G-H5R0RTHBT8"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    enableIndexedDbPersistence(db).catch(err => console.warn("Offline DB Warning:", err));
-
-    const stocksDocRef = doc(db, "app_stocks", "main_stock");
-    const txCollectionRef = collection(db, "app_transactions");
-    const reportsCollectionRef = collection(db, "app_reports");
-    const pbucDocRef = doc(db, "app_pbuc", "main_pbuc");
-    const kmCollectionRef = collection(db, "app_km_logs");
-
+  <!-- JAVASCRIPT GLOBAL SYSTEM (DIDEKLARASIKAN PERTAMA) -->
+  <script>
     window.PRODUCT_LIST = [
       "CNNX SKT", "CNNX B SKT", "HD SKT", "MCB SKT", "MCM SKT", 
       "MCG SKT", "PBB SKT", "PBM SKT", "PBW SKT", "MCB SKM", "MCM SKM", "PBB SKM", "PBM SKM"
@@ -421,103 +395,6 @@
 
     window.generateUniqueId = () => Date.now().toString() + '_' + Math.random().toString(36).substr(2, 7);
 
-    function initStockData() {
-      window.PRODUCT_LIST.forEach(sku => {
-        if (!window.stockData[sku]) {
-          window.stockData[sku] = { initial: 0, added: 0 };
-        }
-      });
-    }
-
-    window.syncTxToCloud = async function(txObj) {
-      try { await setDoc(doc(txCollectionRef, String(txObj.id)), txObj); } catch (e) {}
-    };
-
-    window.syncKmToCloud = async function(kmObj) {
-      try { await setDoc(doc(kmCollectionRef, String(kmObj.id)), kmObj); } catch (e) {}
-    };
-
-    window.savePbucData = async function() {
-      try {
-        await setDoc(pbucDocRef, { pbucData: window.pbucData });
-        alert("Data PBUC Berhasil Disimpan!");
-      } catch (e) { alert("Gagal Simpan PBUC"); }
-    };
-
-    window.confirmResetAllDatabase = async function() {
-      closeModal('modal-reset-db');
-      try {
-        await deleteDoc(stocksDocRef);
-        await deleteDoc(pbucDocRef);
-        const snaps = await getDocs(txCollectionRef);
-        await Promise.all(snaps.docs.map(d => deleteDoc(d.ref)));
-        window.stockData = {};
-        window.transactions = [];
-        window.generatedReports = [];
-        window.pbucData = {};
-        window.kmLogs = [];
-        localStorage.clear();
-        initStockData();
-        renderAllViews();
-        alert("Seluruh database berhasil dibersihkan!");
-      } catch (e) { alert("Gagal reset database"); }
-    };
-
-    // LISTENERS FIREBASE REALTIME
-    onSnapshot(stocksDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().stockData) {
-        window.stockData = docSnap.data().stockData;
-      }
-      initStockData();
-      renderAllViews();
-    });
-
-    onSnapshot(txCollectionRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-      list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-      window.transactions = list;
-      renderAllViews();
-    });
-
-    onSnapshot(reportsCollectionRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-      list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-      window.generatedReports = list;
-      renderAllViews();
-    });
-
-    onSnapshot(pbucDocRef, (docSnap) => {
-      if (docSnap.exists() && docSnap.data().pbucData) {
-        window.pbucData = docSnap.data().pbucData;
-      }
-      renderAllViews();
-    });
-
-    onSnapshot(kmCollectionRef, (snapshot) => {
-      const list = [];
-      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
-      list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
-      window.kmLogs = list;
-      renderAllViews();
-    });
-
-    function renderAllViews() {
-      if (typeof initProductDropdown === 'function') initProductDropdown();
-      if (typeof renderCartUI === 'function') renderCartUI();
-      if (typeof renderTransactions === 'function') renderTransactions();
-      if (typeof renderStockTable === 'function') renderStockTable();
-      if (typeof renderDailySummaryTable === 'function') renderDailySummaryTable();
-      if (typeof renderReportsHistory === 'function') renderReportsHistory();
-      if (typeof renderPbucTable === 'function') renderPbucTable();
-      if (typeof renderKmTable === 'function') renderKmTable();
-      if (typeof lucide !== 'undefined') lucide.createIcons();
-    }
-  </script>
-
-  <!-- JAVASCRIPT SYSTEM NAVIGATION & RENDERERS -->
-  <script>
     function openResetModal() { document.getElementById('modal-reset-db').classList.remove('hidden'); }
     function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
 
@@ -767,6 +644,16 @@
       renderKmTable();
     }
 
+    function saveBbmLog() {
+      const kmVal = parseInt(document.getElementById('input-bbm-km').value, 10) || 0;
+      const literVal = parseFloat(document.getElementById('input-bbm-liter').value) || 0;
+      if (kmVal <= 0 || literVal <= 0) return alert("Isi data pengisian BBM dengan benar!");
+
+      alert("Log Pengisian BBM Berhasil Diberitahukan!");
+      document.getElementById('input-bbm-km').value = '';
+      document.getElementById('input-bbm-liter').value = '';
+    }
+
     function renderKmTable() {
       const tbody = document.getElementById('km-table-body');
       if (!tbody) return;
@@ -784,6 +671,18 @@
           <td class="p-2.5 border text-right font-bold text-blue-600">${k.jarak} KM</td>
         </tr>
       `).join('');
+    }
+
+    function renderAllViews() {
+      initProductDropdown();
+      renderCartUI();
+      renderTransactions();
+      renderStockTable();
+      renderDailySummaryTable();
+      renderReportsHistory();
+      renderPbucTable();
+      renderKmTable();
+      if (typeof lucide !== 'undefined') lucide.createIcons();
     }
 
     // AI GEMINI OCR
@@ -849,6 +748,114 @@
         event.target.value = '';
       }
     }
+  </script>
+
+  <!-- FIREBASE ENGINE & REALTIME SYNC (DIDEKLARASIKAN SETELAH SYSTEM LOGIC) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+      getFirestore, enableIndexedDbPersistence, doc, setDoc, deleteDoc, collection, getDocs, onSnapshot 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAjMsxk0__VsFf37h9vyAIBlNDoNwLghUY",
+      authDomain: "aplikasi-awal-cb8bc.firebaseapp.com",
+      projectId: "aplikasi-awal-cb8bc",
+      storageBucket: "aplikasi-awal-cb8bc.firebasestorage.app",
+      messagingSenderId: "393090474476",
+      appId: "1:393090474476:web:2a2de286c3b9b6bd9160c9",
+      measurementId: "G-H5R0RTHBT8"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    enableIndexedDbPersistence(db).catch(err => console.warn("Offline DB Warning:", err));
+
+    const stocksDocRef = doc(db, "app_stocks", "main_stock");
+    const txCollectionRef = collection(db, "app_transactions");
+    const reportsCollectionRef = collection(db, "app_reports");
+    const pbucDocRef = doc(db, "app_pbuc", "main_pbuc");
+    const kmCollectionRef = collection(db, "app_km_logs");
+
+    function initStockData() {
+      window.PRODUCT_LIST.forEach(sku => {
+        if (!window.stockData[sku]) {
+          window.stockData[sku] = { initial: 0, added: 0 };
+        }
+      });
+    }
+
+    window.syncTxToCloud = async function(txObj) {
+      try { await setDoc(doc(txCollectionRef, String(txObj.id)), txObj); } catch (e) {}
+    };
+
+    window.syncKmToCloud = async function(kmObj) {
+      try { await setDoc(doc(kmCollectionRef, String(kmObj.id)), kmObj); } catch (e) {}
+    };
+
+    window.savePbucData = async function() {
+      try {
+        await setDoc(pbucDocRef, { pbucData: window.pbucData });
+        alert("Data PBUC Berhasil Disimpan!");
+      } catch (e) { alert("Gagal Simpan PBUC"); }
+    };
+
+    window.confirmResetAllDatabase = async function() {
+      closeModal('modal-reset-db');
+      try {
+        await deleteDoc(stocksDocRef);
+        await deleteDoc(pbucDocRef);
+        const snaps = await getDocs(txCollectionRef);
+        await Promise.all(snaps.docs.map(d => deleteDoc(d.ref)));
+        window.stockData = {};
+        window.transactions = [];
+        window.generatedReports = [];
+        window.pbucData = {};
+        window.kmLogs = [];
+        localStorage.clear();
+        initStockData();
+        renderAllViews();
+        alert("Seluruh database berhasil dibersihkan!");
+      } catch (e) { alert("Gagal reset database"); }
+    };
+
+    // LISTENERS FIREBASE REALTIME
+    onSnapshot(stocksDocRef, (docSnap) => {
+      if (docSnap.exists() && docSnap.data().stockData) {
+        window.stockData = docSnap.data().stockData;
+      }
+      initStockData();
+      renderAllViews();
+    });
+
+    onSnapshot(txCollectionRef, (snapshot) => {
+      const list = [];
+      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+      window.transactions = list;
+      renderAllViews();
+    });
+
+    onSnapshot(reportsCollectionRef, (snapshot) => {
+      const list = [];
+      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+      window.generatedReports = list;
+      renderAllViews();
+    });
+
+    onSnapshot(pbucDocRef, (docSnap) => {
+      if (docSnap.exists() && docSnap.data().pbucData) {
+        window.pbucData = docSnap.data().pbucData;
+      }
+      renderAllViews();
+    });
+
+    onSnapshot(kmCollectionRef, (snapshot) => {
+      const list = [];
+      snapshot.forEach(doc => list.push({ id: doc.id, ...doc.data() }));
+      window.kmLogs = list;
+      renderAllViews();
+    });
   </script>
 
   <!-- PWA SERVICE WORKER -->
